@@ -17,6 +17,9 @@ nav:
           - Event Pipeline & Worker: prd/PRD-003-1-event-pipeline.md
           - Supervisor Prompt & Routing: prd/PRD-003-2-supervisor-spec.md
       - Agent Layer: prd/PRD-004-agent-layer.md
+      - Agent Layer Detail:
+          - Full LCEL Chain Specs: prd/PRD-004-1-agent-chains.md
+          - Codebase Vector Index: prd/PRD-004-2-codebase-index.md
       - LangSmith Observability: prd/PRD-005-langsmith-observability.md
       - Data Validation: prd/PRD-006-data-validation.md
       - Developer Tooling: prd/PRD-007-developer-tooling.md

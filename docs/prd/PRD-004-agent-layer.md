@@ -22,6 +22,9 @@ key_decisions: [lcel-chain-pattern, langserve-microservices, langflow-prototypin
 
 ## Overview
 
+> **Detailed specs:** [Full LCEL Chain Specs](PRD-004-1-agent-chains.md) ·
+> [Codebase Vector Index](PRD-004-2-codebase-index.md)
+
 This document covers the **individual agent layer** — the internals of each of the five specialized worker agents. These
 agents are the leaves of the system: the LangGraph supervisor ([PRD-003](PRD-003-langgraph-orchestration.md)) calls them, but doesn't know or care what's
 inside.
@@ -57,7 +60,6 @@ Every agent in this system follows this base pattern:
 
 ```python
 from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.output_parsers import PydanticOutputParser
 from langchain_openai import ChatOpenAI
 
 prompt = ChatPromptTemplate.from_messages([
@@ -72,10 +74,12 @@ llm = ChatOpenAI(
     api_key=settings.service_token,        # internal token, not the OpenAI key
 )
 
-parser = PydanticOutputParser(pydantic_object=AgentFinding)
-
-chain = prompt | llm | parser
+chain = prompt | llm.with_structured_output(AgentOutputSchema)
 ```
+
+`with_structured_output()` uses the model's native function-calling / JSON mode to enforce the
+schema. Do not use `PydanticOutputParser` — it requires explicit format instructions in the prompt
+and is fragile with complex nested schemas.
 
 The `chain` object is what gets served via LangServe.
 
@@ -95,6 +99,13 @@ The `chain` object is what gets served via LangServe.
 ## LangServe — Agent Microservices
 
 ### Architecture Decision
+
+> **LangServe status (March 2026):** LangServe is in maintenance mode. The LangChain team recommends
+> LangGraph Platform for new projects and will not accept new feature contributions to LangServe
+> (source: github.com/langchain-ai/langserve README). This project continues to use LangServe because
+> it provides a stable, simple REST interface for LCEL runnables and our use case does not require
+> LangGraph Platform's additional features. Pin `langserve>=0.3,<0.4` in `pyproject.toml` to prevent
+> unintended upgrades.
 
 Rather than importing agent functions directly into the LangGraph process, each agent is deployed as a **standalone
 FastAPI + LangServe microservice**. The LangGraph nodes call these services over HTTP.
