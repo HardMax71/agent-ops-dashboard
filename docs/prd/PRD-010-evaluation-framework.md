@@ -4,7 +4,7 @@ title: Evaluation Framework
 status: DRAFT
 domain: evaluation
 depends_on: [PRD-001, PRD-004, PRD-005]
-key_decisions: [llm-as-judge-cross-family, golden-dataset-structure, ci-eval-gate]
+key_decisions: [llm-as-judge-cross-family, golden-dataset-structure, ci-eval-gate, eval-staging-isolation]
 ---
 
 # PRD-010 — Evaluation Framework
@@ -49,8 +49,18 @@ The eval framework measures three things:
 ## LLM-as-Judge Setup
 
 ```python
+from typing import Literal
+from pydantic_settings import BaseSettings
 from langchain_anthropic import ChatAnthropic
 from langsmith.evaluation import evaluate, LangChainStringEvaluator
+
+
+class EvalSettings(BaseSettings):
+    langchain_project: Literal["agentops-staging"]  # fails fast if pointed at production
+    langserve_base_url: str                          # must be a staging deployment URL
+    openai_api_key: str                              # separate eval project key for billing isolation
+
+settings = EvalSettings()  # raises ValidationError if env vars are missing or wrong
 
 helpfulness_evaluator = LangChainStringEvaluator(
     "criteria",
@@ -150,4 +160,32 @@ to Dataset" feature.
       --project agentops-staging \
       --min-score 4.0 \
       --fail-on-regression
+```
+
+### Eval Environment Requirements
+
+CI-triggered evals (PR gate and staging-deploy trigger) call `run_triage_job` against the
+golden dataset. They must run in a fully isolated environment:
+
+| Resource          | Production value          | Eval (CI) value                        | Why                                                                |
+|-------------------|---------------------------|----------------------------------------|--------------------------------------------------------------------|
+| LangSmith project | `agentops-prod`           | `agentops-staging`                     | Prevent eval traces from polluting production dashboards           |
+| LangServe URL     | `https://agents.prod/…`   | `https://agents.staging/…`             | Prevent eval traffic from consuming production rate-limit budget   |
+| OpenAI API key    | Production org/project    | Separate org sub-account or project    | Billing isolation; eval cost tracked separately from user traffic  |
+
+**Staging deployment requirement:** A dedicated staging deployment of all LangServe agents
+(`investigator`, `codebase-search`, `web-search`, `critic`, `writer`) must be maintained and
+kept in sync with `main`. CI evals fail if the staging deployment is unreachable.
+
+**Daily production eval (02:00 UTC)** is exempt from the above: it scores completed job
+outputs already stored in LangSmith and does not call `run_triage_job` on new inputs.
+Production credentials are appropriate for that trigger.
+
+**CI env vars (set in GitHub Actions secrets):**
+
+```yaml
+LANGCHAIN_PROJECT: agentops-staging
+LANGSMITH_API_KEY: ${{ secrets.LANGSMITH_STAGING_KEY }}
+LANGSERVE_BASE_URL: ${{ secrets.LANGSERVE_STAGING_URL }}
+OPENAI_API_KEY: ${{ secrets.OPENAI_EVAL_KEY }}
 ```

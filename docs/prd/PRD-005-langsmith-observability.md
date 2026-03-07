@@ -4,7 +4,7 @@ title: Observability & Evaluation — LangSmith
 status: DRAFT
 domain: observability
 depends_on: [PRD-001, PRD-003, PRD-004]
-key_decisions: [trace-hierarchy, cost-per-job-tracking, prompt-iteration-workflow]
+key_decisions: [trace-hierarchy, cost-per-job-tracking, prompt-iteration-workflow, run-id-pre-assigned]
 ---
 
 # PRD-005 — Observability & Evaluation: LangSmith
@@ -129,20 +129,10 @@ No other code changes are required. LangSmith auto-instruments all LangChain and
 
 ### Tagging Runs
 
-Each LangGraph job run is tagged with metadata for filtering:
-
-```python
-config = {
-    "configurable": {"thread_id": job_id},
-    "metadata": {
-        "job_id": job_id,
-        "repository": state["repository"],
-        "issue_url": state["issue_url"],
-        "env": os.getenv("ENVIRONMENT", "dev"),
-    },
-    "tags": ["bug-triage", state["repository"]]
-}
-```
+Each LangGraph job run is tagged with `metadata` and `tags` for filtering in the
+LangSmith dashboard. Both are set in the combined `config` dict assembled in the
+ARQ worker — see [Accessing the Trace URL](#accessing-the-trace-url) for the
+full example.
 
 ---
 
@@ -150,15 +140,34 @@ config = {
 
 ### Accessing the Trace URL
 
-LangSmith returns a `run_id` at the start of each traced execution. This is captured and stored in
-`BugTriageState.langsmith_run_id` so the frontend can construct a deep-link:
+The `run_id` is generated **before** graph invocation and passed via `config["run_id"]`.
+LangGraph forwards it to LangSmith as the root run ID. Because the ID is pre-assigned,
+it is stored in `BugTriageState.langsmith_run_id` and the DB before the graph runs —
+no callback manager, no `traced_runs` access, no race condition.
 
 ```python
-# FastAPI: capture run ID when starting a job
-with tracing_v2_enabled(project_name="agentops-prod") as cb:
-    result = await graph.ainvoke(initial_state, config=config)
-    run_id = cb.traced_runs[0].id  # top-level run ID
-    # Store run_id → job_id mapping in DB
+# worker.py — inside run_triage(), before astream_events
+import uuid
+
+langsmith_run_id = uuid.uuid4()
+
+config = {
+    "configurable": {"thread_id": job_id},
+    "run_id": langsmith_run_id,   # LangSmith root run ID; pre-assigned, never read back
+    "metadata": {
+        "job_id": job_id,
+        "repository": initial_state["repository"],
+        "issue_url": initial_state["issue_url"],
+        "env": os.getenv("ENVIRONMENT", "dev"),
+    },
+    "tags": ["bug-triage", initial_state["repository"]],
+}
+
+# Persist run ID in graph state so checkpointer carries it through the job lifetime
+initial_state["langsmith_run_id"] = str(langsmith_run_id)
+
+async for event in graph.astream_events(initial_state, config=config, version="v2"):
+    ...
 ```
 
 Deep-link format:

@@ -4,7 +4,7 @@ title: LangGraph Orchestration & Human-in-the-Loop
 status: DRAFT
 domain: backend/orchestration
 depends_on: [PRD-001, PRD-002]
-key_decisions: [bug-triage-state-schema, interrupt-hitl, arq-worker-separation, redis-pubsub-fanout, postgres-checkpointing, human-input-timeout]
+key_decisions: [bug-triage-state-schema, interrupt-hitl, arq-worker-separation, redis-pubsub-fanout, postgres-checkpointing, human-input-timeout, human-exchanges-reducer, investigator-first, state-schema-versioning]
 ---
 
 # PRD-003 — LangGraph Orchestration & Human-in-the-Loop
@@ -36,7 +36,7 @@ LangGraph is used here in its intended role: **low-level orchestration of long-r
 
 | Concept           | Usage in This Product                                                                                                                     |
 |-------------------|-------------------------------------------------------------------------------------------------------------------------------------------|
-| `StateGraph`      | The main graph class; holds the shared `BugTriageState` across all nodes                                                                  |
+| `StateGraph`      | The main graph class; holds the shared `BugTriageState` (Pydantic `BaseModel`) across all nodes                                           |
 | Nodes             | Each agent and decision point is a node: `supervisor`, `investigator`, `codebase_search`, `web_search`, `critic`, `human_input`, `writer` |
 | Conditional edges | Supervisor's output determines which worker runs next via `add_conditional_edges`                                                         |
 | `interrupt()`     | Pauses graph execution mid-node to await human input; resumes via `Command(resume=answer)`                                                |
@@ -50,13 +50,15 @@ LangGraph is used here in its intended role: **low-level orchestration of long-r
 
 ## Shared State Schema
 
-The `BugTriageState` TypedDict is the central data structure. Every node reads from and writes to this state. It is
+The `BugTriageState` Pydantic model is the central data structure. Every node reads from and writes to this state. It is
 persisted at every checkpoint.
 
 ```python
 from __future__ import annotations
 
-from typing import TypedDict, Annotated
+from typing import Annotated, ClassVar, NotRequired
+from pydantic import BaseModel, Field, model_validator
+
 from langgraph.graph.message import add_messages
 
 
@@ -83,38 +85,108 @@ class TriageReport(TypedDict):
     confidence: float
 
 
-class BugTriageState(TypedDict):
+class BugTriageState(BaseModel):
+    """
+    Central graph state. Persisted by LangGraph's checkpointer after every node execution.
+
+    Schema evolution rules:
+    - Adding a field: add it with a Field(default=...) default. Pydantic fills missing keys
+      from old checkpoints automatically at deserialization — no migration code required.
+    - Renaming or changing the type of a field: add a branch inside migrate_from_checkpoint()
+      and bump CURRENT_SCHEMA_VERSION.
+    """
+
+    CURRENT_SCHEMA_VERSION: ClassVar[int] = 1
+
+    # --- Issue metadata ---
     issue_url: str
     issue_title: str
     issue_body: str
     repository: str
 
-    current_node: str
-    next_node: str | None
-    supervisor_reasoning: str
-    iterations: int  # total node executions across all resume cycles; persists via checkpointed state
-    max_iterations: int
-    paused: bool
+    # --- Routing ---
+    current_node: str = Field(default="")
+    next_node: str | None = Field(default=None)
+    supervisor_reasoning: str = Field(default="")
+    iterations: int = Field(default=0)   # total node executions; not reset on resume
+    max_iterations: int = Field(default=12)
+    paused: bool = Field(default=False)
+    redirect_instructions: Annotated[list[str], lambda a, b: a + b] = Field(default_factory=list)
 
-    findings: Annotated[list[AgentFinding], lambda a, b: a + b]
+    # --- Agent outputs ---
+    findings: Annotated[list[AgentFinding], lambda a, b: a + b] = Field(default_factory=list)
 
-    human_exchanges: list[HumanExchange]
-    awaiting_human: bool
+    # --- Human-in-the-loop ---
+    human_exchanges: Annotated[list[HumanExchange], lambda a, b: a + b] = Field(default_factory=list)
+    pending_exchange: HumanExchange | None = Field(default=None)
+    awaiting_human: bool = Field(default=False)
 
-    codebase_chunks: list[str]
-    similar_past_issues: list[str]
+    # --- Collected context ---
+    codebase_chunks: list[str] = Field(default_factory=list)
+    similar_past_issues: list[str] = Field(default_factory=list)
+    web_results: list[str] = Field(default_factory=list)
 
-    web_results: list[str]
+    # --- Outputs ---
+    report: TriageReport | None = Field(default=None)
+    github_comment_draft: str | None = Field(default=None)
+    ticket_draft: dict[str, object] | None = Field(default=None)
 
-    report: TriageReport | None
-    github_comment_draft: str | None
-    ticket_draft: dict | None
-
+    # --- Job metadata ---
     job_id: str
     owner_id: str
-    langsmith_run_id: str | None
-    status: str
+    langsmith_run_id: str | None = Field(default=None)
+    status: str = Field(default="queued")
+
+    # --- Schema versioning ---
+    schema_version: int = Field(default=0)
+    # 0 = pre-versioning checkpoint; always written as CURRENT_SCHEMA_VERSION by
+    # migrate_from_checkpoint() on the first supervisor execution after a schema bump.
+
+    @model_validator(mode="before")
+    @classmethod
+    def migrate_from_checkpoint(cls, data: object) -> object:
+        """
+        Runs before Pydantic field validation on every deserialization.
+        For additive schema changes this method does nothing — Pydantic fills Field
+        defaults automatically. Add a branch here only when a field is renamed or its
+        type changes in a breaking way, then bump CURRENT_SCHEMA_VERSION.
+        """
+        if not isinstance(data, dict):
+            return data
+
+        # Example (not yet needed): if the field "web_results" was renamed from
+        # "search_results" in schema v2, the branch would be:
+        #
+        #   if data.get("schema_version", 0) < 2 and "search_results" in data:
+        #       data["web_results"] = data.pop("search_results")
+        #
+        data["schema_version"] = cls.CURRENT_SCHEMA_VERSION
+        return data
+
+    model_config = {"arbitrary_types_allowed": True}
 ```
+
+### Schema Versioning
+
+`BugTriageState` uses Pydantic `BaseModel` rather than `TypedDict` specifically to leverage
+Pydantic's deserialization lifecycle for checkpoint compatibility.
+
+**Additive changes (adding a new field):** Supply a `Field(default=...)` or
+`Field(default_factory=...)`. LangGraph's checkpointer passes the stored JSON dict to Pydantic,
+which fills any missing key with its declared default. No migration code is required.
+
+**Non-additive changes (renaming a field, incompatible type change):** Add a conditional branch
+inside `migrate_from_checkpoint()` guarded by `data.get("schema_version", 0) < N`, then bump
+`CURRENT_SCHEMA_VERSION`. The validator is a classmethod on `BugTriageState` — no module-level
+functions or global registries.
+
+**`schema_version`** starts at `0` in all pre-versioning checkpoints (the field is absent, so
+Pydantic uses `Field(default=0)`). `migrate_from_checkpoint()` always writes
+`CURRENT_SCHEMA_VERSION` into the dict before field validation, so after the first supervisor
+execution following a schema bump the checkpoint is updated automatically.
+
+**`CURRENT_SCHEMA_VERSION`** is a `ClassVar[int]` on `BugTriageState` — not a module-level
+global — so it is always co-located with the class it describes.
 
 ---
 
@@ -183,10 +255,16 @@ def route_from_supervisor(state: BugTriageState) -> str:
     """
     Supervisor LLM outputs structured JSON with 'next' field.
     This function extracts it and returns the node name.
-    Guards: max_iterations check, required-findings check.
+    Guards: max_iterations check, investigator-first enforcement.
     """
     if state["iterations"] >= state["max_iterations"]:
         return "writer"  # force completion
+
+    # Enforce design invariant: investigator must always run first.
+    # The supervisor prompt instructs this, but LLM compliance is not guaranteed.
+    # state["iterations"] == 0 means no worker node has executed yet.
+    if state["iterations"] == 0 and state["next_node"] != "investigator":
+        return "investigator"
 
     return state["next_node"]
 ```
@@ -195,6 +273,13 @@ def route_from_supervisor(state: BugTriageState) -> str:
 cycles that occur after a human-interrupt resume. The value `max_iterations` is chosen to
 accommodate a typical flow (investigation → optional human interrupt → continued investigation
 → write) without premature termination. It is **not** reset on resume.
+
+**Investigator-first guard:** When `iterations == 0`, no worker node has yet executed. The
+supervisor prompt instructs the LLM to always call `investigator` first, but prompt compliance
+is not guaranteed — edge-case inputs or model drift could cause the LLM to skip straight to
+`codebase_search` or `writer`. The guard in `route_from_supervisor` overrides any such decision
+deterministically. Once `investigator` has run, `iterations` becomes 1 and the guard no longer
+fires; subsequent routing is left entirely to the supervisor.
 
 ---
 
@@ -248,6 +333,11 @@ class SupervisorDecision(BaseModel):
     confidence: float  # 0.0–1.0
 ```
 
+> When `next_node == "human_input"`, the supervisor node returns
+> `{"pending_exchange": HumanExchange(question=..., context=..., answer=None),
+> "awaiting_human": True}`. It does **not** append to `human_exchanges` directly — that
+> field is written only by `human_input_node` via the append reducer.
+
 ---
 
 ## Worker Agent Node Specs
@@ -296,21 +386,27 @@ from langgraph.types import interrupt
 
 
 def human_input_node(state: BugTriageState) -> dict:
-    last_exchange = state["human_exchanges"][-1]
+    exchange = state["pending_exchange"]
 
     answer = interrupt({
-        "question": last_exchange["question"],
-        "context": last_exchange["context"],
+        "question": exchange["question"],
+        "context": exchange["context"],
     })
 
-    updated_exchanges = state["human_exchanges"].copy()
-    updated_exchanges[-1]["answer"] = answer
-
     return {
-        "human_exchanges": updated_exchanges,
+        "human_exchanges": [{**exchange, "answer": answer}],  # reducer appends
+        "pending_exchange": None,
         "awaiting_human": False,
     }
 ```
+
+> **State design note:** `human_exchanges` uses an append reducer
+> (`Annotated[list[HumanExchange], lambda a, b: a + b]`), so nodes may safely return
+> `[new_item]` without reading or copying the existing list. `pending_exchange` uses plain
+> overwrite semantics and holds at most one unanswered question at a time. The supervisor
+> writes to `pending_exchange`; `human_input_node` reads it, fills the answer, appends the
+> completed exchange to `human_exchanges`, and clears `pending_exchange` — no list mutation
+> anywhere.
 
 ### Resuming from FastAPI
 
@@ -424,16 +520,44 @@ async def submit_answer(job_id: str, body: AnswerRequest, redis: Redis = Depends
 
 Triggered by user clicking "Pause" in the UI. Sends `POST /jobs/{id}/pause`.
 
-Implementation: Sets a flag in the checkpointed state. The supervisor checks this flag at the start of each iteration
-and fires `interrupt()` with a "manual pause" signal if set. User can resume by clicking "Resume".
+Implementation: Sets `paused: True` in the checkpointed state. The supervisor checks this flag **at
+the start of each iteration** and fires `interrupt()` with a `"manual_pause"` signal if set. User
+can resume by clicking "Resume".
+
+**"At-next-iteration" behaviour:** The pause takes effect at the next supervisor node boundary, not
+immediately. If the supervisor is already mid-LLM-call (e.g. deciding which worker to dispatch) when
+the API call arrives, execution continues until that LLM call completes and the supervisor node runs
+again. In practice this means up to one additional worker agent may be spawned before the graph
+actually pauses.
+
+This is by design — LangGraph does not expose a mid-node cancellation hook for the flag-based
+pattern. The alternative (a hard `Job.abort()` followed by re-enqueue) is lossy and not used here.
+
+**UI implication:** The frontend must show a **"Pause requested…"** intermediate status from the
+moment `POST /jobs/{id}/pause` returns 200 until a `graph.paused` SSE event is received. See
+[PRD-002 §Status Definitions](PRD-002-frontend-ux.md#status-definitions).
 
 ### Redirect
 
-Triggered after a pause. User can type a new instruction into a text field in the UI: e.g., "Focus only on the database
-layer — ignore the auth middleware."
+Triggered after a pause. User can type a new instruction into a text field in the UI: e.g., "Focus
+only on the database layer — ignore the auth middleware."
 
-Implementation: Resumes the graph via `Command(resume={"type": "redirect", "instruction": "..."})`. The supervisor node
-treats redirect instructions as high-priority context prepended to its system prompt for all subsequent steps.
+Implementation: Resumes the graph via `Command(resume={"type": "redirect", "instruction": "..."})`.
+When the supervisor node receives this command, it:
+
+1. Reads the `instruction` string from the `Command` payload (the return value of `interrupt()`).
+2. **Appends it to `redirect_instructions`** in its returned state dict, so the instruction is
+   written into the LangGraph checkpoint immediately.
+3. Prepends all accumulated `redirect_instructions` (not just the latest) to its system prompt for
+   the current and all subsequent supervisor iterations.
+
+**Persistence guarantee:** Because the instruction is stored in `BugTriageState.redirect_instructions`
+before any further LLM work is done, it survives server restarts. If the worker process crashes and
+the job is resumed from checkpoint, the full list of redirect instructions is restored and the
+supervisor continues to honour them.
+
+**Multiple redirects:** Each redirect appends to the list. The supervisor concatenates all entries
+in order, so earlier redirects remain in effect unless a later one explicitly overrides them.
 
 ### Kill
 
@@ -488,7 +612,8 @@ class WorkerSettings:
     functions = [run_triage]
     allow_abort_jobs = True   # enables Job.abort() cross-worker
     max_jobs = 10             # concurrent job cap per worker
-    retry_jobs = False        # LangGraph jobs are not idempotent by default
+    retry_jobs = False        # ARQ retries disabled; at-most-once deduplication is enforced
+                              # at the API layer via a Redis idempotency key (see PRD-006)
 ```
 
 **Kill endpoint** — no dict lookup, no task tracking:

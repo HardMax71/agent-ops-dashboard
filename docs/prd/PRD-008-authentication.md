@@ -4,7 +4,7 @@ title: Authentication & Authorization
 status: DRAFT
 domain: backend/auth
 depends_on: [PRD-001, PRD-003, PRD-006, PRD-007]
-key_decisions: [github-oauth-flow, jwt-hs256-session, sse-auth-fetch-event-source, job-ownership-idor, fernet-github-token-storage, one-time-auth-code, sse-reconnect-event-loss]
+key_decisions: [github-oauth-flow, jwt-hs256-session, sse-auth-fetch-event-source, job-ownership-idor, fernet-github-token-storage, one-time-auth-code, sse-reconnect-event-loss, github-token-revocation]
 ---
 
 # PRD-008 — Authentication & Authorization
@@ -315,6 +315,7 @@ GET  /auth/callback       → exchange GitHub code, issue auth_code, redirect to
 POST /auth/token          → exchange auth_code for {access_token, token_type}
 POST /auth/refresh        → exchange refresh cookie for new access_token
 POST /auth/logout         → clear refresh cookie, invalidate refresh token in Redis
+DELETE /auth/github-token → delete stored GitHub OAuth token from Redis; user stays logged in
 GET  /auth/me             → return current user info (requires Bearer)
 ```
 
@@ -581,6 +582,26 @@ async def post_comment(
 GitHub OAuth tokens for OAuth Apps do not expire by default. However, GitHub App user tokens
 expire after 8 hours (with refresh tokens). v1 uses an OAuth App (non-expiring tokens). v2
 migration to GitHub Apps requires implementing the token refresh cycle.
+
+### Token Revocation
+
+Users can disconnect their GitHub account without logging out. `DELETE /auth/github-token`
+deletes the Fernet-encrypted token from Redis; the user's JWT and refresh token remain valid.
+
+```python
+@router.delete("/github-token", status_code=204)
+async def revoke_github_token(
+    current_user: Annotated[AuthenticatedUser, Depends(get_current_user)],
+    redis: Annotated[Redis, Depends(get_redis)],
+) -> None:
+    """Delete stored GitHub OAuth token. Session (JWT + refresh token) remains active."""
+    await redis.delete(f"github_token:{current_user.github_id}")
+```
+
+After revocation, `POST /jobs/{id}/post-comment` returns
+`401 GitHub session expired — re-authenticate`. The user must complete a new OAuth flow to
+re-authorize write-back operations. This is surfaced in the UI via the Settings page
+(see [PRD-002 §Settings Page](PRD-002-frontend-ux.md#settings-page)).
 
 ---
 

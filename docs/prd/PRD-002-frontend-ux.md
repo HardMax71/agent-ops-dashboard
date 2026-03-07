@@ -4,7 +4,7 @@ title: Frontend & UX
 status: DRAFT
 domain: frontend
 depends_on: [ PRD-001, PRD-003, PRD-005 ]
-key_decisions: [ jira-layout, sse-streaming, zustand-state, write-back-manual, sse-reconnect-v1-event-loss ]
+key_decisions: [ jira-layout, sse-streaming, zustand-state, write-back-manual, sse-reconnect-v1-event-loss, sse-concurrent-tabs, github-settings-page ]
 ---
 
 # PRD-002 — Frontend & User Experience
@@ -93,9 +93,14 @@ Each card shows:
 |---------|-----------------------------|------------------------|----------------------------------------|
 | QUEUED  | Thread created, not started | Gray                   | Job submitted, waiting for resources   |
 | RUNNING | Graph executing             | Blue (pulse animation) | At least one agent node is active      |
+| PAUSING | Pause flag set, not yet reached supervisor boundary | Blue (static) | Pause requested — waiting for current supervisor iteration to complete |
 | WAITING | `interrupt()` fired         | Amber (pulse)          | Graph paused — user answer required    |
 | DONE    | Graph reached END node      | Green                  | All outputs produced                   |
 | FAILED  | Unhandled exception         | Red                    | Job errored; LangSmith trace available |
+
+> PAUSING is a **client-side-only** status: set optimistically on `POST /jobs/{id}/pause` 200
+> response; cleared when a `graph.paused` SSE event arrives (transitions to WAITING) or a
+> `graph.resumed` event arrives (transitions back to RUNNING, e.g. if pause was cancelled).
 
 ### Interactions
 
@@ -300,6 +305,22 @@ guarantee across sections. The frontend must buffer tokens per section and may n
 is complete until it receives `output.section_done` for that section. `job.done` is emitted only
 after all three `output.section_done` events have been emitted.
 
+### Concurrent connections (multiple tabs)
+
+Opening the same job in more than one browser tab is safe and fully supported. Each `GET
+/{job_id}/stream` request creates an **independent Redis Pub/Sub subscriber** on the
+`jobs:{job_id}:events` channel. The ARQ worker publishes each event once; Redis delivers a copy to
+every active subscriber. Consequences:
+
+- **No duplicate processing** — subscribers are read-only; publishing happens once in the worker.
+- **No missed events** — each subscriber receives its own copy from Redis from the moment it subscribes.
+- **No interference** — closing or losing one tab's connection unsubscribes only that connection's
+  `pubsub` object; the worker and all other subscribers are unaffected.
+
+This is specified at the backend level in
+[PRD-003 §Streaming to Frontend](PRD-003-langgraph-orchestration.md#streaming-to-frontend).
+Events emitted *before* a tab connects are not replayed (same v1 limitation as reconnect — see above).
+
 ### Frontend State Management
 
 State is managed with **Zustand**. Each job has its own state slice:
@@ -307,7 +328,7 @@ State is managed with **Zustand**. Each job has its own state slice:
 ```typescript
 interface JobState {
     id: string
-    status: 'queued' | 'running' | 'waiting' | 'done' | 'failed'
+    status: 'queued' | 'running' | 'pausing' | 'waiting' | 'done' | 'failed'
     agents: AgentCardState[]
     timelineNodes: TimelineNode[]
     pendingQuestion: Question | null
@@ -330,9 +351,34 @@ Write-back to GitHub is always a **manual, user-initiated action**. The flow:
 3. User clicks "Post Comment to GitHub"
 4. Frontend calls `POST /jobs/{id}/post-comment` with final comment text
 5. Backend posts to GitHub API using stored OAuth token
+   (Fernet-encrypted in Redis — see [PRD-008 §GitHub OAuth Token Management](PRD-008-authentication.md#github-oauth-token-management))
 6. UI shows confirmation with link to the GitHub comment
 
 **No agent can post to GitHub autonomously.** This is a hard constraint in v1.0.
+
+---
+
+## Settings Page
+
+A minimal Settings page (`/settings`) lets users manage their GitHub connection and session.
+
+### GitHub Account Panel
+
+| Element | Behaviour |
+|---------|-----------|
+| Connected account row | Shows GitHub avatar, `@login`, and connection date |
+| **Disconnect GitHub** button | Calls `DELETE /auth/github-token`; disables write-back buttons until re-auth |
+| Re-connect link | Opens the GitHub OAuth flow (`GET /auth/login`) to restore write-back capability |
+
+After disconnect, the "Post Comment to GitHub" and "Create GitHub Issue" buttons in the Output
+Panel are replaced with a "Reconnect GitHub to enable write-back" notice. No triage or analysis
+functionality is affected — only GitHub write-back is blocked.
+
+### Session Panel
+
+| Element | Behaviour |
+|---------|-----------|
+| **Log out** button | Calls `POST /auth/logout`; invalidates refresh token in Redis, clears cookie, redirects to `/login` |
 
 ---
 

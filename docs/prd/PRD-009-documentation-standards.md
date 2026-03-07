@@ -193,6 +193,29 @@ async def get_current_user(...):
     ...
 ```
 
+### Typing in Pseudocode
+
+All Python pseudocode in PRD documents must carry accurate type annotations identical to what
+production code would carry:
+
+- **No bare `dict` or `list` as a parameter or return type.** Use a `TypedDict`, a `BaseModel`,
+  a concrete generic (`list[str]`, `dict[str, object]`), or a named alias.
+- **No `Any` without an inline comment explaining why it is unavoidable.**
+- Module-level **global variables are forbidden** in pseudocode. Use `ClassVar` for
+  class-scoped constants, instance fields for instance state, and local variables for
+  function-scoped values.
+- **No explicit migration tables or registries** (e.g., a `_MIGRATIONS: dict[int, ...]` dict).
+  Schema migration must use framework-native patterns — Pydantic `BaseModel` with `Field`
+  defaults handles additive changes automatically; `@model_validator(mode="before")` handles
+  non-additive cases as a co-located classmethod. Migration logic lives on the model, not in
+  a separate data structure.
+- Use `ClassVar[T]` (not a global constant) for schema version markers and other class-level
+  metadata.
+
+Rationale: pseudocode in PRDs is the authoritative specification. Untyped signatures introduce
+ambiguity; globals and migration registries are antipatterns that produce brittle code when
+transcribed verbatim.
+
 ---
 
 ## Diagrams

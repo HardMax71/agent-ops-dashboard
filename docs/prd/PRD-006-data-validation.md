@@ -87,14 +87,29 @@ class JobCreate(BaseModel):
 FastAPI automatically returns HTTP 422 with field-level error detail if validation fails — no explicit `try/except`
 required in the route handler.
 
+The `JobCreate` model has no explicit idempotency field — the key is derived server-side as
+`SHA-256(issue_url + ":" + owner_id)` so callers need no special header or field.
+
 ---
 
 ## `POST /jobs` Endpoint
 
 ```python
 @router.post("/", status_code=202)
-async def create_job(body: JobCreate, redis: Redis = Depends(get_redis)) -> dict:
+async def create_job(
+    body: JobCreate,
+    redis: Redis = Depends(get_redis),
+    current_user: User = Depends(get_current_user),
+    response: Response = None,
+) -> dict:
+    idem_key = _idempotency_key(body.issue_url, current_user.id)
+    existing = await redis.get(f"idempotency:{idem_key}")
+    if existing:
+        response.status_code = 200
+        return {"job_id": existing.decode()}
+
     job_id = str(uuid4())
+    await redis.set(f"idempotency:{idem_key}", job_id, ex=86400)  # 24-hour TTL
     initial_state = {
         "issue_url": body.issue_url,
         "job_id": job_id,
@@ -102,14 +117,18 @@ async def create_job(body: JobCreate, redis: Redis = Depends(get_redis)) -> dict
     }
     await arq_queue.enqueue_job("run_triage", job_id, initial_state)
     return {"job_id": job_id}
+
+
+def _idempotency_key(issue_url: str, owner_id: str) -> str:
+    return hashlib.sha256(f"{issue_url}:{owner_id}".encode()).hexdigest()
 ```
 
 `body.issue_url` is already a plain `str` — `GitHubIssueUrl = Annotated[str, ...]` — so no conversion is needed
 before passing it to `BugTriageState`.
 
-> **Auth note:** `get_current_user` is omitted from this signature because authentication is enforced at the
-> router level — `APIRouter(prefix="/jobs", dependencies=[Depends(get_current_user)])` — not per-endpoint.
-> See [PRD-008 §REST API Authentication](PRD-008-authentication.md#rest-api-authentication) for the full auth pattern.
+`get_current_user` is injected directly here (not only at router level) so that `owner_id`
+is available for key derivation; the router-level dependency still enforces auth for all
+other endpoints.
 
 ---
 
@@ -135,6 +154,19 @@ No additional error handling code is required in the route or worker.
 
 ---
 
+## Idempotent 200 Response
+
+If a job for the same `issue_url` + authenticated user already exists (submitted within the last
+24 hours), `POST /jobs` returns **HTTP 200** with the existing job ID:
+
+```json
+{ "job_id": "<existing-uuid>" }
+```
+
+The frontend should treat 200 identically to 202 — navigate to the existing job's workspace.
+
+---
+
 ## What Is NOT Validated Here
 
 | Concern                                      | Where it is handled                              |
@@ -143,6 +175,7 @@ No additional error handling code is required in the route or worker.
 | Repository access / authentication           | At job execution time via GitHub API credentials |
 | Issue number range / validity                | GitHub returns 404 for non-existent numbers      |
 | Rate limiting on `POST /jobs`                | API gateway / middleware layer (out of scope v1) |
+| Duplicate job detection (same URL, same user) | `POST /jobs` handler via Redis idempotency key |
 
 These are intentionally deferred: validating them at the API boundary would require a synchronous GitHub API call,
 adding latency and a network dependency to every job submission.
