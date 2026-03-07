@@ -184,9 +184,11 @@ Production credentials are appropriate for that trigger.
 
 **CI env vars (set in GitHub Actions secrets):**
 
+{% raw %}
 ```yaml
 LANGCHAIN_PROJECT: agentops-staging
 LANGSMITH_API_KEY: ${{ secrets.LANGSMITH_STAGING_KEY }}
 LANGSERVE_BASE_URL: ${{ secrets.LANGSERVE_STAGING_URL }}
 OPENAI_API_KEY: ${{ secrets.OPENAI_EVAL_KEY }}
 ```
+{% endraw %}
