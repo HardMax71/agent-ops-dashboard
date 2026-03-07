@@ -59,7 +59,7 @@ for user actions (submit job, answer agent question, pause/kill agent).
 
 The application is a three-zone layout, always visible simultaneously on desktop (≥1280px wide):
 
-```
+```text
 ┌──────────────────────────────────────────────────────────────────┐
 │  HEADER — AgentOps Dashboard            [+ New Job]  [Settings]  │
 ├─────────────┬───────────────────────────┬────────────────────────┤
@@ -91,7 +91,7 @@ and 3.
 
 Each card shows:
 
-```
+```text
 ┌─────────────────────────────────────────┐
 │ ● RUNNING                    #1042      │
 │ Auth token expiry causes 500 on /api/me │
@@ -136,11 +136,11 @@ like a Jira ticket that writes itself, section by section, as agents work.
 
 ### 5.2 Workspace Header
 
-```
+```text
 ┌────────────────────────────────────────────────────────────────┐
 │  #1042  Auth token expiry causes 500 on /api/me                │
 │  github.com/org/repo · Opened by @user · 2 hours ago          │
-│                                          [⏸ Pause]  [✕ Kill]  │
+│                        [↪ Redirect]  [⏸ Pause]  [✕ Kill]  │
 └────────────────────────────────────────────────────────────────┘
 ```
 
@@ -149,7 +149,7 @@ like a Jira ticket that writes itself, section by section, as agents work.
 Each active or completed agent gets an **Agent Card** in the workspace. Cards appear as agents are spawned and fill in
 as they execute:
 
-```
+```text
 ┌────────────────────────────────────────────────────────────────┐
 │  🔍  INVESTIGATOR AGENT                    ● DONE  (12s)      │
 ├────────────────────────────────────────────────────────────────┤
@@ -176,7 +176,7 @@ Agent Card states:
 When the supervisor decides to ask the user a question, a **question card** appears above all other agents, with amber
 styling to communicate urgency. The entire graph is paused until the user responds.
 
-```
+```text
 ┌────────────────────────────────────────────────────────────────┐
 │  ⚠  SUPERVISOR NEEDS YOUR INPUT               ● WAITING       │
 ├────────────────────────────────────────────────────────────────┤
@@ -200,7 +200,7 @@ Full specification in **[PRD-003](PRD-003-langgraph-orchestration.md)**.
 
 Below the agent cards, a compact horizontal timeline shows the sequence of node executions:
 
-```
+```text
 START → investigator → codebase_search → [⚠ human_input] → web_search → critic → writer → END
          ✓ 12s           ✓ 18s              ● waiting          ...
 ```
@@ -218,7 +218,7 @@ any GitHub write-back occurs.
 
 ### 6.2 Structured Report Card
 
-```
+```text
 TRIAGE REPORT
 
 Severity:    🔴 HIGH
@@ -280,7 +280,11 @@ A structured form (also pre-filled by Writer agent):
 
 ### 7.1 SSE Event Types
 
-The FastAPI backend emits the following event types over the SSE stream:
+The FastAPI backend emits the following event types over the SSE stream. Every
+message is emitted with an SSE `id:` field set to a per-job monotonically
+incrementing integer (e.g. `id: 42`). On reconnect the browser sends this value
+as the `Last-Event-ID` header automatically; the backend resumes the stream from
+that sequence number, satisfying the reconnect NFR in §11.
 
 | Event                 | Payload                                   | Frontend Action                     |
 |-----------------------|-------------------------------------------|-------------------------------------|
@@ -334,7 +338,7 @@ Write-back to GitHub is always a **manual, user-initiated action**. The flow:
 
 ## 9. Component Tree
 
-```
+```text
 <App>
   <Header />
   <AppLayout>

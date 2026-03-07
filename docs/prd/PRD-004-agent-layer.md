@@ -165,6 +165,12 @@ Each LangServe endpoint comes with a built-in `/playground` UI at no extra cost.
 manually test agent behavior with real GitHub issues before running full end-to-end jobs. This complements the LangFlow
 prototyping workflow.
 
+**Security requirement:** The `/playground` route must be disabled in staging and production. It is enabled only in
+local development environments. Implementers must control this via a deployment flag (e.g. `ENABLE_PLAYGROUND=true`,
+defaulting to `false`); when disabled, requests to `/agents/{name}/playground` must return 404 or be blocked at the
+network boundary. In staging, if access is required for debugging, it must be restricted to internal networks
+(VPN/localhost) or protected by authentication before being enabled.
+
 ---
 
 ## 4. LangFlow — Prototyping Workflow
@@ -235,13 +241,12 @@ class InvestigatorInput(BaseModel):
 **Output:**
 
 ```python
-class InvestigatorFinding(BaseModel):
+class InvestigatorFinding(AgentFindingBase):
     hypothesis: str  # plain English statement of likely root cause
     affected_areas: list[str]  # e.g. ["authentication", "database"]
     keywords_for_search: list[str]  # passed to codebase/web search agents
     error_messages: list[str]  # extracted verbatim error strings
-    confidence: float  # 0.0–1.0
-    reasoning: str  # shown in UI agent card
+    # confidence, reasoning, agent_name, summary, error — inherited from AgentFindingBase
 ```
 
 **LCEL Chain:**
@@ -277,11 +282,10 @@ class CodebaseSearchInput(BaseModel):
 **Output:**
 
 ```python
-class CodebaseFinding(BaseModel):
+class CodebaseFinding(AgentFindingBase):
     relevant_files: list[RelevantFile]  # filepath + relevant snippet + line numbers
     root_cause_location: Optional[str]  # "auth/middleware.py:L142" if found
-    confidence: float
-    reasoning: str
+    # confidence, reasoning, agent_name, summary, error — inherited from AgentFindingBase
 ```
 
 **LCEL Chain (with RAG):**
@@ -322,11 +326,10 @@ class WebSearchInput(BaseModel):
 **Output:**
 
 ```python
-class WebSearchFinding(BaseModel):
+class WebSearchFinding(AgentFindingBase):
     relevant_results: list[WebResult]  # URL + title + relevant excerpt
     external_root_cause: Optional[str]  # e.g. "Known bug in requests v2.31"
-    confidence: float
-    reasoning: str
+    # confidence, reasoning, agent_name, summary, error — inherited from AgentFindingBase
 ```
 
 **LCEL Chain (with tool):**
@@ -369,13 +372,13 @@ class CriticInput(BaseModel):
 **Output:**
 
 ```python
-class CritiqueFinding(BaseModel):
+class CritiqueFinding(AgentFindingBase):
     verdict: Literal["CONFIRMED", "UNCERTAIN", "CHALLENGED"]
     confidence_adjustment: float  # delta to apply to current confidence
     gaps: list[str]  # what's still missing
     revised_hypothesis: Optional[str]
     ready_for_report: bool  # supervisor uses this to decide next step
-    reasoning: str
+    # confidence (overall), reasoning, agent_name, summary, error — inherited from AgentFindingBase
 ```
 
 **LCEL Chain:**
@@ -412,7 +415,7 @@ class WriterInput(BaseModel):
 **Output:**
 
 ```python
-class WriterOutput(BaseModel):
+class WriterOutput(AgentFindingBase):
     report: TriageReport  # structured severity/root cause/files
     github_comment_markdown: str  # ready to post to GitHub
     ticket_title: str

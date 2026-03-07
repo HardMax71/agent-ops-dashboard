@@ -154,7 +154,7 @@ Every tool in the LangX ecosystem plays a specific, non-forced role in this prod
 
 ## 7. High-Level Architecture
 
-```
+```text
 GitHub Issue URL
        │
        ▼
@@ -283,7 +283,7 @@ GitHub Issue URL
 - v1.0 supports only Python-based repositories for codebase analysis
 - Maximum job execution time: 10 minutes
 - Maximum codebase size for vector indexing: 500MB
-- Human-in-the-loop question limit per job: 3 questions (to prevent over-reliance on user)
+- Human-in-the-loop question limit per job: 2 questions (to prevent over-reliance on user)
 
 ### External Dependencies
 

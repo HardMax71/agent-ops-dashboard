@@ -70,7 +70,7 @@ endpoints (automatically). Zero extra instrumentation code is required beyond se
 
 LangSmith captures traces at three levels, all linked in a parent–child hierarchy:
 
-```
+```text
 Job Run (top-level trace)
 │   job_id: "uuid-1234"
 │   total_tokens: 12,450
@@ -192,7 +192,7 @@ with tracing_v2_enabled(project_name="agentops-prod") as cb:
 
 Deep-link format:
 
-```
+```text
 https://smith.langchain.com/o/{org_id}/projects/p/{project_id}/r/{run_id}
 ```
 
@@ -218,7 +218,7 @@ The trace shows:
 A lightweight summary of the LangSmith trace is shown directly in the AgentOps UI (no need to navigate to LangSmith for
 basic info):
 
-```
+```text
 ┌─────────────────────────────────────────────────────────┐
 │  JOB TRACE SUMMARY                                       │
 │  Total tokens: 12,450    Estimated cost: $0.043          │
@@ -327,7 +327,7 @@ to Dataset" feature.
 
 | Trigger                                         | Action                                                                          |
 |-------------------------------------------------|---------------------------------------------------------------------------------|
-| Any agent prompt change committed to `main`     | CI pipeline runs eval against golden dataset; fails PR if avg score drops > 0.3 |
+| Any agent prompt change proposed in a PR to `main` | CI pipeline runs eval against golden dataset; fails PR if avg score drops > 0.3 |
 | New LangServe agent version deployed to staging | Eval runs automatically; results posted to PR as a comment                      |
 | Daily at 02:00 UTC                              | Production eval: random sample of 10 recent jobs scored and logged              |
 | Manual trigger                                  | Developer can run evals on demand from LangSmith UI or CLI                      |
@@ -341,7 +341,7 @@ to Dataset" feature.
     python scripts/run_evals.py \
       --dataset agentops-golden-dataset-v1 \
       --project agentops-staging \
-      --min-score 3.7 \
+      --min-score 4.0 \
       --fail-on-regression
 ```
 
@@ -386,7 +386,7 @@ The Analytics page (v1.1) shows rolling 7-day charts from LangSmith data:
 
 The workflow for safely improving agent quality using LangSmith:
 
-```
+```text
 1. OBSERVE
    Identify a failing job in production via LangSmith traces
    Note which agent produced the bad output and why

@@ -101,6 +101,7 @@ class BugTriageState(TypedDict):
     supervisor_reasoning: str  # why supervisor chose next agent
     iterations: int  # guard against infinite loops
     max_iterations: int  # default: 12
+    paused: bool  # set by POST /jobs/{id}/pause; supervisor fires interrupt() when True
 
     # Agent findings (accumulated)
     findings: Annotated[list[AgentFinding], lambda a, b: a + b]  # reducer: append
@@ -316,7 +317,7 @@ def human_input_node(state: BugTriageState) -> dict:
     # This pauses the graph and surfaces the question to the user
     answer = interrupt({
         "question": last_exchange["question"],
-        "context": last_exchange["question_context"],
+        "context": last_exchange["context"],
     })
 
     # When resumed, `answer` contains the user's response
@@ -378,14 +379,23 @@ treats redirect instructions as high-priority context prepended to its system pr
 Sends `DELETE /jobs/{id}`. Immediately terminates the LangGraph thread. Final state is checkpointed with
 `status: "killed"`. Any partial outputs already in state are preserved and shown in the output panel.
 
+`running_tasks` is a module-level `dict[str, asyncio.Task]` populated by the
+`POST /jobs` handler when it spawns each graph execution as a background
+`asyncio.Task`. The kill handler looks up the task by job ID, persists the
+killed status via `graph.aupdate_state()` (the async counterpart to
+`update_state`), then cancels the task.
+
 ```python
 @app.delete("/jobs/{job_id}")
 async def kill_job(job_id: str):
+    task = running_tasks.get(job_id)
+    if task is None:
+        raise HTTPException(status_code=404, detail="Job not found or already completed")
     config = {"configurable": {"thread_id": job_id}}
     # Update state to killed before cancelling
     await graph.aupdate_state(config, {"status": "killed"})
     # Cancel the background task running the graph
-    running_tasks[job_id].cancel()
+    task.cancel()
 ```
 
 ---
