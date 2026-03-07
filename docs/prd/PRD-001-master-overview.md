@@ -16,7 +16,7 @@ key_decisions: [architecture, tech-stack, langchain-ecosystem-map, release-roadm
 | Status       | DRAFT                              |
 | Date         | March 2026                         |
 | Author       | Product & Engineering Team         |
-| Related Docs | [PRD-002](PRD-002-frontend-ux.md), [PRD-003](PRD-003-langgraph-orchestration.md), [PRD-004](PRD-004-agent-layer.md), [PRD-005](PRD-005-langsmith-observability.md), [PRD-006](PRD-006-data-validation.md), [PRD-007](PRD-007-developer-tooling.md), [PRD-008](PRD-008-authentication.md) |
+| Related Docs | [PRD-002](PRD-002-frontend-ux.md), [PRD-003](PRD-003-langgraph-orchestration.md), [PRD-004](PRD-004-agent-layer.md), [PRD-005](PRD-005-langsmith-observability.md), [PRD-006](PRD-006-data-validation.md), [PRD-007](PRD-007-developer-tooling.md), [PRD-008](PRD-008-authentication.md), [PRD-009](PRD-009-documentation-standards.md) |
 
 ---
 

@@ -44,10 +44,10 @@ This PRD specifies:
 
 - GitHub OAuth 2.0 as the sole identity provider (natural fit: product is GitHub-native)
 - JWT-based session tokens for all API calls
-- The authentication strategy for SSE streams (non-trivial; see §6)
+- The authentication strategy for SSE streams (non-trivial; see [SSE Endpoint Authentication](#sse-endpoint-authentication))
 - Per-job authorization (ownership model)
 - Secure storage of GitHub OAuth tokens for repo operations
-- Inter-service authentication for ARQ worker → LangServe agent calls (see §9)
+- Inter-service authentication for ARQ worker → LangServe agent calls (see [Inter-Service Authentication](#inter-service-authentication))
 - Token lifecycle and the v1/v2 simplification boundary
 
 ---
@@ -75,8 +75,8 @@ This PRD specifies:
 | Token theft via XSS | JWT in `localStorage` | JWT in `sessionStorage` (v1) / memory + HttpOnly refresh cookie (v2) |
 | CSRF on state-mutating endpoints | Cross-origin form/fetch triggering `POST /jobs/{id}/answer` | `SameSite=Strict` on refresh cookie; Bearer token on all REST calls (CSRF requires stolen token, not just cookies) |
 | GitHub OAuth token exfiltration | Token in JWT payload (base64-readable) | Token stored encrypted in Redis; only referenced by user ID |
-| SSE stream hijack | Attacker opens EventSource to stream URL without auth | Auth required on SSE endpoint; see §6 |
-| Unauthenticated agent invocation | Direct `POST` to `/agents/*/invoke` ports (8001–8005) without going through the job pipeline | Network isolation (primary) + shared secret header (defense-in-depth); see §9 |
+| SSE stream hijack | Attacker opens EventSource to stream URL without auth | Auth required on SSE endpoint; see [SSE Endpoint Authentication](#sse-endpoint-authentication) |
+| Unauthenticated agent invocation | Direct `POST` to `/agents/*/invoke` ports (8001–8005) without going through the job pipeline | Network isolation (primary) + shared secret header (defense-in-depth); see [Inter-Service Authentication](#inter-service-authentication) |
 
 ### Out-of-Scope Threats (not in v1)
 
@@ -93,7 +93,7 @@ This PRD specifies:
 
 - The product is GitHub-native: users connect GitHub repos, submit GitHub issues, and write back GitHub comments
 - No need for a separate user database — GitHub identity (`github_id`, `login`) is the authoritative user record
-- Users already have GitHub accounts by definition (PRD-001 §12)
+- Users already have GitHub accounts by definition ([PRD-001 §Assumptions, Constraints, Dependencies](PRD-001-master-overview.md#assumptions-constraints-dependencies))
 - GitHub's OAuth flow is standard, well-documented, and handles MFA transparently
 
 ### OAuth Application Scopes
@@ -206,7 +206,7 @@ REFRESH_TOKEN_EXPIRE_SECONDS=604800    # 7 days
 GITHUB_CLIENT_ID=<from GitHub App settings>
 GITHUB_CLIENT_SECRET=<from GitHub App settings>
 GITHUB_TOKEN_ENCRYPTION_KEY=<Fernet.generate_key() — URL-safe base64, 32 bytes>
-INTERNAL_SERVICE_SECRET=<64-byte random hex>   # shared by ARQ worker + all agent services; see §9
+INTERNAL_SERVICE_SECRET=<64-byte random hex>   # shared by ARQ worker + all agent services; see Inter-Service Authentication section
 ```
 
 ---
@@ -245,12 +245,9 @@ async def stream_job(
 ### `get_current_user` Dependency
 
 ```python
-from fastapi import Depends, HTTPException, status
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi import Depends, HTTPException, Request, status
 import jwt
 from pydantic import BaseModel
-
-bearer_scheme = HTTPBearer()
 
 
 class AuthenticatedUser(BaseModel):
@@ -262,13 +259,13 @@ class AuthenticatedUser(BaseModel):
 
 
 async def get_current_user(
-    credentials: Annotated[HTTPAuthorizationCredentials, Depends(bearer_scheme)],
+    request: Request,
     settings: Annotated[Settings, Depends(get_settings)],
 ) -> AuthenticatedUser:
     """Validate Bearer JWT and return the resolved user.
 
     Args:
-        credentials: Extracted Bearer token from Authorization header.
+        request: Incoming HTTP request; Authorization header is read directly.
         settings: Application settings (JWT_SECRET, algorithm).
 
     Returns:
@@ -282,9 +279,13 @@ async def get_current_user(
         detail="Invalid or expired token",
         headers={"WWW-Authenticate": "Bearer"},
     )
+    authorization = request.headers.get("Authorization", "")
+    if not authorization.startswith("Bearer "):
+        raise credentials_exception
+    token = authorization.removeprefix("Bearer ")
     try:
         payload = jwt.decode(
-            credentials.credentials,
+            token,
             settings.JWT_SECRET,
             algorithms=[settings.JWT_ALGORITHM],
         )
@@ -406,7 +407,7 @@ it is authenticated by the open TCP socket — the token is only used for the ha
 
 Access tokens expire in 15 minutes. An ongoing stream may outlast the token. The frontend handles
 this by detecting the 401 status in `onopen`, calling `POST /auth/refresh` to get a new access
-token, and re-opening the stream — see the `streamJob` pattern in §6.2. The `Last-Event-ID` header
+token, and re-opening the stream — see the `streamJob` pattern in [Selected Approach: Fetch-Based EventSource](#selected-approach-fetch-based-eventsource). The `Last-Event-ID` header
 is sent automatically by `fetchEventSource` on reconnect, but the backend **does not guarantee
 resume from the last event in v1**: Redis Pub/Sub has no message history, so events emitted during
 the reconnect window are lost. v1 reconnects within 2 seconds; missed events are not replayed.
@@ -461,7 +462,7 @@ async def get_job_and_verify_owner(
         The validated job_id.
 
     Raises:
-        HTTPException: 404 if job not found, 403 if caller does not own the job.
+        HTTPException: 404 if job not found or caller does not own the job (both cases return 404 to avoid revealing existence to non-owners).
     """
     registry = await redis.hgetall(f"job_registry:{job_id}")
     if not registry:
@@ -477,7 +478,7 @@ Returning 404 reveals nothing about existence.
 
 ### BugTriageState Schema Change
 
-`BugTriageState` (PRD-003 §3) requires one new field:
+`BugTriageState` ([PRD-003 §Shared State Schema](PRD-003-langgraph-orchestration.md#shared-state-schema)) requires one new field:
 
 ```python
 class BugTriageState(TypedDict):
@@ -544,7 +545,7 @@ async def get_github_token(github_user_id: str, redis: Redis) -> str | None:
 
 The ARQ worker context does not carry the JWT. **`writer_node` does not post to GitHub** — it only
 prepares the draft. Actual posting is user-initiated via `POST /jobs/{id}/post-comment` (see
-[PRD-002](PRD-002-frontend-ux.md) §8). The GitHub token is fetched at that point, not inside the
+[PRD-002 §GitHub Write-Back Flow](PRD-002-frontend-ux.md#github-write-back-flow)). The GitHub token is fetched at that point, not inside the
 graph node:
 
 ```python
@@ -558,7 +559,7 @@ async def writer_node(state: BugTriageState, ctx: dict) -> dict:
     }
 ```
 
-The `get_github_token` helper (§8.2) is called only from the write-back endpoint handler, which
+The `get_github_token` helper ([Storage: Encrypted in Redis](#storage-encrypted-in-redis)) is called only from the write-back endpoint handler, which
 runs in the FastAPI request context after the user explicitly clicks "Post Comment":
 
 ```python
@@ -596,7 +597,7 @@ response = await client.post(
 )
 ```
 
-The `/agents/*` services (ports 8001–8005, see [PRD-004](PRD-004-agent-layer.md) §3.2) have no auth
+The `/agents/*` services (ports 8001–8005, see [PRD-004 §Service Registry](PRD-004-agent-layer.md#service-registry)) have no auth
 guard. `get_current_user` does not protect them — it applies only to the public `/jobs/*` router.
 Anyone who can reach those ports can invoke agents directly, burning LLM API credits and bypassing
 all job ownership checks.
@@ -618,8 +619,7 @@ Network isolation alone prevents external abuse. Everything below is defense-in-
 Network isolation can fail (misconfigured proxy, SSRF pivot from another internal service). A
 shared secret header provides a second independent layer.
 
-`INTERNAL_SERVICE_SECRET` is set in all ARQ worker and agent service environments (see §4.3 env
-vars). The worker sends it on every agent call:
+`INTERNAL_SERVICE_SECRET` is set in all ARQ worker and agent service environments (see [Signing Algorithm](#signing-algorithm) for env vars). The worker sends it on every agent call:
 
 ```python
 async with httpx.AsyncClient() as client:
@@ -634,15 +634,20 @@ Each LangServe agent service validates it via a FastAPI dependency applied at th
 
 ```python
 async def verify_internal_token(
-    x_internal_token: Annotated[str, Header()],
+    x_internal_token: Annotated[str | None, Header()] = None,
     settings: Annotated[Settings, Depends(get_settings)],
 ) -> None:
     """Reject requests that do not carry the correct internal service secret.
 
+    The header is declared optional (str | None) so FastAPI does not return 422
+    on a missing header — both absent and wrong-value cases are handled here as 403.
+
     Raises:
         HTTPException: 403 if the header is missing or does not match.
     """
-    if not secrets.compare_digest(x_internal_token, settings.INTERNAL_SERVICE_SECRET):
+    if x_internal_token is None or not secrets.compare_digest(
+        x_internal_token, settings.INTERNAL_SERVICE_SECRET
+    ):
         raise HTTPException(status_code=403, detail="Forbidden")
 
 
@@ -660,7 +665,7 @@ and redeploying all affected services — no token store or expiry mechanism req
 | Rejected option | Reason |
 |-----------------|--------|
 | `get_current_user` (user JWT) on `/agents/*` | Agent calls originate from the ARQ worker — no user session exists in that context |
-| Re-routing under `/jobs/{id}/agents/*` | Couples LangServe microservices to the job lifecycle; intentionally avoided (PRD-004 §3.1) |
+| Re-routing under `/jobs/{id}/agents/*` | Couples LangServe microservices to the job lifecycle; intentionally avoided ([PRD-004 §Architecture Decision](PRD-004-agent-layer.md#architecture-decision)) |
 | mTLS | Correct for zero-trust infrastructure; operationally complex for v1 single-operator deployment |
 | Internal JWT signed by a service account | Appropriate for multi-team microservice meshes; shared secret is simpler and sufficient for v1 |
 
@@ -954,11 +959,13 @@ async def stream_job(
     async def event_generator() -> AsyncGenerator[str, None]:
         pubsub = redis.pubsub()
         await pubsub.subscribe(channel)
+        seq = 0
         try:
             async for message in pubsub.listen():
                 if message["type"] != "message":
                     continue
-                yield f"data: {message['data']}\n\n"
+                yield f"id: {seq}\ndata: {message['data']}\n\n"
+                seq += 1
                 if json.loads(message["data"]).get("type") == "job.done":
                     break
         finally:
@@ -981,7 +988,7 @@ async def stream_job(
 | **RBAC / roles** | Single-user-per-job model; no shared access or team permissions in v1 |
 | **Refresh token rotation** | Adds client complexity; 15-min access token + 7-day non-rotating refresh is acceptable for v1 |
 | **Access token revocation** | Requires a Redis token blocklist; 15-min expiry limits the damage window |
-| **GitHub App (vs OAuth App)** | GitHub Apps have expiring tokens + finer permission granularity; migration path documented in §8.4 |
+| **GitHub App (vs OAuth App)** | GitHub Apps have expiring tokens + finer permission granularity; migration path documented in [Token Expiry](#token-expiry) |
 | **Multi-user job sharing** | Share a job stream with a colleague — v2 feature requiring explicit ACL |
 | **Rate limiting per user** | Prevent a single user from creating thousands of jobs; separate infrastructure concern (API gateway / Redis rate limiter) |
 | **Audit log** | Record of who did what to which job; v2 compliance feature |

@@ -35,7 +35,7 @@ The `pyproject.toml` is the single source of truth for packaging, tool config, a
 ## Python Version
 
 - **Minimum: Python 3.12** (managed by `uv`)
-- `.python-version` file pins the exact version: `3.12`
+- `.python-version` file pins the Python minor version (`3.12`); `uv` selects the latest `3.12.x` patch
 - `requires-python = ">=3.12"` declared in `pyproject.toml`
 
 Python 3.12 enables:
@@ -317,7 +317,7 @@ without `NotRequired` boilerplate, no computed fields, no `frozen` immutability,
 | LangGraph state (`BugTriageState`)                                         | `TypedDict`              | **Recommended** — `StateGraph` also accepts `BaseModel`/dataclass, but `TypedDict` is the idiomatic choice: nodes return partial dicts (only changed keys), LangGraph merges them cleanly; `BaseModel` state requires full model reconstruction per node update |
 | API request / response bodies                                              | Pydantic `BaseModel`     | Runtime validation, automatic 422 response, `.model_dump()`                                                                                                                                                                                                     |
 | Internal structured data (`AgentFinding`, `HumanExchange`, `TriageReport`) | Pydantic `BaseModel`     | Serialization to/from Redis, validation, attribute access                                                                                                                                                                                                       |
-| Supervisor LLM output (`SupervisorDecision`)                               | Pydantic `BaseModel`     | `.with_structured_output()` accepts `TypedDict` / JSON schema too, but `BaseModel` is preferred: returns a validated object (not a raw dict), attribute access, validation errors surface cleanly (PRD-003 §5.2)                                                |
+| Supervisor LLM output (`SupervisorDecision`)                               | Pydantic `BaseModel`     | `.with_structured_output()` accepts `TypedDict` / JSON schema too, but `BaseModel` is preferred: returns a validated object (not a raw dict), attribute access, validation errors surface cleanly ([PRD-003 §Supervisor Output Schema](PRD-003-langgraph-orchestration.md#supervisor-output-schema))                                                |
 | Simple config / constants                                                  | `dataclass(frozen=True)` | No runtime dep, immutable, attribute access                                                                                                                                                                                                                     |
 
 ### Implication for PRD-003

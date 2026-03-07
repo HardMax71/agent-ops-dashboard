@@ -111,6 +111,7 @@ class BugTriageState(TypedDict):
     ticket_draft: dict | None
 
     job_id: str
+    owner_id: str
     langsmith_run_id: str | None
     status: str
 ```
@@ -309,18 +310,14 @@ def human_input_node(state: BugTriageState) -> dict:
 ### Resuming from FastAPI
 
 When the user submits an answer via `POST /jobs/{id}/answer`, the endpoint cancels the pending timeout ARQ job and
-resumes the graph. Full implementation is in §7.3.
+resumes the graph. Full implementation is in the [Interrupt Timeout Mechanism](#interrupt-timeout-mechanism) section.
 
 ### Interrupt Timeout Mechanism
 
 `interrupt()` blocks the graph indefinitely — LangGraph has no built-in timeout. The 30-minute timeout is implemented
-by scheduling a background task at the moment the interrupt fires, which calls `graph.ainvoke(Command(resume=...))` if
-the user has not answered.
-
-**Implementation:** The ARQ worker (where the graph runs) schedules a `asyncio.create_task` after calling
-`graph.astream_events`. Because the interrupt suspends execution and checkpoints state, the worker's task completes at
-that point. A separate lightweight ARQ job (`expire_human_input`) is enqueued with a 30-minute delay to handle the
-timeout. If the user answers first, the answer endpoint cancels the timeout job via `Job.abort()`.
+by enqueuing a deferred ARQ job (`expire_human_input`) with a 30-minute delay at the moment the interrupt fires. If the
+user has not answered by then, the job resumes the graph with a best-effort signal via `graph.ainvoke(Command(resume=...))`.
+If the user answers first, the answer endpoint cancels the deferred job via `Job.abort()` before resuming the graph.
 
 ```python
 # worker.py
@@ -530,7 +527,7 @@ the same ID used in SSE stream URLs, answer endpoints, and LangSmith trace group
 
 ## Streaming to Frontend
 
-**Separation of concerns:** `graph.astream_events()` runs inside the ARQ worker (see §8.3). The worker publishes each
+**Separation of concerns:** `graph.astream_events()` runs inside the ARQ worker (see [Kill](#kill)). The worker publishes each
 transformed event to a Redis Pub/Sub channel (`jobs:{job_id}:events`). The FastAPI SSE endpoint is a pure subscriber
 — it never executes graph logic.
 
@@ -543,8 +540,11 @@ generator is blocked on inside `pubsub.listen()`. The `finally` block fires unco
 subscriber. No polling, no `request.is_disconnected()` checks, no extra tasks.
 
 ```python
-@app.get("/jobs/{job_id}/stream")
-async def stream_job(job_id: str, redis: Redis = Depends(get_redis)):
+@router.get("/{job_id}/stream")
+async def stream_job(
+    job_id: Annotated[str, Depends(get_job_and_verify_owner)],
+    redis: Annotated[Redis, Depends(get_redis)],
+) -> StreamingResponse:
     channel = f"jobs:{job_id}:events"
 
     async def event_generator():

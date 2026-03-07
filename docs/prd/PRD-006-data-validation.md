@@ -40,13 +40,13 @@ Enforcing validation at the API boundary means zero malformed URLs ever reach do
 
 Pydantic v2 is already a dependency (pulled in by FastAPI and `pydantic-settings`). No additional package is needed.
 
-| Feature           | Purpose in this PRD                                                                     |
-|-------------------|-----------------------------------------------------------------------------------------|
-| `AnyHttpUrl`      | Validates scheme is `http` or `https`; parses host; rejects `file://`, `ftp://`, etc.  |
-| `AfterValidator`  | Runs a function on the already-parsed `AnyHttpUrl` to enforce the GitHub issue path pattern |
+| Feature          | Purpose in this PRD                                                                    |
+|------------------|----------------------------------------------------------------------------------------|
+| `Field(pattern=)` | Single regex applied to a `str` field; enforces scheme, host, and path in one shot   |
+| `Annotated[str, Field(...)]` | Reusable type alias — define once, import wherever a GitHub issue URL is accepted |
 
-This is the canonical FastAPI/Pydantic v2 pattern for reusable validated types. No separate third-party GitHub URL
-library is used — Pydantic IS the standard validation layer for FastAPI.
+No separate validator function, no custom URL type. Pydantic v2 evaluates the `pattern` constraint and returns
+HTTP 422 automatically — the regex IS the validation layer.
 
 ---
 
@@ -55,31 +55,21 @@ library is used — Pydantic IS the standard validation layer for FastAPI.
 Defined once; imported wherever a GitHub issue URL is accepted.
 
 ```python
-import re
 from typing import Annotated
-from pydantic import AnyHttpUrl, AfterValidator
+from pydantic import Field
 
-_GITHUB_ISSUE_RE = re.compile(
-    r"^https://github\.com/[A-Za-z0-9_.\-]+/[A-Za-z0-9_.\-]+/issues/\d+$"
-)
-
-def _validate_github_issue_url(v: AnyHttpUrl) -> AnyHttpUrl:
-    if not _GITHUB_ISSUE_RE.match(str(v)):
-        raise ValueError(
-            "issue_url must be a GitHub issue URL: "
-            "https://github.com/{owner}/{repo}/issues/{number}"
-        )
-    return v
-
-GitHubIssueUrl = Annotated[AnyHttpUrl, AfterValidator(_validate_github_issue_url)]
+GitHubIssueUrl = Annotated[
+    str,
+    Field(pattern=r"^https://github\.com/[A-Za-z0-9_.\-]+/[A-Za-z0-9_.\-]+/issues/\d+$"),
+]
 ```
 
-**Validation layers (in order):**
+**What the regex enforces:**
 
-1. `AnyHttpUrl` rejects any non-HTTP/HTTPS scheme — blocks `file://`, `ftp://`, `javascript://`, etc.
-2. `AfterValidator` enforces:
-   - Host must be exactly `github.com`
-   - Path must match `/{owner}/{repo}/issues/{number}` (owner/repo: alphanumeric + `_`, `.`, `-`; number: digits only)
+- `^https://` — HTTPS scheme only; blocks `http://`, `file://`, `ftp://`, `javascript://`, etc.
+- `github\.com/` — host must be exactly `github.com`
+- `[A-Za-z0-9_.\-]+/[A-Za-z0-9_.\-]+` — `{owner}/{repo}` (alphanumeric + `_`, `.`, `-`)
+- `/issues/\d+$` — path segment `issues` followed by a numeric issue ID
 
 ---
 
@@ -102,11 +92,11 @@ required in the route handler.
 ## `POST /jobs` Endpoint
 
 ```python
-@app.post("/jobs", status_code=202)
+@router.post("/", status_code=202)
 async def create_job(body: JobCreate, redis: Redis = Depends(get_redis)) -> dict:
     job_id = str(uuid4())
     initial_state = {
-        "issue_url": str(body.issue_url),  # str() — BugTriageState uses plain str
+        "issue_url": body.issue_url,
         "job_id": job_id,
         ...
     }
@@ -114,8 +104,12 @@ async def create_job(body: JobCreate, redis: Redis = Depends(get_redis)) -> dict
     return {"job_id": job_id}
 ```
 
-`str(body.issue_url)` converts the validated `AnyHttpUrl` back to a plain string for `BugTriageState`, which uses
-`issue_url: str` (internal state that only ever receives already-validated URLs from this boundary).
+`body.issue_url` is already a plain `str` — `GitHubIssueUrl = Annotated[str, ...]` — so no conversion is needed
+before passing it to `BugTriageState`.
+
+> **Auth note:** `get_current_user` is omitted from this signature because authentication is enforced at the
+> router level — `APIRouter(prefix="/jobs", dependencies=[Depends(get_current_user)])` — not per-endpoint.
+> See [PRD-008 §REST API Authentication](PRD-008-authentication.md#rest-api-authentication) for the full auth pattern.
 
 ---
 
@@ -127,10 +121,11 @@ When `issue_url` fails validation, FastAPI/Pydantic returns HTTP 422 automatical
 {
   "detail": [
     {
-      "type": "value_error",
+      "type": "string_pattern_mismatch",
       "loc": ["body", "issue_url"],
-      "msg": "Value error, issue_url must be a GitHub issue URL: https://github.com/{owner}/{repo}/issues/{number}",
-      "input": "http://internal-service/admin"
+      "msg": "String should match pattern '^https://github\\.com/...'",
+      "input": "http://internal-service/admin",
+      "ctx": { "pattern": "^https://github\\.com/[A-Za-z0-9_.\\-]+/[A-Za-z0-9_.\\-]+/issues/\\d+$" }
     }
   ]
 }

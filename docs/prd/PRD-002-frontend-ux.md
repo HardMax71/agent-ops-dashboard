@@ -3,19 +3,19 @@ id: PRD-002
 title: Frontend & UX
 status: DRAFT
 domain: frontend
-depends_on: [PRD-001, PRD-003, PRD-005]
-key_decisions: [jira-layout, sse-streaming, zustand-state, write-back-manual, sse-reconnect-v1-event-loss]
+depends_on: [ PRD-001, PRD-003, PRD-005 ]
+key_decisions: [ jira-layout, sse-streaming, zustand-state, write-back-manual, sse-reconnect-v1-event-loss ]
 ---
 
 # PRD-002 — Frontend & User Experience
 
-| Field        | Value                                            |
-|--------------|--------------------------------------------------|
-| Document ID  | PRD-002                                          |
-| Version      | 1.0                                              |
-| Status       | DRAFT                                            |
-| Date         | March 2026                                       |
-| Parent Doc   | [PRD-001](PRD-001-master-overview.md)            |
+| Field        | Value                                                                                                                        |
+|--------------|------------------------------------------------------------------------------------------------------------------------------|
+| Document ID  | PRD-002                                                                                                                      |
+| Version      | 1.0                                                                                                                          |
+| Status       | DRAFT                                                                                                                        |
+| Date         | March 2026                                                                                                                   |
+| Parent Doc   | [PRD-001](PRD-001-master-overview.md)                                                                                        |
 | Related Docs | [PRD-003](PRD-003-langgraph-orchestration.md) (Human-in-the-Loop), [PRD-005](PRD-005-langsmith-observability.md) (LangSmith) |
 
 ---
@@ -50,12 +50,12 @@ for user actions (submit job, answer agent question, pause/kill agent).
 
 The application is a three-zone layout, always visible simultaneously on desktop (≥1280px wide):
 
-| Zone 1 — Job Queue (25%) | Zone 2 — Live Workspace (50%) | Zone 3 — Output Panel (25%) |
-|--------------------------|-------------------------------|------------------------------|
-| Ticket cards with statuses | Agent cards streaming in real time | Final triage report |
-| Filter bar | Agent question cards (amber, blocking) | GitHub comment draft |
-| New Job button | Execution timeline | Ticket draft + Post to GitHub |
-| | | View in LangSmith link |
+| Zone 1 — Job Queue (25%)   | Zone 2 — Live Workspace (50%)          | Zone 3 — Output Panel (25%)   |
+|----------------------------|----------------------------------------|-------------------------------|
+| Ticket cards with statuses | Agent cards streaming in real time     | Final triage report           |
+| Filter bar                 | Agent question cards (amber, blocking) | GitHub comment draft          |
+| New Job button             | Execution timeline                     | Ticket draft + Post to GitHub |
+|                            |                                        | View in LangSmith link        |
 
 ---
 
@@ -257,7 +257,8 @@ A structured form (also pre-filled by Writer agent):
 - **Post Comment to GitHub** — posts the comment draft to the original issue (requires GitHub auth)
 - **Create GitHub Issue** — creates a new ticket with the ticket draft fields
 - **Copy Report** — copies the structured report as markdown
-- **View in LangSmith** — deep-link to the full job trace in LangSmith (see [PRD-005](PRD-005-langsmith-observability.md))
+- **View in LangSmith** — deep-link to the full job trace in LangSmith (
+  see [PRD-005](PRD-005-langsmith-observability.md))
 
 ---
 
@@ -272,7 +273,9 @@ as the `Last-Event-ID` header automatically. **v1 behavior:** the backend
 reconnects the stream but does not replay missed events — Redis Pub/Sub has no
 message history, so events emitted during the disconnect window are silently
 lost. Gapless resume (e.g., via Redis Streams or a DB event log) is a v2
-concern. See [PRD-008](PRD-008-authentication.md) §6.4 for the token-expiry
+concern.
+See [PRD-008 §Token Expiry During an Active Stream](PRD-008-authentication.md#token-expiry-during-an-active-stream) for
+the token-expiry
 reconnect flow.
 
 | Event                 | Payload                                   | Frontend Action                     |
@@ -373,11 +376,11 @@ graph TD
 
 ## Non-Functional Requirements
 
-| Requirement                         | Target                                                                         |
-|-------------------------------------|--------------------------------------------------------------------------------|
-| Time to first streaming token in UI | < 5 seconds from job submission                                                |
+| Requirement                         | Target                                                                                       |
+|-------------------------------------|----------------------------------------------------------------------------------------------|
+| Time to first streaming token in UI | < 5 seconds from job submission                                                              |
 | SSE reconnect on drop               | Automatic, within 2 seconds; v1 may miss events emitted during disconnect window (no replay) |
-| Concurrent jobs in UI               | Support up to 10 simultaneously with no performance degradation                |
-| Browser support                     | Chrome 110+, Firefox 115+, Safari 16+                                          |
-| Accessibility                       | WCAG 2.1 AA for all static content; streaming regions use `aria-live="polite"` |
-| Responsive layout                   | Full functionality at 1280px+; graceful degradation at 1024px                  |
+| Concurrent jobs in UI               | Support up to 10 simultaneously with no performance degradation                              |
+| Browser support                     | Chrome 110+, Firefox 115+, Safari 16+                                                        |
+| Accessibility                       | WCAG 2.1 AA for all static content; streaming regions use `aria-live="polite"`               |
+| Responsive layout                   | Full functionality at 1280px+; graceful degradation at 1024px                                |
