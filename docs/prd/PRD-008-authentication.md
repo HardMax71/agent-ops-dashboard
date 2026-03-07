@@ -531,7 +531,7 @@ async def store_github_token(github_user_id: str, github_token: str, redis: Redi
     encrypted = fernet.encrypt(github_token.encode())
     await redis.setex(
         f"github_token:{github_user_id}",
-        7 * 24 * 3600,          # 7-day TTL, matches refresh token lifetime
+        365 * 24 * 3600,        # 365-day TTL — re-stored on every OAuth login; see PRD-008-1 §5
         encrypted,
     )
 

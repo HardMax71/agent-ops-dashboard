@@ -117,7 +117,12 @@ async def fetch_runs_for_job(job_id: str, langsmith_client: Client) -> list:
 
 ```python
 def split_runs(runs: list) -> tuple[object, list]:
-    root = next(r for r in runs if r.parent_run_id is None)
+    root = next((r for r in runs if r.parent_run_id is None), None)
+    if root is None:
+        raise ValueError(
+            f"No root run found among {len(runs)} runs — "
+            "LangSmith trace may still be ingesting"
+        )
     children = [r for r in runs if r.parent_run_id is not None]
     return root, children
 ```
@@ -276,11 +281,14 @@ if state["cost_budget_exceeded"]:
 
 ```python
 running_cost = 0.0
+budget_exceeded = False
+max_cost_usd = initial_state["max_cost_usd"]
 async for event in graph.astream_events(initial_state, config=config, version="v2"):
     cost_delta = extract_cost_from_event(event)
     if cost_delta > 0:
         running_cost += cost_delta
-        if running_cost >= state["max_cost_usd"] and not state["cost_budget_exceeded"]:
+        if running_cost >= max_cost_usd and not budget_exceeded:
+            budget_exceeded = True
             # Update state via checkpointer so supervisor sees it on next hop
             await graph.aupdate_state(
                 config,
@@ -393,11 +401,10 @@ LANGSMITH_REVIEW_QUEUE_ID=<uuid-from-langsmith-ui>
 
 Evaluated in the ARQ post-job hook after graph execution completes:
 
-| Condition                              | Trigger                                        |
-|----------------------------------------|------------------------------------------------|
-| `final_confidence < 0.5`               | Checked against `state["final_confidence"]`    |
-| Any agent errored and was skipped      | Checked against `state["findings"]` error flag |
-| User submitted negative feedback       | Handled in feedback endpoint (see §6)          |
+| Condition                              | Trigger                                                           |
+|----------------------------------------|-------------------------------------------------------------------|
+| `supervisor_confidence < 0.5`          | Checked against `state["supervisor_confidence"]` (final hop)     |
+| User submitted negative feedback       | Handled in feedback endpoint (see §6)                             |
 
 ### SDK Call
 
@@ -407,10 +414,7 @@ async def add_to_review_queue_if_needed(
     langsmith_run_id: str,
     client: Client,
 ) -> None:
-    needs_review = (
-        state.get("final_confidence", 1.0) < 0.5
-        or any(f.get("error") for f in state.get("findings", []))
-    )
+    needs_review = state.get("supervisor_confidence", 1.0) < 0.5
     if not needs_review:
         return
 
@@ -565,7 +569,7 @@ await db.execute(
 ```sql
 SELECT ROUND(AVG(avg_score)::numeric, 2) AS rolling_avg_7d
 FROM daily_eval_results
-WHERE date >= NOW() - INTERVAL '7 days';
+WHERE date >= CURRENT_DATE - INTERVAL '7 days';
 ```
 
 ### API Exposure

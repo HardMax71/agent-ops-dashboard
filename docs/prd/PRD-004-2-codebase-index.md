@@ -85,16 +85,26 @@ def collection_name(repo_url: str) -> str:
     """
     Return a deterministic, URL-safe Chroma collection name for a repository.
 
+    Normalises the URL before hashing: strips trailing slashes and the .git
+    suffix so that https://github.com/owner/repo, .../repo/, and .../repo.git
+    all resolve to the same collection.
+
     Examples:
-        "https://github.com/owner/repo" → "repo_4a2f1b9c8d3e7f02"
+        "https://github.com/owner/repo"      → "repo_4a2f1b9c8d3e7f02"
+        "https://github.com/owner/repo/"     → "repo_4a2f1b9c8d3e7f02"
+        "https://github.com/owner/repo.git"  → "repo_4a2f1b9c8d3e7f02"
         "https://github.com/owner/other-repo" → "repo_9c1d3e5f7a2b4c8d"
     """
-    digest = hashlib.sha256(repo_url.encode()).hexdigest()
+    normalised = repo_url.rstrip("/")
+    if normalised.endswith(".git"):
+        normalised = normalised[:-4]
+    digest = hashlib.sha256(normalised.encode()).hexdigest()
     return f"repo_{digest[:16]}"
 ```
 
-**Note:** Strip trailing slashes from `repo_url` before hashing to avoid creating duplicate
-collections for `https://github.com/owner/repo` vs `https://github.com/owner/repo/`.
+**Note:** `collection_name` normalises the URL before hashing — trailing slashes and `.git`
+suffixes are stripped — so `https://github.com/owner/repo`, `.../repo/`, and `.../repo.git`
+all map to the same collection. Callers must not pre-normalise; pass the raw URL.
 
 ---
 
@@ -144,6 +154,8 @@ mount the same `chroma_data` volume. The search service only reads; the ARQ work
 ### Function Signature
 
 ```python
+import chromadb
+
 def get_codebase_retriever(repository: str) -> VectorStoreRetriever:
     """
     Return a LangChain VectorStoreRetriever for the Chroma collection
@@ -158,16 +170,23 @@ def get_codebase_retriever(repository: str) -> VectorStoreRetriever:
         k=8 results, and a minimum score threshold of 0.3.
 
     Raises:
-        ValueError: If the collection does not exist (repository has not been indexed yet).
-            The caller (codebase_search_node) should handle this by setting error on the finding.
+        chromadb.errors.InvalidCollectionException: If the collection does not exist
+            (repository has not been indexed yet). Propagates to the worker error handler.
     """
+    coll_name = collection_name(repository.rstrip("/"))
+
+    # Chroma(persist_directory=...) silently creates missing collections, so we
+    # must validate existence via the raw client first. get_collection() raises
+    # InvalidCollectionException if the name is not found — let it propagate.
+    chromadb.PersistentClient(path="/data/chroma").get_collection(coll_name)
+
     vectorstore = Chroma(
-        collection_name=collection_name(repository.rstrip("/")),
+        collection_name=coll_name,
         embedding_function=OpenAIEmbeddings(model="text-embedding-3-small"),
         persist_directory="/data/chroma",
     )
     return vectorstore.as_retriever(
-        search_type="similarity",
+        search_type="similarity_score_threshold",
         search_kwargs={"k": 8, "score_threshold": 0.3},
     )
 ```
@@ -179,16 +198,7 @@ layer) before building the chain, using `state["repository"]`:
 
 ```python
 async def codebase_search_node(state: BugTriageState) -> dict:
-    try:
-        retriever = get_codebase_retriever(state["repository"])
-    except ValueError as e:
-        logger.warning("codebase index not ready: %s", e)
-        return {
-            "current_node": "codebase_search",
-            "iterations": state["iterations"] + 1,
-            # No finding appended; supervisor will route elsewhere or retry after indexing
-        }
-
+    retriever = get_codebase_retriever(state["repository"])
     chain = build_codebase_chain(retriever)  # see PRD-004-1 §6
     # ... invoke chain and translate finding
 ```
@@ -246,10 +256,8 @@ EXTENSION_TO_LANGUAGE = {
     ".go": Language.GO,
     ".java": Language.JAVA,
 }
-EXCLUDE_PATTERNS = {
-    "node_modules", "dist", "__pycache__", ".git",
-    "*.min.js", "*.min.css",
-}
+EXCLUDE_DIRS = {"node_modules", "dist", "__pycache__", ".git"}
+EXCLUDE_FILENAME_PATTERNS = {"*.min.js", "*.min.css"}
 MAX_REPO_SIZE_MB = 500
 
 
@@ -308,10 +316,16 @@ async def _do_build(repo_url: str, col_name: str):
 ```python
 def _should_index(path: Path) -> bool:
     """Return True if the file should be indexed."""
-    # Exclude directories
+    import fnmatch
+
+    # Exclude excluded directories and hidden directories/files
     for part in path.parts:
-        if part in EXCLUDE_PATTERNS or part.startswith("."):
+        if part in EXCLUDE_DIRS or part.startswith("."):
             return False
+
+    # Exclude minified files and other glob-matched filename patterns
+    if any(fnmatch.fnmatch(path.name, pat) for pat in EXCLUDE_FILENAME_PATTERNS):
+        return False
 
     # Extension allowlist
     if path.suffix not in SUPPORTED_EXTENSIONS:

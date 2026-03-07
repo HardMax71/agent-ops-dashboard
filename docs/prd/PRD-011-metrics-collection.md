@@ -110,20 +110,38 @@ This PRD covers all metric recording that requires explicit code:
 ARQ Worker startup:
   config["callbacks"] = [AgentOpsMetricsCallback()]
                               │
-                              │  LangGraph/LangChain framework fires these
-                              │  automatically at every node/chain/LLM call:
+                              │  LangGraph framework fires these automatically
+                              │  for in-process node function execution only.
+                              │  LLM calls happen inside LangServe (over HTTP)
+                              │  and do NOT propagate callbacks back to the worker.
                               ▼
   ┌──────────────────────────────────────────────────────────────────┐
   │  AgentOpsMetricsCallback (BaseCallbackHandler)                    │
   │  agentops/metrics/callback.py                                     │
   │                                                                   │
-  │  on_chain_start  → agent_calls_total.add(1)                      │
-  │  on_chain_end    → agent_duration_seconds.record(elapsed)        │
-  │  on_chain_error  → agent_errors_total.add(1)                     │
-  │  on_llm_end      → token_usage_total.add(...), cost_usd_total    │
+  │  on_chain_start  → agent_calls_total.add(1)          ✓ captured  │
+  │  on_chain_end    → agent_duration_seconds.record(elapsed) ✓      │
+  │  on_chain_error  → agent_errors_total.add(1)         ✓ captured  │
+  │  on_llm_end      → token_usage_total / cost_usd_total            │
+  │                    ✗ NOT fired — LLM runs inside LangServe        │
   │                                                                   │
   │  Records via OTel Metrics API — not prometheus_client            │
   └──────────────────────────────────────────────────────────────────┘
+
+  Token/cost coverage gap:
+  LangServe agents execute LLM calls in separate processes over HTTP.
+  on_llm_end never fires in the worker. Two options to close the gap:
+
+  Option A (recommended): Instrument each LangServe LCEL chain entrypoint
+  with a thin OTel wrapper that records token_usage_total and cost_usd_total
+  directly using the same agentops/metrics/setup.py MeterProvider setup.
+
+  Option B (post-job only): Derive total tokens + cost from LangSmith traces
+  via fetch_and_cache_trace_summary() (PRD-005-1 §3). This gives accurate
+  per-job totals after completion but no real-time in-flight counters.
+
+  v1 uses Option B (LangSmith post-job data already captured). Option A is
+  a v1.1 concern requiring OTel setup in each LangServe service.
 
 Explicit emission points (4 total — not in business logic):
   ┌────────────────────────────────────────────────────────────────┐
@@ -191,8 +209,8 @@ class AgentOpsMetricsCallback(BaseCallbackHandler):
     calls inside the astream_events() loop.
     """
 
-    def __init__(self) -> None:
-        meter = metrics.get_meter("agentops")
+    def __init__(self, meter_provider: metrics.MeterProvider) -> None:
+        meter = meter_provider.get_meter("agentops")
         self._agent_calls    = meter.create_counter(
             "agent_calls_total", description="Total agent invocations",
         )
@@ -285,7 +303,7 @@ config = {
     "run_id": langsmith_run_id,
     "metadata": {...},
     "tags": [...],
-    "callbacks": [AgentOpsMetricsCallback()],   # injected here; never in node code
+    "callbacks": [AgentOpsMetricsCallback(metrics.get_meter_provider())],   # injected here; never in node code
 }
 
 async for event in graph.astream_events(initial_state, config=config, version="v2"):
@@ -304,11 +322,8 @@ import uuid
 def test_agent_duration_recorded():
     reader = InMemoryMetricReader()
     provider = MeterProvider(metric_readers=[reader])
-    # Override global provider for this test
-    from opentelemetry import metrics as otel_metrics
-    otel_metrics.set_meter_provider(provider)
 
-    cb = AgentOpsMetricsCallback()
+    cb = AgentOpsMetricsCallback(provider)
     run_id = uuid.uuid4()
     cb.on_chain_start(
         {"name": "investigator"}, {},
@@ -368,12 +383,13 @@ app.mount("/metrics", prometheus_client.make_asgi_app())
 ```python
 # tests/conftest.py
 from opentelemetry import metrics
-from opentelemetry.sdk.metrics import MeterProvider
+from opentelemetry.metrics import NoOpMeterProvider
 
-# NoOpMeterProvider makes all create_counter / create_histogram calls return
-# no-op instruments. All .add() and .record() calls silently succeed.
-# No Prometheus registry. No global state accumulation.
-metrics.set_meter_provider(MeterProvider())   # empty provider = effective no-op
+# NoOpMeterProvider (API package) returns true no-op instruments —
+# .add() and .record() calls silently succeed with zero state accumulation.
+# MeterProvider() (SDK package) with no readers is NOT equivalent: it creates
+# real SDK instruments that aggregate state in-process even without an exporter.
+metrics.set_meter_provider(NoOpMeterProvider())
 ```
 
 This single line applies to **all** test files — no per-test setup, no mock patching.
@@ -808,10 +824,10 @@ import outside of `agentops/metrics/` and `agentops/langsmith_client.py` is bloc
 - repo: local
   hooks:
     - id: no-metrics-in-business-logic
-      name: No prometheus_client imports outside agentops/metrics/
+      name: No prometheus_client imports outside agentops/metrics/ or main.py
       language: pygrep
       entry: "from prometheus_client|import prometheus_client"
-      files: "^agentops/(?!metrics/).*\\.py$"
+      files: "^agentops/(?!metrics/|main\\.py).*\\.py$"
     - id: no-langsmith-in-business-logic
       name: No langsmith.Client imports outside designated modules
       language: pygrep
@@ -830,8 +846,8 @@ All metrics produced by this system, with their source:
 | `agent_calls_total`            | Counter   | `agent`                             | `AgentOpsMetricsCallback`     |
 | `agent_duration_seconds`       | Histogram | `agent`                             | `AgentOpsMetricsCallback`     |
 | `agent_errors_total`           | Counter   | `agent`                             | `AgentOpsMetricsCallback`     |
-| `token_usage_total`            | Counter   | `agent`, `model`, `token_type`      | `AgentOpsMetricsCallback`     |
-| `cost_usd_total`               | Counter   | `agent`, `model`                    | `AgentOpsMetricsCallback`     |
+| `token_usage_total`            | Counter   | `agent`, `model`, `token_type`      | LangServe-side instrumentation (v1.1); LangSmith post-job in v1 |
+| `cost_usd_total`               | Counter   | `agent`, `model`                    | LangServe-side instrumentation (v1.1); LangSmith post-job in v1 |
 | `job_total`                    | Counter   | `status`                            | Worker post-graph             |
 | `job_duration_seconds`         | Histogram | —                                   | Worker post-graph             |
 | `jobs_active`                  | UpDownCounter | —                               | Worker post-graph             |

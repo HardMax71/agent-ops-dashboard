@@ -60,7 +60,7 @@ prompt = ChatPromptTemplate.from_messages([
 ])
 
 llm = ChatOpenAI(
-    model="gpt-4o-mini",
+    model="gpt-4o",
     temperature=0,
     base_url=settings.model_gateway_url,  # e.g. http://litellm:4000
     api_key=settings.service_token,       # internal token, not the OpenAI key
@@ -489,13 +489,11 @@ is instantiated at call time using the `repository` field from the input:
 from langchain_core.runnables import RunnableParallel, RunnablePassthrough, RunnableLambda
 
 
-def build_codebase_chain(repository: str):
-    """Build the RAG chain for a specific repository."""
-    retriever = get_codebase_retriever(repository)
-
+def build_codebase_chain(retriever: VectorStoreRetriever):
+    """Build the RAG chain for a pre-built repository retriever."""
     primary = (
         RunnableParallel({
-            "context": retriever,           # passes the full input dict; retriever uses "keywords"
+            "context": (lambda x: " ".join(x["keywords"])) | retriever,
             "hypothesis": RunnablePassthrough() | (lambda x: x["hypothesis"]),
             "keywords": RunnablePassthrough() | (lambda x: ", ".join(x["keywords"])),
         })
@@ -504,7 +502,7 @@ def build_codebase_chain(repository: str):
     )
     fallback = (
         RunnableParallel({
-            "context": retriever,
+            "context": (lambda x: " ".join(x["keywords"])) | retriever,
             "hypothesis": RunnablePassthrough() | (lambda x: x["hypothesis"]),
             "keywords": RunnablePassthrough() | (lambda x: ", ".join(x["keywords"])),
         })
@@ -517,8 +515,9 @@ def build_codebase_chain(repository: str):
     ).with_fallbacks([fallback])
 ```
 
-The LangServe endpoint invokes `build_codebase_chain(input["repository"])` inside a `RunnableLambda`
-wrapper so the chain is repository-aware at runtime.
+The caller (`codebase_search_node` in PRD-004-2 §5) calls `get_codebase_retriever(state["repository"])`
+first, then passes the retriever into `build_codebase_chain(retriever)`. This keeps collection
+validation (and its exception) outside the chain itself.
 
 ### Node-Level Translation
 
@@ -840,17 +839,18 @@ logger = logging.getLogger(__name__)
 async def investigator_node(state: BugTriageState) -> dict:
     node_name = "investigator"
 
-    response = await httpx.AsyncClient().post(
-        f"{settings.investigator_url}/agents/investigator/invoke",
-        json={
-            "input": {
-                "issue_title": state["issue_title"],
-                "issue_body": state["issue_body"],
-                "prior_findings": state["findings"],
-            }
-        },
-        timeout=60.0,
-    )
+    async with httpx.AsyncClient() as client:
+        response = await client.post(
+            f"{settings.investigator_url}/agents/investigator/invoke",
+            json={
+                "input": {
+                    "issue_title": state["issue_title"],
+                    "issue_body": state["issue_body"],
+                    "prior_findings": state["findings"],
+                }
+            },
+            timeout=60.0,
+        )
     response.raise_for_status()
 
     output: dict = response.json()["output"]

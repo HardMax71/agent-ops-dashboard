@@ -266,7 +266,7 @@ class Settings(BaseSettings):
 
 PRD-008 states: "GitHub OAuth tokens for OAuth Apps do not expire by default." This is technically
 correct but critically incomplete. **GitHub automatically revokes any OAuth App token that has not
-been used for 1 year.** See [GitHub docs — OAuth token expiration](https://docs.github.com/en/apps/maintaining-github-apps/managing-expiring-user-tokens-for-github-apps).
+been used for 1 year.** See [GitHub docs — OAuth token expiration](https://docs.github.com/en/apps/creating-github-apps/authenticating-with-a-github-app/refreshing-user-access-tokens).
 
 This matters because:
 
@@ -591,6 +591,10 @@ async function streamJob(jobId: string, accessToken: string, onEvent: (data: str
     const response = await fetch(`/jobs/${jobId}/stream`, {
         headers: { Authorization: `Bearer ${accessToken}` },
     });
+
+    if (!response.ok) {
+        throw new Error(`Stream request failed: ${response.status}`);
+    }
 
     const reader = response.body!.getReader();
     const decoder = new TextDecoder();

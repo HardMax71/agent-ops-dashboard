@@ -85,7 +85,7 @@ PRD-002. Every SSE event type in PRD-002's event table has a row here.
 
 | LangGraph event | Condition | Frontend SSE event | Payload mapping | Notes |
 |---|---|---|---|---|
-| `on_chain_start` | `metadata["langgraph_node"] in WORKER_NODES` AND node not yet in `spawned_agents` | `agent.spawned` | `agent_id`: new UUID stored in `spawned_agents`; `agent_name`: `langgraph_node`; `node`: `langgraph_node` | First `on_chain_start` per node per run generates the agent card |
+| `on_chain_start` | `metadata["langgraph_node"] in WORKER_NODES` | `agent.spawned` | `agent_id`: new UUID stored in `spawned_agents`; `agent_name`: `langgraph_node`; `node`: `langgraph_node` | Every `on_chain_start` generates a new agent card — including re-entries (node called twice); each gets its own UUID |
 | `on_chat_model_stream` | `metadata["langgraph_node"] in WORKER_NODES` AND token non-empty | `agent.token` | `agent_id`: from `spawned_agents[langgraph_node]`; `token`: extracted string token | Drop events where extracted token is `""` |
 | `on_tool_start` | `metadata["langgraph_node"] in WORKER_NODES` | `agent.tool_call` | `agent_id`: from `spawned_agents`; `tool_name`: `event["name"]`; `input_preview`: truncated JSON of `data["input"]` at 60 chars | Preview truncation: see §5 |
 | `on_tool_end` | `metadata["langgraph_node"] in WORKER_NODES` | `agent.tool_result` | `agent_id`: from `spawned_agents`; `tool_name`: `event["name"]`; `result_summary`: `str(data["output"])[:120]` | — |
@@ -132,11 +132,13 @@ This constant is used in `transform_langgraph_event()` to gate which events prod
 def transform_langgraph_event(
     event: dict,
     spawned_agents: dict[str, str],  # mutated in place: langgraph_node -> agent_id UUID
-) -> dict | None:
+) -> list[dict]:
     """
-    Translate a single LangGraph v2 event dict into a frontend SSE event dict.
+    Translate a single LangGraph v2 event dict into zero or more frontend SSE event dicts.
 
-    Returns None if the event should be dropped (not published to Redis).
+    Returns an empty list if the event should be dropped (not published to Redis).
+    Returns a list with two elements when a worker on_chain_end produces both
+    agent.done (or output.section_done) and graph.node_complete.
 
     `spawned_agents` is maintained by the caller (run_triage) across the full
     astream_events loop. It maps graph node names to stable UUID agent_ids.
@@ -167,109 +169,104 @@ def transform_langgraph_event(event, spawned_agents):
 
     # Drop events without a langgraph_node (inner chain events — see §10)
     if not node:
-        return None
+        return []
 
     # --- agent.spawned ---
+    # Emitted on every on_chain_start, including re-entries (node called twice in one run).
+    # Each execution gets a fresh UUID so the UI shows a separate agent card per run.
     if ev == "on_chain_start" and node in WORKER_NODES:
-        if node not in spawned_agents:
-            agent_id = str(uuid4())
-            spawned_agents[node] = agent_id
-            return {
-                "type": "agent.spawned",
-                "agent_id": agent_id,
-                "agent_name": node,
-                "node": node,
-            }
-        else:
-            # Node re-entry (same node called twice): generate new UUID for second card
-            agent_id = str(uuid4())
-            spawned_agents[node] = agent_id
-            return {
-                "type": "agent.spawned",
-                "agent_id": agent_id,
-                "agent_name": node,
-                "node": node,
-            }
+        agent_id = str(uuid4())
+        spawned_agents[node] = agent_id
+        return [{
+            "type": "agent.spawned",
+            "agent_id": agent_id,
+            "agent_name": node,
+            "node": node,
+        }]
 
     # --- agent.token / output.token ---
     if ev in {"on_chat_model_stream", "on_llm_stream"}:
         token = _extract_token(event["data"].get("chunk"))
         if not token:
-            return None  # drop empty chunks
+            return []  # drop empty chunks
 
         if node == "writer":
-            return {
+            return [{
                 "type": "output.token",
                 "token": token,
                 "section": _section_from_ns(meta.get("langgraph_checkpoint_ns", "")),
-            }
+            }]
         elif node in WORKER_NODES:
             agent_id = spawned_agents.get(node)
             if not agent_id:
-                return None
-            return {
+                return []
+            return [{
                 "type": "agent.token",
                 "agent_id": agent_id,
                 "token": token,
-            }
-        return None
+            }]
+        return []
 
     # --- agent.tool_call ---
     if ev == "on_tool_start" and node in WORKER_NODES:
         agent_id = spawned_agents.get(node)
         if not agent_id:
-            return None
+            return []
         raw_input = event["data"].get("input", {})
         preview = json.dumps(raw_input, default=str)
         if len(preview) > 60:
             preview = preview[:60] + "..."
-        return {
+        return [{
             "type": "agent.tool_call",
             "agent_id": agent_id,
             "tool_name": event.get("name", "unknown"),
             "input_preview": preview,
-        }
+        }]
 
     # --- agent.tool_result ---
     if ev == "on_tool_end" and node in WORKER_NODES:
         agent_id = spawned_agents.get(node)
         if not agent_id:
-            return None
+            return []
         output = event["data"].get("output", "")
-        return {
+        return [{
             "type": "agent.tool_result",
             "agent_id": agent_id,
             "tool_name": event.get("name", "unknown"),
             "result_summary": str(output)[:120],
-        }
+        }]
 
-    # --- agent.done ---
+    # --- agent.done + graph.node_complete (worker nodes) ---
     if ev == "on_chain_end" and node in WORKER_NODES:
-        # Check for writer RunnableParallel branch first (output.section_done)
-        branch_name = event.get("name", "")
-        if node == "writer" and branch_name in {"report", "comment_draft", "ticket_draft"}:
-            return {
-                "type": "output.section_done",
-                "section": branch_name,
-            }
-        agent_id = spawned_agents.get(node)
-        if not agent_id:
-            return None
-        return {
-            "type": "agent.done",
-            "agent_id": agent_id,
-            "node": node,
-        }
-
-    # --- graph.node_complete (all nodes including supervisor) ---
-    if ev == "on_chain_end" and node in ALL_NODES:
-        return {
+        node_complete = {
             "type": "graph.node_complete",
             "node": node,
             "step": meta.get("langgraph_step"),
         }
+        # Check for writer RunnableParallel branch first (output.section_done)
+        branch_name = event.get("name", "")
+        if node == "writer" and branch_name in {"report", "comment_draft", "ticket_draft"}:
+            return [
+                {"type": "output.section_done", "section": branch_name},
+                node_complete,
+            ]
+        agent_id = spawned_agents.get(node)
+        if not agent_id:
+            return [node_complete]
+        return [
+            {"type": "agent.done", "agent_id": agent_id, "node": node},
+            node_complete,
+        ]
 
-    return None
+    # --- graph.node_complete (supervisor and human_input — non-worker nodes) ---
+    if ev == "on_chain_end" and node in ALL_NODES:
+        return [{
+            "type": "graph.node_complete",
+            "node": node,
+            "step": meta.get("langgraph_step"),
+        }]
+
+    return []
 ```
 
 ### Token Extraction Helper
@@ -394,14 +391,13 @@ and mutated in place.
 spawned_agents: dict[str, str] = {}  # node_name -> agent_id UUID
 
 async for event in graph.astream_events(initial_state, config=config, version="v2"):
-    sse = transform_langgraph_event(event, spawned_agents)
-    if sse:
+    for sse in transform_langgraph_event(event, spawned_agents):
         await redis.publish(channel, json.dumps(sse))
 ```
 
-**First `on_chain_start` for a node:** A new UUID is generated and stored.
-All subsequent events for that node (tokens, tool calls, chain_end) look up the UUID via
-`spawned_agents[node]`.
+**Every `on_chain_start` for a worker node:** A new UUID is generated and stored in
+`spawned_agents[node]`. All subsequent events for that execution (tokens, tool calls, chain_end)
+look up the current UUID via `spawned_agents[node]`.
 
 **Node called a second time (e.g. `investigator` redirected back):** Each `on_chain_start`
 generates a fresh UUID. The old agent card in the UI remains (its `agent_id` is still valid);
@@ -533,8 +529,7 @@ async def run_triage(ctx: dict, job_id: str, initial_state: dict) -> None:
     spawned_agents: dict[str, str] = {}
 
     async for event in graph.astream_events(initial_state, config=config, version="v2"):
-        sse = transform_langgraph_event(event, spawned_agents)
-        if sse:
+        for sse in transform_langgraph_event(event, spawned_agents):
             await redis.publish(channel, json.dumps(sse))
 
     interrupt_payload = await _check_for_interrupt(graph, config)

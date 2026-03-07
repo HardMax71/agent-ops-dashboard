@@ -286,7 +286,7 @@ Control bar shows: `[↪ Redirect]` (ghost), `[⏸ Pause]` (secondary), `[✕ Ki
 
 #### State 3 — HITL / Waiting
 
-```
+```text
 ┌─────────────────────────────────────────────────────┐
 │  #1042  Auth token expiry causes 500 on /api/me     │  ← workspace header
 │  github.com/org/repo · @user · 2 hours ago          │

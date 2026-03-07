@@ -34,9 +34,8 @@ the set of conditions that must all pass before the next phase begins.
   - `README.md` with quickstart skeleton
 
 - **D1.2** Single Investigator LCEL chain
-  - `InvestigatorChain`: `ChatPromptTemplate | ChatOpenAI | PydanticOutputParser`
+  - `InvestigatorChain`: `ChatPromptTemplate | ChatOpenAI.with_structured_output(InvestigatorOutput)`
   - Output model: `InvestigatorOutput(summary: str, hypotheses: list[str], files_to_check: list[str])`
-  - Async streaming enabled via `.astream()`
   - Unit tests covering happy path and malformed LLM output fallback
 
 - **D1.3** LangGraph skeleton (single-agent)
@@ -185,7 +184,7 @@ All of the following must be true:
   - `GET /jobs/{id}/stream` returns `Content-Type: text/event-stream`
   - Events: `{"type": "agent_output", "agent": "...", "chunk": "..."}` and `{"type": "status_change", "status": "..."}`
   - Redis Pub/Sub used for fanout (worker publishes → API subscribes → SSE to client)
-  - Connection drops are handled gracefully (client can reconnect and receive missed events via `Last-Event-ID`)
+  - Connection drops reconnect within ~2 s; **missed events are not replayed** — Pub/Sub has no history (gapless resume via `Last-Event-ID` is a v2 concern requiring Redis Streams or a DB-backed event log)
 
 - **D4.2** Job persistence layer
   - Postgres table `jobs`: `id`, `issue_url`, `status`, `created_at`, `updated_at`, `output`, `langsmith_url`
@@ -207,7 +206,7 @@ All of the following must be true:
 
 | Deliverable | Criterion |
 |-------------|-----------|
-| D4.1 | `curl -N /jobs/{id}/stream` outputs ≥5 SSE events during a real job run; reconnect with `Last-Event-ID` receives events from the reconnect point |
+| D4.1 | `curl -N /jobs/{id}/stream` outputs ≥5 SSE events during a real job run; connection drop reconnects within 2 s and stream resumes from the live position (no historical replay) |
 | D4.2 | `alembic upgrade head` runs cleanly; job survives an API server restart (fetched from Postgres) |
 | D4.3 | Job state contains `issue_context.body` and `issue_context.labels` populated from the real GitHub API |
 | D4.4 | `curl -X POST /jobs -d '{"issue_url":"https://not-github.com/x"}'` returns `422`; `/docs` loads without error |
@@ -231,7 +230,7 @@ All of the following must be true:
 
 - **D5.1** Job queue panel (Jira-style)
   - Left sidebar: list of job cards with `issue_url` title, status badge, creation time
-  - Status badge colors: grey (Queued), blue (Running), amber (Waiting), green (Done), red (Cancelled)
+  - Status badge colors: grey (Queued), blue (Running), amber (Waiting), purple (Paused), green (Done), red (Cancelled), dark-red (Timed Out)
   - "New Job" button opens a modal with `issue_url` input and Submit
 
 - **D5.2** Live workspace panel

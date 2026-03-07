@@ -118,6 +118,7 @@ async def supervisor_node(state: BugTriageState) -> dict:
     updates: dict = {
         "next_node": decision.next_node,
         "supervisor_reasoning": decision.reasoning,
+        "supervisor_confidence": decision.confidence,
     }
 
     if decision.next_node == "human_input":
@@ -252,14 +253,17 @@ If `state.human_exchanges` is empty: `"None."`. If `state.pending_exchange` exis
 yet been answered, append it with `A: (awaiting answer)`.
 
 ```python
-def _format_human_exchanges(exchanges: list[HumanExchange]) -> str:
-    if not exchanges:
-        return "None."
+def _format_human_exchanges(
+    exchanges: list[HumanExchange],
+    pending: HumanExchange | None,
+) -> str:
     parts = []
     for e in exchanges:
         answer_str = e.answer if e.answer is not None else "(awaiting answer)"
         parts.append(f"Q: {e.question}\nContext: {e.context}\nA: {answer_str}")
-    return "\n\n".join(parts)
+    if pending is not None:
+        parts.append(f"Q: {pending.question}\nContext: {pending.context}\nA: (awaiting answer)")
+    return "\n\n".join(parts) if parts else "None."
 ```
 
 ### `redirect_instructions_block`
@@ -317,7 +321,7 @@ def build_supervisor_context(state: BugTriageState) -> str:
         f"## Findings so far\n"
         f"{_format_findings(state.findings)}\n\n"
         f"## Human exchanges so far\n"
-        f"{_format_human_exchanges(state.human_exchanges)}\n\n"
+        f"{_format_human_exchanges(state.human_exchanges, state.pending_exchange)}\n\n"
         f"## Your task\n"
         "Decide the next step. Output JSON with these fields:\n"
         "- next_node: one of \"investigator\", \"codebase_search\", \"web_search\", "
@@ -437,9 +441,9 @@ code-level backstop if the LLM misapplies a threshold.
 | < 0.70 | After investigator only | Must call at least one more agent |
 | any | `max_iterations` reached | Forced to writer by routing guard regardless of confidence |
 
-The `confidence` field in `SupervisorDecision` is stored in `supervisor_reasoning` context and
-surfaced in LangSmith traces. It is not currently stored separately in `BugTriageState` but may
-be added as an additive field in a future schema version.
+The `confidence` field in `SupervisorDecision` is stored as `supervisor_confidence` in
+`BugTriageState` on every supervisor call and is surfaced in LangSmith traces via the structured
+output span. `BugTriageState` must declare `supervisor_confidence: float = 0.0`.
 
 ---
 
