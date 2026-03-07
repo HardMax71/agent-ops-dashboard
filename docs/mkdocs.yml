@@ -14,6 +14,8 @@ nav:
       - Data Validation: prd/PRD-006-data-validation.md
       - Developer Tooling: prd/PRD-007-developer-tooling.md
       - Authentication: prd/PRD-008-authentication.md
+      - Documentation Standards: prd/PRD-009-documentation-standards.md
+      - Evaluation Framework: prd/PRD-010-evaluation-framework.md
 
 theme:
   name: material

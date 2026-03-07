@@ -4,7 +4,7 @@ title: Observability & Evaluation — LangSmith
 status: DRAFT
 domain: observability
 depends_on: [PRD-001, PRD-003, PRD-004]
-key_decisions: [trace-hierarchy, llm-as-judge-eval, golden-dataset, cost-per-job-tracking, prompt-iteration-workflow]
+key_decisions: [trace-hierarchy, cost-per-job-tracking, prompt-iteration-workflow]
 ---
 
 # PRD-005 — Observability & Evaluation: LangSmith
@@ -203,117 +203,8 @@ This data is fetched from the LangSmith API after job completion and cached in t
 
 ---
 
-## Evaluation Framework
-
-### What Gets Evaluated
-
-The eval framework measures three things:
-
-| Dimension             | Question                                                             | Evaluator Type                                    |
-|-----------------------|----------------------------------------------------------------------|---------------------------------------------------|
-| **Triage Accuracy**   | Does the root cause match what a human engineer would identify?      | LLM-as-judge + human comparison                   |
-| **Report Usefulness** | Is the final report helpful and actionable?                          | LLM-as-judge (GPT-4o rubric)                      |
-| **Question Quality**  | When the supervisor asks the user a question, is it a good question? | Human feedback (thumbs up/down in UI)             |
-| **Agent Efficiency**  | Did the supervisor route optimally (no redundant agent calls)?       | Automated: count supervisor hops vs. minimum path |
-
-### LLM-as-Judge Setup
-
-```python
-from langsmith.evaluation import evaluate, LangChainStringEvaluator
-
-helpfulness_evaluator = LangChainStringEvaluator(
-    "criteria",
-    config={
-        "criteria": {
-            "helpfulness": "Is this triage report specific, actionable, and correct?",
-            "completeness": "Does the report cover severity, root cause, relevant files, and a fix suggestion?",
-            "accuracy": "Does the root cause match the reference answer?"
-        },
-        "llm": ChatOpenAI(model="gpt-4o", temperature=0)
-    }
-)
-
-results = evaluate(
-    lambda inputs: run_triage_job(inputs["issue_url"]),
-    data="agentops-golden-dataset-v1",
-    evaluators=[helpfulness_evaluator],
-    experiment_prefix="prompt-change-2026-03",
-)
-```
-
-### Scoring Rubric
-
-| Score | Meaning                                                                             |
-|-------|-------------------------------------------------------------------------------------|
-| 5     | Perfect: root cause is correct, files are exact, report is clear and actionable     |
-| 4     | Good: root cause is correct, minor gaps in files or report formatting               |
-| 3     | Partial: hypothesis is on the right track but root cause is incomplete or imprecise |
-| 2     | Poor: wrong code area identified, or report is too vague to be actionable           |
-| 1     | Fail: completely wrong diagnosis or empty output                                    |
-
-**Target:** Average score ≥ 4.0 / 5.0 on the golden dataset before any prompt change is deployed to production.
-
----
-
-## Golden Dataset
-
-### Structure
-
-The golden dataset is a collection of real GitHub issues with human-authored reference answers:
-
-```python
-{
-    "issue_url": "https://github.com/org/repo/issues/1042",
-    "issue_title": "Auth token expiry causes 500 on /api/me",
-    "issue_body": "...",
-    "reference": {
-        "severity": "HIGH",
-        "root_cause": "JWT expiry check in auth/middleware.py:L142 uses local time instead of UTC",
-        "relevant_files": ["auth/middleware.py", "tests/test_auth.py"],
-        "expected_keywords": ["JWT", "UTC", "timezone", "token expiry"]
-    }
-}
-```
-
-### Dataset Growth Plan
-
-| Phase       | Dataset Size | Source                                      |
-|-------------|--------------|---------------------------------------------|
-| v1.0 launch | 20 issues    | Manually authored from real repos           |
-| v1.1        | 50 issues    | User feedback thumbs up/down on job outputs |
-| v2.0        | 200+ issues  | Crowdsourced from community contributors    |
-
-### Dataset Management
-
-The golden dataset is managed in LangSmith's Datasets UI. New examples can be added directly from a LangSmith trace: if
-a live production job produces a high-quality output, it can be added to the dataset in one click via LangSmith's "Add
-to Dataset" feature.
-
----
-
-## Automated Eval Pipeline
-
-### When Evals Run
-
-| Trigger                                         | Action                                                                          |
-|-------------------------------------------------|---------------------------------------------------------------------------------|
-| Any agent prompt change proposed in a PR to `main` | CI pipeline runs eval against golden dataset; fails PR if avg score drops > 0.3 |
-| New LangServe agent version deployed to staging | Eval runs automatically; results posted to PR as a comment                      |
-| Daily at 02:00 UTC                              | Production eval: random sample of 10 recent jobs scored and logged              |
-| Manual trigger                                  | Developer can run evals on demand from LangSmith UI or CLI                      |
-
-### CI Integration
-
-```yaml
-# .github/workflows/eval.yml
-- name: Run LangSmith Evals
-  run: |
-    python scripts/run_evals.py \
-      --dataset agentops-golden-dataset-v1 \
-      --project agentops-staging \
-      --min-score 4.0 \
-      --fail-on-regression
-```
+Evaluation methodology — golden dataset, LLM-as-judge setup, scoring rubrics, and CI pipeline
+— is specified in [PRD-010 §Evaluation Framework](PRD-010-evaluation-framework.md).
 
 ---
 
