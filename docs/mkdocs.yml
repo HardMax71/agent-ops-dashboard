@@ -13,6 +13,9 @@ nav:
           - Pages & Wireframes: prd/PRD-002-2-pages-and-wireframes.md
           - Interactions & Accessibility: prd/PRD-002-3-interactions-and-a11y.md
       - LangGraph Orchestration: prd/PRD-003-langgraph-orchestration.md
+      - Orchestration Detail:
+          - Event Pipeline & Worker: prd/PRD-003-1-event-pipeline.md
+          - Supervisor Prompt & Routing: prd/PRD-003-2-supervisor-spec.md
       - Agent Layer: prd/PRD-004-agent-layer.md
       - LangSmith Observability: prd/PRD-005-langsmith-observability.md
       - Data Validation: prd/PRD-006-data-validation.md
