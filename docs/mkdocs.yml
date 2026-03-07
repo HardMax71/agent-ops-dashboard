@@ -26,6 +26,8 @@ nav:
       - Data Validation: prd/PRD-006-data-validation.md
       - Developer Tooling: prd/PRD-007-developer-tooling.md
       - Authentication: prd/PRD-008-authentication.md
+      - Auth Detail:
+          - Implementation Spec: prd/PRD-008-1-auth-impl-spec.md
       - Documentation Standards: prd/PRD-009-documentation-standards.md
       - Evaluation Framework: prd/PRD-010-evaluation-framework.md
       - Metrics Collection: prd/PRD-011-metrics-collection.md
