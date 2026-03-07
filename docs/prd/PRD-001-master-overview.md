@@ -1,3 +1,12 @@
+---
+id: PRD-001
+title: Master Overview
+status: DRAFT
+domain: product
+depends_on: []
+key_decisions: [architecture, tech-stack, langchain-ecosystem-map, release-roadmap]
+---
+
 # PRD-001 — AgentOps Dashboard
 
 ## Master Product Requirements Document

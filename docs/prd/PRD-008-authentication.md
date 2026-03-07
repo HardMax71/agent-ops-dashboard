@@ -1,3 +1,12 @@
+---
+id: PRD-008
+title: Authentication & Authorization
+status: DRAFT
+domain: backend/auth
+depends_on: [PRD-001, PRD-003, PRD-006, PRD-007]
+key_decisions: [github-oauth-flow, jwt-hs256-session, sse-auth-fetch-event-source, job-ownership-idor, fernet-github-token-storage, one-time-auth-code, sse-reconnect-event-loss]
+---
+
 # PRD-008 — Authentication & Authorization
 
 ## AgentOps Dashboard — Identity, Session, and Access Control

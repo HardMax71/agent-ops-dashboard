@@ -1,3 +1,12 @@
+---
+id: PRD-004
+title: Agent Layer — LangChain, LCEL, LangServe & LangFlow
+status: DRAFT
+domain: backend/agents
+depends_on: [PRD-001, PRD-003, PRD-005]
+key_decisions: [lcel-chain-pattern, langserve-microservices, langflow-prototyping-workflow, chroma-vector-index, agent-finding-base-contract]
+---
+
 # PRD-004 — Agent Layer: LangChain, LCEL, LangServe & LangFlow
 
 ## AgentOps Dashboard — Individual Agent Requirements

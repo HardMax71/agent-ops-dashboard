@@ -1,3 +1,12 @@
+---
+id: PRD-007
+title: Python Developer Tooling & Code Quality Standards
+status: DRAFT
+domain: tooling
+depends_on: [PRD-001, PRD-003, PRD-006]
+key_decisions: [uv-ruff-ty-astral-stack, pyproject-toml-single-source, typeddict-vs-basemodel, no-type-checking-guard, no-local-imports, comment-policy, future-annotations]
+---
+
 # PRD-007 — Python Developer Tooling & Code Quality Standards
 
 ## Metadata

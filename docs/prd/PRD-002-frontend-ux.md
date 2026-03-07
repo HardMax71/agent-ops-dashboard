@@ -1,3 +1,12 @@
+---
+id: PRD-002
+title: Frontend & UX
+status: DRAFT
+domain: frontend
+depends_on: [PRD-001, PRD-003, PRD-005]
+key_decisions: [jira-layout, sse-streaming, zustand-state, write-back-manual, sse-reconnect-v1-event-loss]
+---
+
 # PRD-002 — Frontend & User Experience
 
 ## AgentOps Dashboard — UI/UX Requirements

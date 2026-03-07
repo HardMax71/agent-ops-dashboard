@@ -1,3 +1,12 @@
+---
+id: PRD-006
+title: Data Validation — GitHub Issue URL
+status: DRAFT
+domain: backend/api
+depends_on: [PRD-001, PRD-003]
+key_decisions: [pydantic-v2-annotated-type, github-issue-url-validation, ssrf-prevention, api-boundary-validation-only]
+---
+
 # PRD-006 — Data Validation: GitHub Issue URL
 
 ## AgentOps Dashboard — Input Validation Requirements

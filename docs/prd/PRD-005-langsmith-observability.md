@@ -1,3 +1,12 @@
+---
+id: PRD-005
+title: Observability & Evaluation — LangSmith
+status: DRAFT
+domain: observability
+depends_on: [PRD-001, PRD-003, PRD-004]
+key_decisions: [trace-hierarchy, llm-as-judge-eval, golden-dataset, cost-per-job-tracking, prompt-iteration-workflow]
+---
+
 # PRD-005 — Observability & Evaluation: LangSmith
 
 ## AgentOps Dashboard — Monitoring, Tracing & Quality Requirements

@@ -1,3 +1,12 @@
+---
+id: PRD-003
+title: LangGraph Orchestration & Human-in-the-Loop
+status: DRAFT
+domain: backend/orchestration
+depends_on: [PRD-001, PRD-002]
+key_decisions: [bug-triage-state-schema, interrupt-hitl, arq-worker-separation, redis-pubsub-fanout, postgres-checkpointing, human-input-timeout]
+---
+
 # PRD-003 — LangGraph Orchestration & Human-in-the-Loop
 
 ## AgentOps Dashboard — Agent Runtime Requirements
