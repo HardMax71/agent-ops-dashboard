@@ -59,24 +59,12 @@ for user actions (submit job, answer agent question, pause/kill agent).
 
 The application is a three-zone layout, always visible simultaneously on desktop (≥1280px wide):
 
-```text
-┌──────────────────────────────────────────────────────────────────┐
-│  HEADER — AgentOps Dashboard            [+ New Job]  [Settings]  │
-├─────────────┬───────────────────────────┬────────────────────────┤
-│             │                           │                        │
-│  ZONE 1     │  ZONE 2                   │  ZONE 3                │
-│  Job Queue  │  Live Workspace           │  Output Panel          │
-│  (sidebar)  │  (center, ~50% width)     │  (~25% width)          │
-│             │                           │                        │
-│  Ticket     │  Agent cards streaming    │  Final report          │
-│  list with  │  in real time             │  GitHub comment draft  │
-│  statuses   │                           │  Ticket draft          │
-│             │  Agent question cards     │  Post to GitHub btn    │
-│             │  (blocking, highlighted)  │                        │
-│             │                           │  [View in LangSmith]   │
-│  ~25% width │                           │                        │
-└─────────────┴───────────────────────────┴────────────────────────┘
-```
+| Zone 1 — Job Queue (25%) | Zone 2 — Live Workspace (50%) | Zone 3 — Output Panel (25%) |
+|--------------------------|-------------------------------|------------------------------|
+| Ticket cards with statuses | Agent cards streaming in real time | Final triage report |
+| Filter bar | Agent question cards (amber, blocking) | GitHub comment draft |
+| New Job button | Execution timeline | Ticket draft + Post to GitHub |
+| | | View in LangSmith link |
 
 ---
 
@@ -200,9 +188,15 @@ Full specification in **[PRD-003](PRD-003-langgraph-orchestration.md)**.
 
 Below the agent cards, a compact horizontal timeline shows the sequence of node executions:
 
-```text
-START → investigator → codebase_search → [⚠ human_input] → web_search → critic → writer → END
-         ✓ 12s           ✓ 18s              ● waiting          ...
+```mermaid
+flowchart LR
+    S([START]) --> INV["investigator\n✓ 12s"]
+    INV --> CS["codebase_search\n✓ 18s"]
+    CS --> HI["⚠ human_input\n● waiting"]
+    HI -.-> WS["web_search\n..."]
+    WS -.-> CRIT["critic\n..."]
+    CRIT -.-> WR["writer\n..."]
+    WR -.-> E([END])
 ```
 
 This is the most direct visualization of the LangGraph graph state — nodes light up as they complete.
@@ -338,40 +332,33 @@ Write-back to GitHub is always a **manual, user-initiated action**. The flow:
 
 ## 9. Component Tree
 
-```text
-<App>
-  <Header />
-  <AppLayout>
-    <JobQueueSidebar>
-      <NewJobModal />
-      <JobFilterBar />
-      <JobCard /> × N
-    </JobQueueSidebar>
+```mermaid
+graph TD
+    App --> Header
+    App --> AppLayout
+    AppLayout --> JQS["JobQueueSidebar"]
+    AppLayout --> LW["LiveWorkspace"]
+    AppLayout --> OP["OutputPanel"]
 
-    <LiveWorkspace>
-      <WorkspaceHeader>
-        <PauseButton />
-        <KillButton />
-      </WorkspaceHeader>
-      <ExecutionTimeline />
-      <AgentQuestionCard />        ← conditional, amber
-      <AgentCardList>
-        <AgentCard /> × N          ← streams tokens live
-      </AgentCardList>
-    </LiveWorkspace>
+    JQS --> NJM["NewJobModal"]
+    JQS --> JFB["JobFilterBar"]
+    JQS --> JC["JobCard × N"]
 
-    <OutputPanel>
-      <TriageReportCard />
-      <GitHubCommentEditor />
-      <TicketDraftForm />
-      <OutputActions>
-        <PostCommentButton />
-        <CreateTicketButton />
-        <LangSmithDeepLink />
-      </OutputActions>
-    </OutputPanel>
-  </AppLayout>
-</App>
+    LW --> WH["WorkspaceHeader"]
+    LW --> ET["ExecutionTimeline"]
+    LW --> AQC["AgentQuestionCard (conditional)"]
+    LW --> ACL["AgentCardList"]
+    ACL --> AC["AgentCard × N"]
+    WH --> PB["PauseButton"]
+    WH --> KB["KillButton"]
+
+    OP --> TRC["TriageReportCard"]
+    OP --> GCE["GitHubCommentEditor"]
+    OP --> TDF["TicketDraftForm"]
+    OP --> OA["OutputActions"]
+    OA --> PCB["PostCommentButton"]
+    OA --> CTB["CreateTicketButton"]
+    OA --> LSD["LangSmithDeepLink"]
 ```
 
 ---

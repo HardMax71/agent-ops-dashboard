@@ -154,58 +154,51 @@ Every tool in the LangX ecosystem plays a specific, non-forced role in this prod
 
 ## 7. High-Level Architecture
 
-```text
-GitHub Issue URL
-       │
-       ▼
-┌─────────────────────────────────────────────────────────┐
-│  FastAPI Backend                                         │
-│  POST /jobs  →  creates LangGraph thread                │
-│  GET  /jobs/{id}/stream  →  SSE stream of state diffs   │
-│  POST /jobs/{id}/answer  →  resume after human input    │
-└──────────────────┬──────────────────────────────────────┘
-                   │
-                   ▼
-┌─────────────────────────────────────────────────────────┐
-│  LangGraph Orchestration Layer                           │
-│                                                         │
-│   [supervisor] ──routes──▶ [investigator_node]          │
-│        │                   [codebase_search_node]       │
-│        │                   [web_search_node]            │
-│        │                   [critic_node]                │
-│        │                   [human_input_node] ◀── PAUSE │
-│        └──────────────────▶ [writer_node]               │
-│                                                         │
-│   Checkpointer: persists full state to SQLite/Postgres  │
-└──────────────────┬──────────────────────────────────────┘
-                   │  HTTP calls to LangServe endpoints
-                   ▼
-┌─────────────────────────────────────────────────────────┐
-│  LangServe Agent Microservices                           │
-│  /agents/investigator    ← LCEL chain (LangChain)        │
-│  /agents/codebase-search ← LCEL chain + RAG retriever   │
-│  /agents/web-search      ← LCEL chain + Tavily tool     │
-│  /agents/critic          ← LCEL chain                   │
-│  /agents/writer          ← LCEL chain                   │
-└─────────────────────────────────────────────────────────┘
-                   │
-                   ▼  (wraps everything automatically)
-┌─────────────────────────────────────────────────────────┐
-│  LangSmith                                               │
-│  Traces: LCEL chains + LangGraph nodes + full jobs      │
-│  Evals: score triage quality vs. golden dataset         │
-│  Dashboard: latency, cost, error rates per agent        │
-└─────────────────────────────────────────────────────────┘
-                   │  SSE stream
-                   ▼
-┌─────────────────────────────────────────────────────────┐
-│  React Frontend (Jira-style)                             │
-│  Left: Job queue (ticket list with statuses)            │
-│  Center: Live workspace (streaming agent outputs)       │
-│  Center: Agent question cards (blocking human input)    │
-│  Right: Final output panel (report, comment, ticket)    │
-│  Footer: "View in LangSmith" deep-link per job          │
-└─────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    GH(["GitHub Issue URL"])
+
+    subgraph BE["FastAPI Backend"]
+        JOBS["POST /jobs — creates LangGraph thread"]
+        STREAM["GET /jobs/{id}/stream — SSE state diffs"]
+        ANSWER["POST /jobs/{id}/answer — resume after human input"]
+    end
+
+    subgraph ORCH["LangGraph Orchestration Layer"]
+        SUP["supervisor"]
+        WORKERS["investigator | codebase_search\nweb_search | critic | human_input"]
+        WR["writer"]
+        CP[("Checkpointer — SQLite / Postgres")]
+        SUP -->|routes to| WORKERS
+        WORKERS -->|returns to| SUP
+        SUP -->|when done| WR
+    end
+
+    subgraph SVC["LangServe Agent Microservices"]
+        S1["/agents/investigator — LCEL"]
+        S2["/agents/codebase-search — LCEL + RAG"]
+        S3["/agents/web-search — LCEL + Tavily"]
+        S4["/agents/critic — LCEL"]
+        S5["/agents/writer — LCEL"]
+    end
+
+    subgraph OBS["LangSmith (auto-instrumented)"]
+        direction LR
+        T["Traces"] --- E["Evals"] --- D["Dashboard"]
+    end
+
+    subgraph FE["React Frontend — Jira-style"]
+        direction LR
+        JQ["Job queue"] --- LW["Live workspace"] --- OP["Output panel"]
+    end
+
+    GH --> BE
+    BE --> ORCH
+    ORCH -->|"HTTP calls"| SVC
+    BE -.->|instruments| OBS
+    ORCH -.->|instruments| OBS
+    SVC -.->|instruments| OBS
+    BE -->|"SSE stream"| FE
 ```
 
 ---

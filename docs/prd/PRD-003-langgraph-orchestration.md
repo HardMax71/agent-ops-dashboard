@@ -457,19 +457,26 @@ the output panel.
 an abort signal through Redis; the worker process holding that job cancels its asyncio task — this works across any
 number of workers and processes by design. No module-level `running_tasks` dict is needed.
 
-```
-┌──────────────────────┐     enqueue_job()      ┌──────────────────────┐
-│   FastAPI API server │ ──────────────────────► │   ARQ Worker(s)      │
-│   (REST + SSE)       │                         │   graph.ainvoke()    │
-│                      │ ◄────────────────────── │   publishes events   │
-│   SSE: subscribe to  │   Redis Pub/Sub events  │   to Redis channel   │
-│   jobs:{id}:events   │                         └──────────────────────┘
-└──────────────────────┘
-         │                                                  │
-         │  Job.abort()                                     │ PostgresSaver
-         ▼                                                  ▼
-      Redis ──────────────────────────────────────►  PostgreSQL
-   (ARQ queue + Pub/Sub + job status)               (LangGraph state)
+```mermaid
+flowchart LR
+    subgraph API["FastAPI API server (REST + SSE)"]
+        REST["REST endpoints\n/jobs/*"]
+        SSE["SSE subscriber\njobs:{id}:events"]
+    end
+
+    subgraph WORKER["ARQ Worker(s)"]
+        GRAPH["graph.ainvoke()"]
+        PUB["publishes events\nto Redis channel"]
+    end
+
+    REDIS[("Redis\nARQ queue + Pub/Sub\n+ job status")]
+    PG[("PostgreSQL\nLangGraph state")]
+
+    API -->|"enqueue_job()"| WORKER
+    WORKER -->|"Redis Pub/Sub events"| API
+    API -->|"Job.abort()"| REDIS
+    REDIS -->|"job queue"| WORKER
+    WORKER -->|"PostgresSaver"| PG
 ```
 
 **ARQ worker function** — runs on a worker process, not the API server:

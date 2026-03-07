@@ -118,41 +118,33 @@ Request the minimum scopes at authorization time:
 
 ### 3.3 OAuth Web Application Flow
 
-```
-Browser                     Backend                          GitHub
-   │                           │                               │
-   │── GET /auth/login ────────►│                               │
-   │                           │── redirect 302 ──────────────►│
-   │                           │   github.com/login/oauth/     │
-   │                           │   authorize?client_id=...     │
-   │                           │   &redirect_uri=.../callback  │
-   │                           │   &scope=read:user+repo       │
-   │                           │   &state=<csrf_nonce>         │
-   │                           │                               │
-   │                           │◄── redirect with ?code&state ─│
-   │◄── redirect 302 ──────────│                               │
-   │    to /auth/callback      │                               │
-   │                           │                               │
-   │── GET /auth/callback ─────►│                               │
-   │    ?code=...&state=...    │── POST access_token ─────────►│
-   │                           │    (code + client_secret)     │
-   │                           │◄── github_access_token ───────│
-   │                           │                               │
-   │                           │── GET /user (github_token) ──►│
-   │                           │◄── {id, login, name, ...} ────│
-   │                           │                               │
-   │                           │  [store encrypted github_token in Redis]
-   │                           │  [issue internal JWT]
-   │                           │  [issue one-time auth_code → Redis, 30s TTL]
-   │◄── redirect 302 ──────────│                               │
-   │    to frontend            │                               │
-   │    /auth/callback         │                               │
-   │    ?code=<auth_code>      │                               │
-   │                           │                               │
-   │── POST /auth/token ───────►│                               │
-   │    body: {code}           │  [validate auth_code, delete from Redis]
-   │                           │  [return JWT + set refresh cookie]
-   │◄── {access_token, ...} ───│                               │
+```mermaid
+sequenceDiagram
+    actor Browser
+    participant Backend
+    participant GitHub
+
+    Browser->>Backend: GET /auth/login
+    Backend-->>Browser: 302 → github.com/login/oauth/authorize
+    Note over Backend,GitHub: scope=read:user+repo, state=<csrf_nonce>
+
+    Browser->>GitHub: GET /login/oauth/authorize
+    GitHub-->>Browser: 302 → /auth/callback?code=...&state=...
+
+    Browser->>Backend: GET /auth/callback?code=...&state=...
+    Backend->>GitHub: POST /login/oauth/access_token (code + client_secret)
+    GitHub-->>Backend: github_access_token
+    Backend->>GitHub: GET /user (Bearer github_access_token)
+    GitHub-->>Backend: {id, login, name, avatar_url}
+
+    Note over Backend: encrypt & store github_token in Redis
+    Note over Backend: issue one-time auth_code (30s TTL) → Redis
+
+    Backend-->>Browser: 302 → frontend /auth/callback?code=<auth_code>
+    Browser->>Backend: POST /auth/token {code: auth_code}
+    Note over Backend: validate & atomically delete auth_code (single-use)
+    Backend-->>Browser: {access_token, token_type: bearer}
+    Note over Backend,Browser: Set-Cookie: refresh_token (HttpOnly; Secure; SameSite=Strict)
 ```
 
 **Why the one-time auth code step?**

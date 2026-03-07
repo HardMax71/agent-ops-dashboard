@@ -70,50 +70,31 @@ endpoints (automatically). Zero extra instrumentation code is required beyond se
 
 LangSmith captures traces at three levels, all linked in a parent–child hierarchy:
 
-```text
-Job Run (top-level trace)
-│   job_id: "uuid-1234"
-│   total_tokens: 12,450
-│   total_cost: $0.043
-│   duration: 127s
-│   status: success
-│
-├── LangGraph: supervisor [node 1]
-│       prompt_tokens: 840
-│       completion_tokens: 120
-│       decision: "call investigator"
-│
-├── LangGraph: investigator [node 2]
-│   │   duration: 12s
-│   │
-│   └── LCEL Chain: investigator
-│           prompt: [full system prompt + human message]
-│           response: [full LLM output]
-│           structured_output: { hypothesis: "...", confidence: 0.8 }
-│           model: gpt-4o-mini
-│           tokens: 1,240
-│
-├── LangGraph: supervisor [node 3]
-│       decision: "call codebase_search"
-│
-├── LangGraph: codebase_search [node 4]
-│   │
-│   └── LCEL Chain: codebase-search
-│       ├── Retriever: VectorStoreRetriever
-│       │       query: "JWT token expiry UTC"
-│       │       results: [3 chunks from auth/middleware.py]
-│       └── LLM Call: gpt-4o
-│               tokens: 3,200
-│
-├── LangGraph: human_input [node 5]
-│       interrupt fired: true
-│       question: "Focus on auth or DB layer?"
-│       answer: "Auth layer — recent deploy changed JWT lib"
-│       wait_duration: 145s
-│
-└── LangGraph: writer [node N]
-        └── LCEL Chain: writer
-                parallel_calls: [report_chain, comment_chain, ticket_chain]
+```mermaid
+flowchart TD
+    JOB["Job Run\njob_id: uuid-1234\ntokens: 12,450 · cost: $0.043 · duration: 127s"]
+
+    SUP1["supervisor [node 1]\nprompt: 840 tokens\ndecision: call investigator"]
+    INV["investigator [node 2] — 12s"]
+    LCEL_I["LCEL Chain: investigator\ngpt-4o-mini · 1,240 tokens\noutput: {hypothesis, confidence: 0.8}"]
+
+    SUP3["supervisor [node 3]\ndecision: call codebase_search"]
+    CS["codebase_search [node 4]"]
+    RET["Retriever: VectorStoreRetriever\nquery: JWT token expiry UTC\n→ 3 chunks from auth/middleware.py"]
+    LLM_C["LLM: gpt-4o · 3,200 tokens"]
+
+    HI["human_input [node 5]\nq: Focus on auth or DB layer?\na: Auth layer — recent JWT lib change\nwait: 145s"]
+
+    WR["writer [node N]"]
+    LCEL_W["LCEL Chain: writer\nparallel: report_chain · comment_chain · ticket_chain"]
+
+    JOB --> SUP1
+    JOB --> INV --> LCEL_I
+    JOB --> SUP3
+    JOB --> CS --> RET
+    CS --> LLM_C
+    JOB --> HI
+    JOB --> WR --> LCEL_W
 ```
 
 ### 3.2 What Gets Automatically Captured
