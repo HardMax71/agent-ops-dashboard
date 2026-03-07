@@ -9,8 +9,6 @@ key_decisions: [architecture, tech-stack, langchain-ecosystem-map, release-roadm
 
 # PRD-001 — AgentOps Dashboard
 
-## Master Product Requirements Document
-
 | Field        | Value                              |
 |--------------|------------------------------------|
 | Document ID  | PRD-001                            |
@@ -22,24 +20,7 @@ key_decisions: [architecture, tech-stack, langchain-ecosystem-map, release-roadm
 
 ---
 
-## Table of Contents
-
-1. [Executive Summary](#1-executive-summary)
-2. [Problem Statement](#2-problem-statement)
-3. [Goals and Non-Goals](#3-goals-and-non-goals)
-4. [User Personas](#4-user-personas)
-5. [Product Overview](#5-product-overview)
-6. [LangChain Ecosystem Map](#6-langchain-ecosystem-map)
-7. [High-Level Architecture](#7-high-level-architecture)
-8. [Feature Summary](#8-feature-summary)
-9. [Success Metrics](#9-success-metrics)
-10. [Release Roadmap](#10-release-roadmap)
-11. [Risks and Mitigations](#11-risks-and-mitigations)
-12. [Assumptions, Constraints, Dependencies](#12-assumptions-constraints-dependencies)
-
----
-
-## 1. Executive Summary
+## Executive Summary
 
 AgentOps Dashboard is a developer-facing platform for orchestrating, supervising, and debugging multi-agent AI workflows
 for software development tasks. The product combines the full LangChain ecosystem — **LangChain, LCEL, LangGraph,
@@ -57,9 +38,9 @@ coordinated team of AI agents. AgentOps Dashboard fills this gap.
 
 ---
 
-## 2. Problem Statement
+## Problem Statement
 
-### 2.1 The Multi-Agent Visibility Gap
+### The Multi-Agent Visibility Gap
 
 Modern LLM agents are capable of autonomous reasoning, tool use, and multi-step planning. However, when multiple agents
 collaborate on a complex task, developers currently face:
@@ -70,7 +51,7 @@ collaborate on a complex task, developers currently face:
 - No clean separation between agent logic (what agents do) and orchestration logic (how they coordinate)
 - No human-friendly interface — everything lives in terminal logs or raw LangSmith traces
 
-### 2.2 The Software Dev Triage Pain Point
+### The Software Dev Triage Pain Point
 
 Bug triage is a high-value, time-consuming workflow with clear AI ROI. A typical senior engineer spends 30–45 minutes
 per complex issue: reading the issue, searching the codebase, checking similar past bugs, forming a hypothesis, and
@@ -79,9 +60,9 @@ excel at — but only if a human can trust and steer the process.
 
 ---
 
-## 3. Goals and Non-Goals
+## Goals and Non-Goals
 
-### 3.1 Goals
+### Goals
 
 1. Deliver a working multi-agent **bug triage system** for GitHub repositories using the full LangChain ecosystem
 2. Provide a **Jira-inspired real-time dashboard** where each job is a "ticket" that agents fill in live via streaming
@@ -93,7 +74,7 @@ excel at — but only if a human can trust and steer the process.
 7. Deploy each agent chain as an independent **LangServe** microservice endpoint
 8. Serve as a strong portfolio project demonstrating production-grade LangX ecosystem usage
 
-### 3.2 Non-Goals (v1.0)
+### Non-Goals (v1.0)
 
 - Support for non-GitHub trackers (Jira, Linear, GitLab) — v2 roadmap
 - Fully autonomous operation with zero human oversight
@@ -104,7 +85,7 @@ excel at — but only if a human can trust and steer the process.
 
 ---
 
-## 4. User Personas
+## User Personas
 
 | Persona    | Role                    | Primary Goal                                                 | Key Pain Point                                                            |
 |------------|-------------------------|--------------------------------------------------------------|---------------------------------------------------------------------------|
@@ -115,9 +96,9 @@ excel at — but only if a human can trust and steer the process.
 
 ---
 
-## 5. Product Overview
+## Product Overview
 
-### 5.1 What It Is
+### What It Is
 
 AgentOps Dashboard is a web application with a Python/FastAPI backend and a React frontend. Users connect a GitHub
 repository, submit an issue URL, and the system:
@@ -130,7 +111,7 @@ repository, submit an issue URL, and the system:
 5. Produces a final structured output: severity rating, root cause, relevant files, a drafted GitHub comment, and a
    ticket draft — all editable before posting
 
-### 5.2 The Jira Analogy
+### The Jira Analogy
 
 The product is intentionally modeled after Jira's mental model:
 
@@ -147,7 +128,7 @@ The product is intentionally modeled after Jira's mental model:
 
 ---
 
-## 6. LangChain Ecosystem Map
+## LangChain Ecosystem Map
 
 Every tool in the LangX ecosystem plays a specific, non-forced role in this product.
 
@@ -161,7 +142,7 @@ Every tool in the LangX ecosystem plays a specific, non-forced role in this prod
 
 ---
 
-## 7. High-Level Architecture
+## High-Level Architecture
 
 ```mermaid
 flowchart TD
@@ -212,7 +193,7 @@ flowchart TD
 
 ---
 
-## 8. Feature Summary
+## Feature Summary
 
 | Feature                                          | Priority | PRD Reference |
 |--------------------------------------------------|----------|---------------|
@@ -235,7 +216,7 @@ flowchart TD
 
 ---
 
-## 9. Success Metrics
+## Success Metrics
 
 | Metric                                  | Target (v1.0)                                         |
 |-----------------------------------------|-------------------------------------------------------|
@@ -248,7 +229,7 @@ flowchart TD
 
 ---
 
-## 10. Release Roadmap
+## Release Roadmap
 
 | Phase                           | Scope                                                                         | Target      |
 |---------------------------------|-------------------------------------------------------------------------------|-------------|
@@ -261,7 +242,7 @@ flowchart TD
 
 ---
 
-## 11. Risks and Mitigations
+## Risks and Mitigations
 
 | Risk                                                      | Likelihood | Impact | Mitigation                                                                                          |
 |-----------------------------------------------------------|------------|--------|-----------------------------------------------------------------------------------------------------|
@@ -274,7 +255,7 @@ flowchart TD
 
 ---
 
-## 12. Assumptions, Constraints, Dependencies
+## Assumptions, Constraints, Dependencies
 
 ### Assumptions
 

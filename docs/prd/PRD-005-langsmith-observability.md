@@ -9,8 +9,6 @@ key_decisions: [trace-hierarchy, llm-as-judge-eval, golden-dataset, cost-per-job
 
 # PRD-005 — Observability & Evaluation: LangSmith
 
-## AgentOps Dashboard — Monitoring, Tracing & Quality Requirements
-
 | Field        | Value                                          |
 |--------------|------------------------------------------------|
 | Document ID  | PRD-005                                        |
@@ -22,24 +20,7 @@ key_decisions: [trace-hierarchy, llm-as-judge-eval, golden-dataset, cost-per-job
 
 ---
 
-## Table of Contents
-
-1. [Overview](#1-overview)
-2. [Why LangSmith](#2-why-langsmith)
-3. [Trace Architecture](#3-trace-architecture)
-4. [Integration Setup](#4-integration-setup)
-5. [Trace Hierarchy](#5-trace-hierarchy)
-6. [UI Integration — LangSmith Deep Links](#6-ui-integration--langsmith-deep-links)
-7. [Evaluation Framework](#7-evaluation-framework)
-8. [Golden Dataset](#8-golden-dataset)
-9. [Automated Eval Pipeline](#9-automated-eval-pipeline)
-10. [Cost and Latency Monitoring](#10-cost-and-latency-monitoring)
-11. [Prompt Iteration Workflow](#11-prompt-iteration-workflow)
-12. [Alerting and Anomaly Detection](#12-alerting-and-anomaly-detection)
-
----
-
-## 1. Overview
+## Overview
 
 LangSmith is the observability and evaluation layer of AgentOps Dashboard. It wraps every layer of the stack
 automatically — LCEL chains inside each agent, LangGraph orchestration decisions, and full end-to-end job runs — and
@@ -57,7 +38,7 @@ LangSmith is used in three modes in this product:
 
 ---
 
-## 2. Why LangSmith
+## Why LangSmith
 
 | Need                                                           | LangSmith Solution                                                                  |
 |----------------------------------------------------------------|-------------------------------------------------------------------------------------|
@@ -73,9 +54,9 @@ endpoints (automatically). Zero extra instrumentation code is required beyond se
 
 ---
 
-## 3. Trace Architecture
+## Trace Architecture
 
-### 3.1 Trace Levels
+### Trace Levels
 
 LangSmith captures traces at three levels, all linked in a parent–child hierarchy:
 
@@ -106,7 +87,7 @@ flowchart TD
     JOB --> WR --> LCEL_W
 ```
 
-### 3.2 What Gets Automatically Captured
+### What Gets Automatically Captured
 
 No manual instrumentation is needed for:
 
@@ -123,9 +104,9 @@ Manual tagging is added for:
 
 ---
 
-## 4. Integration Setup
+## Integration Setup
 
-### 4.1 Environment Variables
+### Environment Variables
 
 ```bash
 # Set in all services (orchestration + all LangServe agents)
@@ -138,7 +119,7 @@ LANGSMITH_ENDPOINT=https://api.smith.langchain.com
 No other code changes are required. LangSmith auto-instruments all LangChain and LangGraph calls when
 `LANGSMITH_TRACING=true`.
 
-### 4.2 Project Separation
+### Project Separation
 
 | Environment | LangSmith Project  | Purpose                                  |
 |-------------|--------------------|------------------------------------------|
@@ -146,7 +127,7 @@ No other code changes are required. LangSmith auto-instruments all LangChain and
 | Staging     | `agentops-staging` | Eval runs against golden dataset         |
 | Production  | `agentops-prod`    | Live monitoring; alerts configured here  |
 
-### 4.3 Tagging Runs
+### Tagging Runs
 
 Each LangGraph job run is tagged with metadata for filtering:
 
@@ -165,9 +146,9 @@ config = {
 
 ---
 
-## 5. Trace Hierarchy
+## Trace Hierarchy
 
-### 5.1 Accessing the Trace URL
+### Accessing the Trace URL
 
 LangSmith returns a `run_id` at the start of each traced execution. This is captured and stored in
 `BugTriageState.langsmith_run_id` so the frontend can construct a deep-link:
@@ -188,9 +169,9 @@ https://smith.langchain.com/o/{org_id}/projects/p/{project_id}/r/{run_id}
 
 ---
 
-## 6. UI Integration — LangSmith Deep Links
+## UI Integration — LangSmith Deep Links
 
-### 6.1 "View in LangSmith" Button
+### "View in LangSmith" Button
 
 Every completed or failed job in the AgentOps Dashboard UI shows a **"View in LangSmith"** button in the Output Panel (
 [PRD-002](PRD-002-frontend-ux.md), Zone 3). This button opens the full job trace in a new tab.
@@ -203,7 +184,7 @@ The trace shows:
 - The human interrupt: question asked, time waited, answer given
 - Any errors with full stack traces
 
-### 6.2 Job-Level Trace Summary (In-App)
+### Job-Level Trace Summary (In-App)
 
 A lightweight summary of the LangSmith trace is shown directly in the AgentOps UI (no need to navigate to LangSmith for
 basic info):
@@ -222,9 +203,9 @@ This data is fetched from the LangSmith API after job completion and cached in t
 
 ---
 
-## 7. Evaluation Framework
+## Evaluation Framework
 
-### 7.1 What Gets Evaluated
+### What Gets Evaluated
 
 The eval framework measures three things:
 
@@ -235,7 +216,7 @@ The eval framework measures three things:
 | **Question Quality**  | When the supervisor asks the user a question, is it a good question? | Human feedback (thumbs up/down in UI)             |
 | **Agent Efficiency**  | Did the supervisor route optimally (no redundant agent calls)?       | Automated: count supervisor hops vs. minimum path |
 
-### 7.2 LLM-as-Judge Setup
+### LLM-as-Judge Setup
 
 ```python
 from langsmith.evaluation import evaluate, LangChainStringEvaluator
@@ -260,7 +241,7 @@ results = evaluate(
 )
 ```
 
-### 7.3 Scoring Rubric
+### Scoring Rubric
 
 | Score | Meaning                                                                             |
 |-------|-------------------------------------------------------------------------------------|
@@ -274,9 +255,9 @@ results = evaluate(
 
 ---
 
-## 8. Golden Dataset
+## Golden Dataset
 
-### 8.1 Structure
+### Structure
 
 The golden dataset is a collection of real GitHub issues with human-authored reference answers:
 
@@ -294,7 +275,7 @@ The golden dataset is a collection of real GitHub issues with human-authored ref
 }
 ```
 
-### 8.2 Dataset Growth Plan
+### Dataset Growth Plan
 
 | Phase       | Dataset Size | Source                                      |
 |-------------|--------------|---------------------------------------------|
@@ -302,7 +283,7 @@ The golden dataset is a collection of real GitHub issues with human-authored ref
 | v1.1        | 50 issues    | User feedback thumbs up/down on job outputs |
 | v2.0        | 200+ issues  | Crowdsourced from community contributors    |
 
-### 8.3 Dataset Management
+### Dataset Management
 
 The golden dataset is managed in LangSmith's Datasets UI. New examples can be added directly from a LangSmith trace: if
 a live production job produces a high-quality output, it can be added to the dataset in one click via LangSmith's "Add
@@ -310,9 +291,9 @@ to Dataset" feature.
 
 ---
 
-## 9. Automated Eval Pipeline
+## Automated Eval Pipeline
 
-### 9.1 When Evals Run
+### When Evals Run
 
 | Trigger                                         | Action                                                                          |
 |-------------------------------------------------|---------------------------------------------------------------------------------|
@@ -321,7 +302,7 @@ to Dataset" feature.
 | Daily at 02:00 UTC                              | Production eval: random sample of 10 recent jobs scored and logged              |
 | Manual trigger                                  | Developer can run evals on demand from LangSmith UI or CLI                      |
 
-### 9.2 CI Integration
+### CI Integration
 
 ```yaml
 # .github/workflows/eval.yml
@@ -336,9 +317,9 @@ to Dataset" feature.
 
 ---
 
-## 10. Cost and Latency Monitoring
+## Cost and Latency Monitoring
 
-### 10.1 Per-Job Cost Tracking
+### Per-Job Cost Tracking
 
 LangSmith automatically tracks token usage per run. The backend aggregates this into per-job cost estimates shown in the
 AgentOps UI:
@@ -355,12 +336,12 @@ AgentOps UI:
 
 *Estimates based on GPT-4o-mini at $0.15/1M input tokens, GPT-4o at $2.50/1M input tokens.*
 
-### 10.2 Cost Budget Alerts
+### Cost Budget Alerts
 
 Users can set a per-job cost limit in Settings. If a job's running cost (tracked via LangSmith's API) exceeds the limit,
 the supervisor is notified and moves toward the `writer` node to wrap up, rather than spawning more agents.
 
-### 10.3 Latency Dashboard
+### Latency Dashboard
 
 The Analytics page (v1.1) shows rolling 7-day charts from LangSmith data:
 
@@ -371,7 +352,7 @@ The Analytics page (v1.1) shows rolling 7-day charts from LangSmith data:
 
 ---
 
-## 11. Prompt Iteration Workflow
+## Prompt Iteration Workflow
 
 The workflow for safely improving agent quality using LangSmith:
 
@@ -407,9 +388,9 @@ The workflow for safely improving agent quality using LangSmith:
 
 ---
 
-## 12. Alerting and Anomaly Detection
+## Alerting and Anomaly Detection
 
-### 12.1 Automated Alerts (v1.1)
+### Automated Alerts (v1.1)
 
 LangSmith supports rule-based automations that trigger actions when conditions are met:
 
@@ -420,7 +401,7 @@ LangSmith supports rule-based automations that trigger actions when conditions a
 | Agent error spike   | Error rate > 10% in last hour           | PagerDuty alert                        |
 | Slow job            | Job duration > 5 minutes                | Warning badge in UI                    |
 
-### 12.2 Manual Review Queue
+### Manual Review Queue
 
 Any job where:
 

@@ -9,8 +9,6 @@ key_decisions: [bug-triage-state-schema, interrupt-hitl, arq-worker-separation, 
 
 # PRD-003 — LangGraph Orchestration & Human-in-the-Loop
 
-## AgentOps Dashboard — Agent Runtime Requirements
-
 | Field        | Value                                             |
 |--------------|---------------------------------------------------|
 | Document ID  | PRD-003                                           |
@@ -22,23 +20,7 @@ key_decisions: [bug-triage-state-schema, interrupt-hitl, arq-worker-separation, 
 
 ---
 
-## Table of Contents
-
-1. [Overview](#1-overview)
-2. [LangGraph Fundamentals Used](#2-langgraph-fundamentals-used)
-3. [Shared State Schema](#3-shared-state-schema)
-4. [Graph Structure](#4-graph-structure)
-5. [Supervisor Agent Design](#5-supervisor-agent-design)
-6. [Worker Agent Node Specs](#6-worker-agent-node-specs)
-7. [Human-in-the-Loop Implementation](#7-human-in-the-loop-implementation)
-8. [Pause, Redirect, and Kill](#8-pause-redirect-and-kill)
-9. [Checkpointing and Persistence](#9-checkpointing-and-persistence)
-10. [Streaming to Frontend](#10-streaming-to-frontend)
-11. [Error Handling](#11-error-handling)
-
----
-
-## 1. Overview
+## Overview
 
 This document specifies the LangGraph orchestration layer of AgentOps Dashboard — the system's brain. It covers how the
 supervisor coordinates worker agents, how shared state flows through the graph, how human interrupts are handled, and
@@ -50,7 +32,7 @@ LangGraph is used here in its intended role: **low-level orchestration of long-r
 
 ---
 
-## 2. LangGraph Fundamentals Used
+## LangGraph Fundamentals Used
 
 | Concept           | Usage in This Product                                                                                                                     |
 |-------------------|-------------------------------------------------------------------------------------------------------------------------------------------|
@@ -66,7 +48,7 @@ LangGraph is used here in its intended role: **low-level orchestration of long-r
 
 ---
 
-## 3. Shared State Schema
+## Shared State Schema
 
 The `BugTriageState` TypedDict is the central data structure. Every node reads from and writes to this state. It is
 persisted at every checkpoint.
@@ -135,9 +117,9 @@ class BugTriageState(TypedDict):
 
 ---
 
-## 4. Graph Structure
+## Graph Structure
 
-### 4.1 Node List
+### Node List
 
 | Node              | Type           | Description                                              |
 |-------------------|----------------|----------------------------------------------------------|
@@ -151,7 +133,7 @@ class BugTriageState(TypedDict):
 | `writer`          | Tool node      | Calls LangServe `/agents/writer`; produces final outputs |
 | `END`             | Built-in       | Exit point                                               |
 
-### 4.2 Graph Definition (Pseudocode)
+### Graph Definition (Pseudocode)
 
 ```python
 from langgraph.graph import StateGraph, START, END
@@ -193,7 +175,7 @@ checkpointer = SqliteSaver.from_conn_string("jobs.db")
 graph = builder.compile(checkpointer=checkpointer)
 ```
 
-### 4.3 Routing Logic
+### Routing Logic
 
 ```python
 def route_from_supervisor(state: BugTriageState) -> str:
@@ -210,7 +192,7 @@ def route_from_supervisor(state: BugTriageState) -> str:
 
 ---
 
-## 5. Supervisor Agent Design
+## Supervisor Agent Design
 
 The supervisor is the most critical node. It reads the full current state and decides:
 
@@ -218,7 +200,7 @@ The supervisor is the most critical node. It reads the full current state and de
 2. Whether it has enough information to write the final report
 3. Whether it needs to ask the user a clarifying question
 
-### 5.1 Supervisor System Prompt (Abbreviated)
+### Supervisor System Prompt (Abbreviated)
 
 ```
 You are the supervisor of a bug triage team. You coordinate specialized agents
@@ -246,7 +228,7 @@ Human input rules:
 Output JSON with fields: next_node, reasoning, question (if asking human), confidence.
 ```
 
-### 5.2 Supervisor Output Schema
+### Supervisor Output Schema
 
 ```python
 class SupervisorDecision(BaseModel):
@@ -262,7 +244,7 @@ class SupervisorDecision(BaseModel):
 
 ---
 
-## 6. Worker Agent Node Specs
+## Worker Agent Node Specs
 
 Each worker node follows the same pattern: call the corresponding LangServe endpoint, get back an `AgentFinding`, append
 it to state, return updated state to supervisor.
@@ -297,9 +279,9 @@ async def investigator_node(state: BugTriageState) -> dict:
 
 ---
 
-## 7. Human-in-the-Loop Implementation
+## Human-in-the-Loop Implementation
 
-### 7.1 Triggering an Interrupt
+### Triggering an Interrupt
 
 When the supervisor routes to `human_input`, the node fires `interrupt()`:
 
@@ -324,12 +306,12 @@ def human_input_node(state: BugTriageState) -> dict:
     }
 ```
 
-### 7.2 Resuming from FastAPI
+### Resuming from FastAPI
 
 When the user submits an answer via `POST /jobs/{id}/answer`, the endpoint cancels the pending timeout ARQ job and
 resumes the graph. Full implementation is in §7.3.
 
-### 7.3 Interrupt Timeout Mechanism
+### Interrupt Timeout Mechanism
 
 `interrupt()` blocks the graph indefinitely — LangGraph has no built-in timeout. The 30-minute timeout is implemented
 by scheduling a background task at the moment the interrupt fires, which calls `graph.ainvoke(Command(resume=...))` if
@@ -408,7 +390,7 @@ async def submit_answer(job_id: str, body: AnswerRequest, redis: Redis = Depends
     await graph.ainvoke(Command(resume=body.answer), config=config)
 ```
 
-### 7.4 Question Constraints
+### Question Constraints
 
 | Rule                  | Value                                                         | Rationale                                               |
 |-----------------------|---------------------------------------------------------------|---------------------------------------------------------|
@@ -419,16 +401,16 @@ async def submit_answer(job_id: str, body: AnswerRequest, redis: Redis = Depends
 
 ---
 
-## 8. Pause, Redirect, and Kill
+## Pause, Redirect, and Kill
 
-### 8.1 Pause
+### Pause
 
 Triggered by user clicking "Pause" in the UI. Sends `POST /jobs/{id}/pause`.
 
 Implementation: Sets a flag in the checkpointed state. The supervisor checks this flag at the start of each iteration
 and fires `interrupt()` with a "manual pause" signal if set. User can resume by clicking "Resume".
 
-### 8.2 Redirect
+### Redirect
 
 Triggered after a pause. User can type a new instruction into a text field in the UI: e.g., "Focus only on the database
 layer — ignore the auth middleware."
@@ -436,7 +418,7 @@ layer — ignore the auth middleware."
 Implementation: Resumes the graph via `Command(resume={"type": "redirect", "instruction": "..."})`. The supervisor node
 treats redirect instructions as high-priority context prepended to its system prompt for all subsequent steps.
 
-### 8.3 Kill
+### Kill
 
 Sends `DELETE /jobs/{id}`. Immediately terminates the LangGraph thread via ARQ's cross-process abort mechanism.
 Final state is checkpointed with `status: "killed"`. Any partial outputs already in state are preserved and shown in
@@ -521,9 +503,9 @@ async def kill_job(job_id: str, redis: Redis = Depends(get_redis)):
 
 ---
 
-## 9. Checkpointing and Persistence
+## Checkpointing and Persistence
 
-### 9.1 Why Checkpointing Matters
+### Why Checkpointing Matters
 
 LangGraph's checkpointer saves the full `BugTriageState` to a database after every node execution. This means:
 
@@ -532,21 +514,21 @@ LangGraph's checkpointer saves the full `BugTriageState` to a database after eve
 - The full execution history is available for debugging
 - Paused jobs (waiting for human input) persist indefinitely until answered
 
-### 9.2 Configuration
+### Configuration
 
 | Environment | Checkpointer    | Connection             |
 |-------------|-----------------|------------------------|
 | Development | `SqliteSaver`   | `jobs.db` (local file) |
 | Production  | `PostgresSaver` | `DATABASE_URL` env var |
 
-### 9.3 Thread IDs
+### Thread IDs
 
 Each job is identified by a UUID that maps 1:1 to a LangGraph thread ID. This UUID is generated at `POST /jobs` and is
 the same ID used in SSE stream URLs, answer endpoints, and LangSmith trace grouping.
 
 ---
 
-## 10. Streaming to Frontend
+## Streaming to Frontend
 
 **Separation of concerns:** `graph.astream_events()` runs inside the ARQ worker (see §8.3). The worker publishes each
 transformed event to a Redis Pub/Sub channel (`jobs:{job_id}:events`). The FastAPI SSE endpoint is a pure subscriber
@@ -603,7 +585,7 @@ app = FastAPI(lifespan=lifespan)
 
 ---
 
-## 11. Error Handling
+## Error Handling
 
 | Error Scenario                          | Behavior                                                                                                                      |
 |-----------------------------------------|-------------------------------------------------------------------------------------------------------------------------------|

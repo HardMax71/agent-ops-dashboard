@@ -9,8 +9,6 @@ key_decisions: [lcel-chain-pattern, langserve-microservices, langflow-prototypin
 
 # PRD-004 — Agent Layer: LangChain, LCEL, LangServe & LangFlow
 
-## AgentOps Dashboard — Individual Agent Requirements
-
 | Field        | Value                                            |
 |--------------|--------------------------------------------------|
 | Document ID  | PRD-004                                          |
@@ -22,25 +20,7 @@ key_decisions: [lcel-chain-pattern, langserve-microservices, langflow-prototypin
 
 ---
 
-## Table of Contents
-
-1. [Overview](#1-overview)
-2. [LangChain + LCEL — Agent Internals](#2-langchain--lcel--agent-internals)
-3. [LangServe — Agent Microservices](#3-langserve--agent-microservices)
-4. [LangFlow — Prototyping Workflow](#4-langflow--prototyping-workflow)
-5. [Agent Specifications](#5-agent-specifications)
-    - [5.1 Investigator Agent](#51-investigator-agent)
-    - [5.2 Codebase Search Agent](#52-codebase-search-agent)
-    - [5.3 Web Search Agent](#53-web-search-agent)
-    - [5.4 Critic Agent](#54-critic-agent)
-    - [5.5 Writer Agent](#55-writer-agent)
-6. [Codebase Vector Index](#6-codebase-vector-index)
-7. [Agent Configuration](#7-agent-configuration)
-8. [Inter-Agent Contract](#8-inter-agent-contract)
-
----
-
-## 1. Overview
+## Overview
 
 This document covers the **individual agent layer** — the internals of each of the five specialized worker agents. These
 agents are the leaves of the system: the LangGraph supervisor ([PRD-003](PRD-003-langgraph-orchestration.md)) calls them, but doesn't know or care what's
@@ -58,9 +38,9 @@ orchestration layer.
 
 ---
 
-## 2. LangChain + LCEL — Agent Internals
+## LangChain + LCEL — Agent Internals
 
-### 2.1 Why LCEL
+### Why LCEL
 
 Every agent's core logic is an LCEL (LangChain Expression Language) chain. LCEL is chosen over the legacy `LLMChain`
 approach because:
@@ -71,7 +51,7 @@ approach because:
 - **LangSmith integration** — LCEL chains are automatically traced without any additional instrumentation code
 - **Parallel execution** — `RunnableParallel` lets agents fetch context from multiple sources simultaneously
 
-### 2.2 Standard LCEL Chain Pattern
+### Standard LCEL Chain Pattern
 
 Every agent in this system follows this base pattern:
 
@@ -94,7 +74,7 @@ chain = prompt | llm | parser
 
 The `chain` object is what gets served via LangServe.
 
-### 2.3 LCEL Features Used Per Agent
+### LCEL Features Used Per Agent
 
 | Feature               | Agents          | Purpose                                                      |
 |-----------------------|-----------------|--------------------------------------------------------------|
@@ -107,9 +87,9 @@ The `chain` object is what gets served via LangServe.
 
 ---
 
-## 3. LangServe — Agent Microservices
+## LangServe — Agent Microservices
 
-### 3.1 Architecture Decision
+### Architecture Decision
 
 Rather than importing agent functions directly into the LangGraph process, each agent is deployed as a **standalone
 FastAPI + LangServe microservice**. The LangGraph nodes call these services over HTTP.
@@ -122,7 +102,7 @@ Benefits:
 - Clear ownership boundary: a team member can "own" one agent service
 - The agent config UI (Zone 3 settings) just stores endpoint URLs — fully pluggable
 
-### 3.2 Service Registry
+### Service Registry
 
 | Service Name               | Default Port | Endpoint                  | Description                            |
 |----------------------------|--------------|---------------------------|----------------------------------------|
@@ -132,7 +112,7 @@ Benefits:
 | `agentops-critic`          | 8004         | `/agents/critic`          | Reviews findings for correctness       |
 | `agentops-writer`          | 8005         | `/agents/writer`          | Produces final structured report       |
 
-### 3.3 LangServe Setup Pattern
+### LangServe Setup Pattern
 
 Each service uses the same setup pattern:
 
@@ -180,7 +160,7 @@ LangServe automatically generates:
 - `POST /agents/investigator/batch` — batch processing
 - `GET  /agents/investigator/playground` — interactive testing UI
 
-### 3.4 LangServe Playground
+### LangServe Playground
 
 Each LangServe endpoint comes with a built-in `/playground` UI at no extra cost. This is used during development to
 manually test agent behavior with real GitHub issues before running full end-to-end jobs. This complements the LangFlow
@@ -197,9 +177,9 @@ public internet.
 
 ---
 
-## 4. LangFlow — Prototyping Workflow
+## LangFlow — Prototyping Workflow
 
-### 4.1 Role in Development Process
+### Role in Development Process
 
 LangFlow is the **first stop for any new agent or prompt change**. The development workflow is:
 
@@ -223,7 +203,7 @@ LangFlow is the **first stop for any new agent or prompt change**. The developme
 
 LangFlow prevents wasted engineering time. A prompt that fails visually in LangFlow won't get deployed to LangServe.
 
-### 4.2 Agent Configuration UI
+### Agent Configuration UI
 
 In v1.1, the Settings page of AgentOps Dashboard will embed LangFlow's canvas (via iframe or the LangFlow API). This
 allows users to:
@@ -234,7 +214,7 @@ allows users to:
 
 This is the product's equivalent of a "plugin editor" — power users can customize agent behavior without writing code.
 
-### 4.3 What Gets Prototyped in LangFlow
+### What Gets Prototyped in LangFlow
 
 | Agent           | LangFlow Prototype Focus                                                               |
 |-----------------|----------------------------------------------------------------------------------------|
@@ -246,9 +226,9 @@ This is the product's equivalent of a "plugin editor" — power users can custom
 
 ---
 
-## 5. Agent Specifications
+## Agent Specifications
 
-### 5.1 Investigator Agent
+### Investigator Agent
 
 **Purpose:** First agent to run. Reads the full GitHub issue body and forms an initial hypothesis about the bug's
 nature, affected areas, and likely root cause.
@@ -287,7 +267,7 @@ chain = (
 
 ---
 
-### 5.2 Codebase Search Agent
+### Codebase Search Agent
 
 **Purpose:** Searches the repository's source code for files and code snippets relevant to the bug. Uses semantic vector
 search against a pre-built Chroma index of the repository.
@@ -330,7 +310,7 @@ chain = (
 
 ---
 
-### 5.3 Web Search Agent
+### Web Search Agent
 
 **Purpose:** Searches the web for the error messages, stack traces, and library issues mentioned in the GitHub issue.
 Particularly useful for third-party library bugs and environment-specific errors.
@@ -375,7 +355,7 @@ chain = (
 
 ---
 
-### 5.4 Critic Agent
+### Critic Agent
 
 **Purpose:** Reviews the accumulated findings from other agents and challenges weak hypotheses. Outputs a revised
 confidence score and flags gaps that need more investigation.
@@ -415,7 +395,7 @@ chain = (
 
 ---
 
-### 5.5 Writer Agent
+### Writer Agent
 
 **Purpose:** Takes all accumulated findings and produces the final structured outputs: triage report, GitHub comment
 draft, and ticket draft.
@@ -462,15 +442,15 @@ chain = (
 
 ---
 
-## 6. Codebase Vector Index
+## Codebase Vector Index
 
-### 6.1 Purpose
+### Purpose
 
 The Codebase Search Agent needs semantic search over the repository's source code. A keyword-based search is
 insufficient for finding the code path related to "JWT token expiry on UTC server" when the actual code says
 `if token.exp < time.time()`.
 
-### 6.2 Implementation
+### Implementation
 
 ```
 Repository Clone → Code Chunking → Embedding → Chroma Vector Store
@@ -482,7 +462,7 @@ Repository Clone → Code Chunking → Embedding → Chroma Vector Store
 - **Vector store:** Chroma (local, persistent) — one collection per repository
 - **Retriever:** `VectorStoreRetriever` with `k=8`, `similarity_threshold=0.3`
 
-### 6.3 Index Lifecycle
+### Index Lifecycle
 
 | Trigger                                        | Action                                                 |
 |------------------------------------------------|--------------------------------------------------------|
@@ -490,7 +470,7 @@ Repository Clone → Code Chunking → Embedding → Chroma Vector Store
 | Repository updated (webhook or manual trigger) | Incremental re-index of changed files only             |
 | Index older than 24 hours on an active repo    | Background refresh triggered before next job           |
 
-### 6.4 Limitations (v1.0)
+### Limitations (v1.0)
 
 - Maximum repository size: 500MB
 - Supported languages: Python, JavaScript, TypeScript, Go, Java
@@ -498,7 +478,7 @@ Repository Clone → Code Chunking → Embedding → Chroma Vector Store
 
 ---
 
-## 7. Agent Configuration
+## Agent Configuration
 
 Users can configure each agent via the Settings page (Zone 1 header → Settings → Agents):
 
@@ -515,18 +495,18 @@ Configuration is stored per-repository in the backend database. Changes take eff
 
 ---
 
-## 8. Inter-Agent Contract
+## Inter-Agent Contract
 
 All agents share a common interface contract to ensure the LangGraph supervisor can treat them uniformly.
 
-### 8.1 HTTP Contract (LangServe)
+### HTTP Contract (LangServe)
 
 Every LangServe endpoint must accept:
 
 - `POST /agents/{name}/invoke` with JSON body `{ "input": { ...AgentInput fields } }`
 - Return `{ "output": { ...AgentFinding fields } }`
 
-### 8.2 AgentFinding Base Fields
+### AgentFinding Base Fields
 
 Every agent output must include these base fields regardless of agent-specific fields:
 

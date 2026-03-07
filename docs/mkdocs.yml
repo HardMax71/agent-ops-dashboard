@@ -53,3 +53,5 @@ markdown_extensions:
       anchor_linenums: true
   - pymdownx.inlinehilite
   - pymdownx.details
+extra_css:
+  - stylesheets/extra.css

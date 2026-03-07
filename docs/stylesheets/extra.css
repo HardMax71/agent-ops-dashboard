@@ -1,0 +1,21 @@
+/* Auto-number h2 and h3 headings inside article content */
+.md-content article {
+  counter-reset: h2counter;
+}
+
+.md-content article h2 {
+  counter-increment: h2counter;
+  counter-reset: h3counter;
+}
+
+.md-content article h2::before {
+  content: counter(h2counter) ". ";
+}
+
+.md-content article h3 {
+  counter-increment: h3counter;
+}
+
+.md-content article h3::before {
+  content: counter(h2counter) "." counter(h3counter) " ";
+}

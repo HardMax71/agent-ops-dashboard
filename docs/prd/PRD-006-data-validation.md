@@ -9,8 +9,6 @@ key_decisions: [pydantic-v2-annotated-type, github-issue-url-validation, ssrf-pr
 
 # PRD-006 — Data Validation: GitHub Issue URL
 
-## AgentOps Dashboard — Input Validation Requirements
-
 | Field        | Value                                                                                                           |
 |--------------|-----------------------------------------------------------------------------------------------------------------|
 | Document ID  | PRD-006                                                                                                         |
@@ -23,19 +21,7 @@ key_decisions: [pydantic-v2-annotated-type, github-issue-url-validation, ssrf-pr
 
 ---
 
-## Table of Contents
-
-1. [Problem](#1-problem)
-2. [Validation Library: Pydantic v2](#2-validation-library-pydantic-v2)
-3. [Reusable Type: GitHubIssueUrl](#3-reusable-type-githubissueurl)
-4. [JobCreate Input Model](#4-jobcreate-input-model)
-5. [POST /jobs Endpoint](#5-post-jobs-endpoint)
-6. [Error Response](#6-error-response)
-7. [What Is NOT Validated Here](#7-what-is-not-validated-here)
-
----
-
-## 1. Problem
+## Problem
 
 `POST /jobs` accepts `issue_url` as a raw string with no structural validation. Without enforcement at the API
 boundary, hostile or malformed URLs reach the GitHub API client:
@@ -50,7 +36,7 @@ Enforcing validation at the API boundary means zero malformed URLs ever reach do
 
 ---
 
-## 2. Validation Library: Pydantic v2
+## Validation Library: Pydantic v2
 
 Pydantic v2 is already a dependency (pulled in by FastAPI and `pydantic-settings`). No additional package is needed.
 
@@ -64,7 +50,7 @@ library is used — Pydantic IS the standard validation layer for FastAPI.
 
 ---
 
-## 3. Reusable Type: `GitHubIssueUrl`
+## Reusable Type: `GitHubIssueUrl`
 
 Defined once; imported wherever a GitHub issue URL is accepted.
 
@@ -97,7 +83,7 @@ GitHubIssueUrl = Annotated[AnyHttpUrl, AfterValidator(_validate_github_issue_url
 
 ---
 
-## 4. `JobCreate` Input Model
+## `JobCreate` Input Model
 
 Used as the request body type for `POST /jobs`.
 
@@ -113,7 +99,7 @@ required in the route handler.
 
 ---
 
-## 5. `POST /jobs` Endpoint
+## `POST /jobs` Endpoint
 
 ```python
 @app.post("/jobs", status_code=202)
@@ -133,7 +119,7 @@ async def create_job(body: JobCreate, redis: Redis = Depends(get_redis)) -> dict
 
 ---
 
-## 6. Error Response
+## Error Response
 
 When `issue_url` fails validation, FastAPI/Pydantic returns HTTP 422 automatically:
 
@@ -154,7 +140,7 @@ No additional error handling code is required in the route or worker.
 
 ---
 
-## 7. What Is NOT Validated Here
+## What Is NOT Validated Here
 
 | Concern                                      | Where it is handled                              |
 |----------------------------------------------|--------------------------------------------------|

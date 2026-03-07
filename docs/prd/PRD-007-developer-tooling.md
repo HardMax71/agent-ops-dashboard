@@ -9,8 +9,6 @@ key_decisions: [ uv-ruff-ty-astral-stack, pyproject-toml-single-source, typeddic
 
 # PRD-007 — Python Developer Tooling & Code Quality Standards
 
-## Metadata
-
 | Field        | Value                                                                                                                                                   |
 |--------------|---------------------------------------------------------------------------------------------------------------------------------------------------------|
 | Document ID  | PRD-007                                                                                                                                                 |
@@ -23,23 +21,7 @@ key_decisions: [ uv-ruff-ty-astral-stack, pyproject-toml-single-source, typeddic
 
 ---
 
-## Table of Contents
-
-1. [Philosophy](#1-philosophy)
-2. [Python Version](#2-python-version)
-3. [Package & Environment Management: uv](#3-package--environment-management-uv)
-4. [Dependency Groups (PEP 735)](#4-dependency-groups-pep-735)
-5. [Linting & Formatting: ruff](#5-linting--formatting-ruff)
-6. [Type Checking: ty](#6-type-checking-ty)
-7. [Python 3.12+ Type System Standards](#7-python-312-type-system-standards)
-8. [Docstring Standards](#8-docstring-standards)
-9. [TypedDict vs Pydantic BaseModel: Decision Guide](#9-typeddict-vs-pydantic-basemodel-decision-guide)
-10. [Pre-commit & CI](#10-pre-commit--ci)
-11. [pytest Configuration](#11-pytest-configuration)
-
----
-
-## 1. Philosophy
+## Philosophy
 
 One tool per concern, all from the **Astral stack** (`uv` + `ruff` + `ty`) — consistent, fast, Rust-based, zero config
 drift. Standards are enforced by tooling, not code review. If `ruff` passes and `ty` passes, the code is correct by
@@ -50,7 +32,7 @@ The `pyproject.toml` is the single source of truth for packaging, tool config, a
 
 ---
 
-## 2. Python Version
+## Python Version
 
 - **Minimum: Python 3.12** (managed by `uv`)
 - `.python-version` file pins the exact version: `3.12`
@@ -65,7 +47,7 @@ Python 3.12 enables:
 
 ---
 
-## 3. Package & Environment Management: `uv`
+## Package & Environment Management: `uv`
 
 `uv` replaces `pip`, `venv`, `pip-tools`, and `pipx` in a single binary. It is the only tool used to manage
 Python environments and dependencies on this project.
@@ -97,7 +79,7 @@ requires-python = ">=3.12"
 
 ---
 
-## 4. Dependency Groups (PEP 735)
+## Dependency Groups (PEP 735)
 
 Groups are declared in `[dependency-groups]` (PEP 735), **not** `[project.optional-dependencies]`. This is the
 `uv`-preferred approach and avoids the semantic misuse of optional deps for developer tooling.
@@ -144,7 +126,7 @@ test = [
 
 ---
 
-## 5. Linting & Formatting: `ruff`
+## Linting & Formatting: `ruff`
 
 `ruff` replaces: `black`, `isort`, `flake8`, `pyupgrade`, `pydocstyle`, `flake8-annotations`. One binary, one
 config block in `pyproject.toml`, sub-millisecond on incremental runs.
@@ -192,7 +174,7 @@ exempt. This gives 100% coverage on the public API surface without noise on inte
 
 ---
 
-## 6. Type Checking: `ty`
+## Type Checking: `ty`
 
 `ty` is Astral's Rust-based type checker — same team as `ruff`/`uv`. As of 2025 it is in active alpha; the
 project pins it with `>=0.0.1a1` and accepts minor churn during stabilisation.
@@ -221,9 +203,9 @@ orbit via Pylance). Document the blocker in this PRD when that decision is made.
 
 ---
 
-## 7. Python 3.12+ Type System Standards
+## Python 3.12+ Type System Standards
 
-### 7.1 Forbidden Patterns
+### Forbidden Patterns
 
 #### Ruff-enforced
 
@@ -250,7 +232,7 @@ Note: ruff's `TCH001`/`TCH002`/`TCH003` rules do the opposite — they push impo
 Those rules are disabled in this project's ruff config (`TCH` is absent from `select`) because they encourage
 the pattern we forbid.
 
-### 7.2 Still-valid `typing` imports (not deprecated)
+### Still-valid `typing` imports (not deprecated)
 
 These have no builtin replacements and remain correct to import from `typing`:
 
@@ -263,13 +245,13 @@ as strings, so forward references never raise `NameError`), but the `import` sta
 execute at module load time — it does not eliminate import overhead. If a module-level import is
 problematic, that is an architecture signal: fix the dependency, do not guard the import.
 
-### 7.3 No `Any`
+### No `Any`
 
 `ANN401` is enabled. The only valid escape hatch is `object` (the true top type) when a genuine heterogeneous
 container is needed. Annotate with a comment explaining why `Any` cannot be avoided if the linter is suppressed
 via `# noqa: ANN401`.
 
-### 7.4 Comment Policy
+### Comment Policy
 
 Inline comments inside function bodies are forbidden except for one purpose: explaining **how** a
 non-obvious implementation works — a quirk, a subtle invariant, or a non-obvious contract that the code
@@ -289,7 +271,7 @@ This applies equally to TypeScript/JavaScript in the frontend: same rule, same e
 
 ---
 
-## 8. Docstring Standards
+## Docstring Standards
 
 Convention: **Google style** (enforced by `ruff D` + `convention = "google"`).
 
@@ -320,7 +302,7 @@ def fetch_issue(url: GitHubIssueUrl, token: str) -> GitHubIssue:
 
 ---
 
-## 9. TypedDict vs Pydantic BaseModel: Decision Guide
+## TypedDict vs Pydantic BaseModel: Decision Guide
 
 ### The problem with TypedDict
 
@@ -375,7 +357,7 @@ class TriageJobResponse(BaseModel):
 
 ---
 
-## 10. Pre-commit & CI
+## Pre-commit & CI
 
 ### Pre-commit (fast, local)
 
@@ -417,7 +399,7 @@ All four checks must pass for a PR to merge. There is no manual override — fix
 
 ---
 
-## 11. pytest Configuration
+## pytest Configuration
 
 ```toml
 [tool.pytest.ini_options]

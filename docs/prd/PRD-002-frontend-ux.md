@@ -9,8 +9,6 @@ key_decisions: [jira-layout, sse-streaming, zustand-state, write-back-manual, ss
 
 # PRD-002 — Frontend & User Experience
 
-## AgentOps Dashboard — UI/UX Requirements
-
 | Field        | Value                                            |
 |--------------|--------------------------------------------------|
 | Document ID  | PRD-002                                          |
@@ -22,23 +20,7 @@ key_decisions: [jira-layout, sse-streaming, zustand-state, write-back-manual, ss
 
 ---
 
-## Table of Contents
-
-1. [Overview](#1-overview)
-2. [Design Principles](#2-design-principles)
-3. [Application Layout](#3-application-layout)
-4. [Zone 1 — Job Queue Sidebar](#4-zone-1--job-queue-sidebar)
-5. [Zone 2 — Live Workspace](#5-zone-2--live-workspace)
-6. [Zone 3 — Output Panel](#6-zone-3--output-panel)
-7. [Streaming Architecture](#7-streaming-architecture)
-8. [GitHub Write-Back Flow](#8-github-write-back-flow)
-9. [Component Tree](#9-component-tree)
-10. [Tech Stack](#10-tech-stack)
-11. [Non-Functional Requirements](#11-non-functional-requirements)
-
----
-
-## 1. Overview
+## Overview
 
 The AgentOps Dashboard frontend is a **Jira-inspired single-page application** that makes multi-agent AI execution
 visible, interactive, and controllable in real time. The UI is intentionally modeled after issue tracking tools because:
@@ -52,7 +34,7 @@ for user actions (submit job, answer agent question, pause/kill agent).
 
 ---
 
-## 2. Design Principles
+## Design Principles
 
 | Principle                      | Description                                                                                                                                        |
 |--------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -64,7 +46,7 @@ for user actions (submit job, answer agent question, pause/kill agent).
 
 ---
 
-## 3. Application Layout
+## Application Layout
 
 The application is a three-zone layout, always visible simultaneously on desktop (≥1280px wide):
 
@@ -77,14 +59,14 @@ The application is a three-zone layout, always visible simultaneously on desktop
 
 ---
 
-## 4. Zone 1 — Job Queue Sidebar
+## Zone 1 — Job Queue Sidebar
 
-### 4.1 Purpose
+### Purpose
 
 Displays all submitted triage jobs as ticket cards, analogous to Jira's issue list. Clicking a job loads it in Zone 2
 and 3.
 
-### 4.2 Job Card Structure
+### Job Card Structure
 
 Each card shows:
 
@@ -105,7 +87,7 @@ Each card shows:
 | Timestamp           | Relative time since submission                                                                                        |
 | Active agents count | Only shown when RUNNING                                                                                               |
 
-### 4.3 Status Definitions
+### Status Definitions
 
 | Status  | LangGraph State             | Color                  | Description                            |
 |---------|-----------------------------|------------------------|----------------------------------------|
@@ -115,7 +97,7 @@ Each card shows:
 | DONE    | Graph reached END node      | Green                  | All outputs produced                   |
 | FAILED  | Unhandled exception         | Red                    | Job errored; LangSmith trace available |
 
-### 4.4 Interactions
+### Interactions
 
 - **Click job card** → loads workspace in Zone 2/3
 - **New Job button** → opens a modal: paste GitHub issue URL, optional notes to supervisor, submit
@@ -123,15 +105,15 @@ Each card shows:
 
 ---
 
-## 5. Zone 2 — Live Workspace
+## Zone 2 — Live Workspace
 
-### 5.1 Purpose
+### Purpose
 
 The center panel is the heart of the product. It shows the active job's execution in real time: each agent's activity,
 reasoning, tool calls, and outputs stream in as they happen. This is where the Jira analogy extends: the workspace is
 like a Jira ticket that writes itself, section by section, as agents work.
 
-### 5.2 Workspace Header
+### Workspace Header
 
 ```text
 ┌────────────────────────────────────────────────────────────────┐
@@ -141,7 +123,7 @@ like a Jira ticket that writes itself, section by section, as agents work.
 └────────────────────────────────────────────────────────────────┘
 ```
 
-### 5.3 Agent Cards
+### Agent Cards
 
 Each active or completed agent gets an **Agent Card** in the workspace. Cards appear as agents are spawned and fill in
 as they execute:
@@ -168,7 +150,7 @@ Agent Card states:
 | Done            | Green checkmark; elapsed time shown                              |
 | Error           | Red border; error message; link to LangSmith trace               |
 
-### 5.4 Agent Question Cards
+### Agent Question Cards
 
 When the supervisor decides to ask the user a question, a **question card** appears above all other agents, with amber
 styling to communicate urgency. The entire graph is paused until the user responds.
@@ -193,7 +175,7 @@ styling to communicate urgency. The entire graph is paused until the user respon
 
 Full specification in **[PRD-003](PRD-003-langgraph-orchestration.md)**.
 
-### 5.5 Execution Timeline
+### Execution Timeline
 
 Below the agent cards, a compact horizontal timeline shows the sequence of node executions:
 
@@ -212,14 +194,14 @@ This is the most direct visualization of the LangGraph graph state — nodes lig
 
 ---
 
-## 6. Zone 3 — Output Panel
+## Zone 3 — Output Panel
 
-### 6.1 Purpose
+### Purpose
 
 The right panel accumulates the final structured outputs as the Writer agent produces them. Content is editable before
 any GitHub write-back occurs.
 
-### 6.2 Structured Report Card
+### Structured Report Card
 
 ```text
 TRIAGE REPORT
@@ -242,7 +224,7 @@ Similar Past Issues:
   · #891 — Fixed 2024-11 (same root cause, different endpoint)
 ```
 
-### 6.3 GitHub Comment Draft
+### GitHub Comment Draft
 
 A text area, pre-populated by the Writer agent, editable by the user:
 
@@ -259,7 +241,7 @@ The token expiry check uses local time instead of UTC...
 *Triaged by AgentOps Dashboard · [View full trace](#)*
 ```
 
-### 6.4 Ticket Draft
+### Ticket Draft
 
 A structured form (also pre-filled by Writer agent):
 
@@ -270,7 +252,7 @@ A structured form (also pre-filled by Writer agent):
 | Assignee suggestion | `@backend-team`                                                 |
 | Effort estimate     | `M (2–4 hours)`                                                 |
 
-### 6.5 Action Buttons
+### Action Buttons
 
 - **Post Comment to GitHub** — posts the comment draft to the original issue (requires GitHub auth)
 - **Create GitHub Issue** — creates a new ticket with the ticket draft fields
@@ -279,9 +261,9 @@ A structured form (also pre-filled by Writer agent):
 
 ---
 
-## 7. Streaming Architecture
+## Streaming Architecture
 
-### 7.1 SSE Event Types
+### SSE Event Types
 
 The FastAPI backend emits the following event types over the SSE stream. Every
 message is emitted with an SSE `id:` field set to a per-job monotonically
@@ -308,7 +290,7 @@ reconnect flow.
 | `job.done`            | `{ report, comment_draft, ticket_draft }` | Finalize output panel, green status |
 | `job.failed`          | `{ error, langsmith_url }`                | Red status, show error card         |
 
-### 7.2 Frontend State Management
+### Frontend State Management
 
 State is managed with **Zustand**. Each job has its own state slice:
 
@@ -328,7 +310,7 @@ interface JobState {
 
 ---
 
-## 8. GitHub Write-Back Flow
+## GitHub Write-Back Flow
 
 Write-back to GitHub is always a **manual, user-initiated action**. The flow:
 
@@ -343,7 +325,7 @@ Write-back to GitHub is always a **manual, user-initiated action**. The flow:
 
 ---
 
-## 9. Component Tree
+## Component Tree
 
 ```mermaid
 graph TD
@@ -376,7 +358,7 @@ graph TD
 
 ---
 
-## 10. Tech Stack
+## Tech Stack
 
 | Concern          | Choice                     | Rationale                                                           |
 |------------------|----------------------------|---------------------------------------------------------------------|
@@ -389,7 +371,7 @@ graph TD
 
 ---
 
-## 11. Non-Functional Requirements
+## Non-Functional Requirements
 
 | Requirement                         | Target                                                                         |
 |-------------------------------------|--------------------------------------------------------------------------------|

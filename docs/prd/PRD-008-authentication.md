@@ -9,8 +9,6 @@ key_decisions: [github-oauth-flow, jwt-hs256-session, sse-auth-fetch-event-sourc
 
 # PRD-008 — Authentication & Authorization
 
-## AgentOps Dashboard — Identity, Session, and Access Control
-
 | Field        | Value                                                                                                                                                                                                 |
 |--------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | Document ID  | PRD-008                                                                                                                                                                                               |
@@ -23,28 +21,9 @@ key_decisions: [github-oauth-flow, jwt-hs256-session, sse-auth-fetch-event-sourc
 
 ---
 
-## Table of Contents
+## Overview
 
-1. [Overview](#1-overview)
-2. [Threat Model](#2-threat-model)
-3. [Identity Provider: GitHub OAuth 2.0](#3-identity-provider-github-oauth-20)
-4. [Session & JWT Model](#4-session--jwt-model)
-5. [REST API Authentication](#5-rest-api-authentication)
-6. [SSE Endpoint Authentication](#6-sse-endpoint-authentication)
-7. [Job Ownership & Per-Resource Authorization](#7-job-ownership--per-resource-authorization)
-8. [GitHub OAuth Token Management](#8-github-oauth-token-management)
-9. [Inter-Service Authentication](#9-inter-service-authentication)
-10. [Token Lifecycle](#10-token-lifecycle)
-11. [CORS & Security Headers](#11-cors--security-headers)
-12. [Dependencies & Libraries](#12-dependencies--libraries)
-13. [Implementation Patterns](#13-implementation-patterns)
-14. [Out of Scope (v1)](#14-out-of-scope-v1)
-
----
-
-## 1. Overview
-
-### 1.1 Why This PRD Exists
+### Why This PRD Exists
 
 PRD-003 specifies five authenticated endpoints — `POST /jobs`, `GET /jobs/{id}/stream`,
 `POST /jobs/{id}/answer`, `POST /jobs/{id}/pause`, `DELETE /jobs/{id}` — with no authentication
@@ -59,7 +38,7 @@ This is not an oversight to defer — it is a design gap that affects the data m
 (`BugTriageState` must carry `owner_id`), the API layer (every endpoint needs a dependency),
 and the infrastructure (job registry, token store).
 
-### 1.2 Scope
+### Scope
 
 This PRD specifies:
 
@@ -73,9 +52,9 @@ This PRD specifies:
 
 ---
 
-## 2. Threat Model
+## Threat Model
 
-### 2.1 Assets Worth Protecting
+### Assets Worth Protecting
 
 | Asset | Why It Matters |
 |-------|----------------|
@@ -86,7 +65,7 @@ This PRD specifies:
 | LLM API budget | Unlimited unauthenticated job creation burns operator credits |
 | LangServe agent endpoints (`/agents/*`) | Unauthenticated invocation burns LLM credits and bypasses all job ownership controls |
 
-### 2.2 In-Scope Threats
+### In-Scope Threats
 
 | Threat | Vector | Mitigation in This PRD |
 |--------|--------|------------------------|
@@ -99,7 +78,7 @@ This PRD specifies:
 | SSE stream hijack | Attacker opens EventSource to stream URL without auth | Auth required on SSE endpoint; see §6 |
 | Unauthenticated agent invocation | Direct `POST` to `/agents/*/invoke` ports (8001–8005) without going through the job pipeline | Network isolation (primary) + shared secret header (defense-in-depth); see §9 |
 
-### 2.3 Out-of-Scope Threats (not in v1)
+### Out-of-Scope Threats (not in v1)
 
 - Compromised server / database — infrastructure-layer concern
 - Brute-force of GitHub OAuth state parameter — mitigated by GitHub's own rate limiting
@@ -108,16 +87,16 @@ This PRD specifies:
 
 ---
 
-## 3. Identity Provider: GitHub OAuth 2.0
+## Identity Provider: GitHub OAuth 2.0
 
-### 3.1 Why GitHub OAuth
+### Why GitHub OAuth
 
 - The product is GitHub-native: users connect GitHub repos, submit GitHub issues, and write back GitHub comments
 - No need for a separate user database — GitHub identity (`github_id`, `login`) is the authoritative user record
 - Users already have GitHub accounts by definition (PRD-001 §12)
 - GitHub's OAuth flow is standard, well-documented, and handles MFA transparently
 
-### 3.2 OAuth Application Scopes
+### OAuth Application Scopes
 
 Request the minimum scopes at authorization time:
 
@@ -129,7 +108,7 @@ Request the minimum scopes at authorization time:
 > If the target repository is always public and write-back is not required, `repo` can be dropped
 > to reduce the permission surface. v1 always requests `repo` for full functionality.
 
-### 3.3 OAuth Web Application Flow
+### OAuth Web Application Flow
 
 ```mermaid
 sequenceDiagram
@@ -168,7 +147,7 @@ POSTs this code to `POST /auth/token` and receives the JWT. This ensures the JWT
 in a URL (not in browser history, not in server access logs, not as a URL fragment). The `auth_code`
 is single-use and 30-second TTL, limiting its attack window even if a redirect is intercepted.
 
-### 3.4 CSRF State Parameter
+### CSRF State Parameter
 
 The `state` parameter sent to GitHub's authorization endpoint is a securely generated 32-byte random
 nonce, stored in the user's session (Redis, 10-minute TTL). On callback, the backend validates that
@@ -177,9 +156,9 @@ on the OAuth flow itself.
 
 ---
 
-## 4. Session & JWT Model
+## Session & JWT Model
 
-### 4.1 Token Architecture
+### Token Architecture
 
 Two tokens exist per authenticated session:
 
@@ -193,7 +172,7 @@ an 8-hour JWT stored in `sessionStorage` (survives page refresh within the tab, 
 This is explicitly acknowledged as an XSS risk tradeoff acceptable for a developer-facing internal
 tool. The full two-token architecture is the target for v1.1.
 
-### 4.2 JWT Claims
+### JWT Claims
 
 ```json
 {
@@ -210,7 +189,7 @@ tool. The full two-token architecture is the target for v1.1.
 - Email — not needed; `sub` (GitHub user ID) is the authoritative identity
 - Permissions/roles — v1 has no RBAC; all authenticated users have equal access to their own jobs
 
-### 4.3 Signing Algorithm
+### Signing Algorithm
 
 **v1: HS256** (HMAC-SHA256 with a shared secret). Simpler key management — one `JWT_SECRET` env var.
 
@@ -232,9 +211,9 @@ INTERNAL_SERVICE_SECRET=<64-byte random hex>   # shared by ARQ worker + all agen
 
 ---
 
-## 5. REST API Authentication
+## REST API Authentication
 
-### 5.1 Protected Endpoints
+### Protected Endpoints
 
 Every `/jobs/*` endpoint requires authentication. The `Depends(get_current_user)` FastAPI dependency
 is injected at the router level, not per-endpoint, so new endpoints cannot accidentally be added
@@ -263,7 +242,7 @@ async def stream_job(
     ...
 ```
 
-### 5.2 `get_current_user` Dependency
+### `get_current_user` Dependency
 
 ```python
 from fastapi import Depends, HTTPException, status
@@ -327,7 +306,7 @@ async def get_current_user(
     return AuthenticatedUser(github_id=github_id, github_login=github_login or "", jti=jti)
 ```
 
-### 5.3 Auth Endpoints (not under `/jobs/*`)
+### Auth Endpoints (not under `/jobs/*`)
 
 ```text
 GET  /auth/login          → redirect to GitHub OAuth authorize URL
@@ -340,9 +319,9 @@ GET  /auth/me             → return current user info (requires Bearer)
 
 ---
 
-## 6. SSE Endpoint Authentication
+## SSE Endpoint Authentication
 
-### 6.1 The Problem
+### The Problem
 
 The browser's native `EventSource` API (`new EventSource(url)`) does not support setting custom
 request headers. This is a hard W3C specification constraint — not a browser quirk. Sending
@@ -356,7 +335,7 @@ Three approaches exist; this PRD selects one and documents the rejected alternat
 | Short-lived stream ticket (`?t=<token>`) | Token in URL (logs, history) | Medium — extra endpoint | Fallback |
 | HttpOnly session cookie | XSS-safe for SSE | High — CSRF on REST, two auth mechanisms | No |
 
-### 6.2 Selected Approach: Fetch-Based EventSource
+### Selected Approach: Fetch-Based EventSource
 
 The React frontend uses `@microsoft/fetch-event-source` instead of the native `EventSource`. This
 library implements the SSE protocol on top of the Fetch API, which supports arbitrary headers.
@@ -405,7 +384,7 @@ async function streamJob(jobId: string, accessToken: string): Promise<void> {
 **Backend:** The `GET /jobs/{id}/stream` endpoint authenticates via `Depends(get_current_user)`
 identically to all other endpoints. No special handling is needed on the server side.
 
-### 6.3 Fallback: Short-Lived Stream Ticket
+### Fallback: Short-Lived Stream Ticket
 
 If `@microsoft/fetch-event-source` introduces a compatibility issue (e.g., proxy that buffers Fetch
 responses but passes `EventSource` connections), the fallback is a stream ticket:
@@ -423,7 +402,7 @@ it is authenticated by the open TCP socket — the token is only used for the ha
 
 **Fallback is not default** — it is documented here only for operational contingency.
 
-### 6.4 Token Expiry During an Active Stream
+### Token Expiry During an Active Stream
 
 Access tokens expire in 15 minutes. An ongoing stream may outlast the token. The frontend handles
 this by detecting the 401 status in `onopen`, calling `POST /auth/refresh` to get a new access
@@ -436,15 +415,15 @@ Redis Streams or a DB-backed event table).
 
 ---
 
-## 7. Job Ownership & Per-Resource Authorization
+## Job Ownership & Per-Resource Authorization
 
-### 7.1 The IDOR Risk
+### The IDOR Risk
 
 Job UUIDs are v4 random (122 bits of entropy). Guessing a UUID is computationally infeasible, but
 relying on UUID unpredictability as the sole access control mechanism is security through obscurity
 — not authorization. The correct control is: **only the user who created a job can operate on it**.
 
-### 7.2 Job Registry
+### Job Registry
 
 A lightweight job registry is maintained in Redis alongside the ARQ job queue. On job creation:
 
@@ -463,7 +442,7 @@ await redis.expire(f"job_registry:{job_id}", 7 * 24 * 3600)  # 7-day TTL
 
 This allows O(1) ownership checks without loading the full LangGraph checkpoint state from Postgres.
 
-### 7.3 Ownership Check Dependency
+### Ownership Check Dependency
 
 ```python
 async def get_job_and_verify_owner(
@@ -496,7 +475,7 @@ async def get_job_and_verify_owner(
 **Why 404 instead of 403:** Returning 403 confirms to an attacker that a job with that UUID exists.
 Returning 404 reveals nothing about existence.
 
-### 7.4 BugTriageState Schema Change
+### BugTriageState Schema Change
 
 `BugTriageState` (PRD-003 §3) requires one new field:
 
@@ -509,7 +488,7 @@ class BugTriageState(TypedDict):
 This field is checkpointed with all other state, providing an immutable ownership record in the
 LangGraph state history for audit purposes.
 
-### 7.5 Endpoint Authorization Matrix
+### Endpoint Authorization Matrix
 
 | Endpoint | Auth | Ownership check | Notes |
 |----------|------|-----------------|-------|
@@ -524,15 +503,15 @@ LangGraph state history for audit purposes.
 
 ---
 
-## 8. GitHub OAuth Token Management
+## GitHub OAuth Token Management
 
-### 8.1 What Needs Storing
+### What Needs Storing
 
 After the GitHub OAuth callback, the backend holds a GitHub access token (`gho_...`). This token is
 used by LangGraph worker nodes when calling the GitHub API (reading issues, writing comments). It
 must be accessible at job execution time, which may be hours after the initial login.
 
-### 8.2 Storage: Encrypted in Redis
+### Storage: Encrypted in Redis
 
 The GitHub OAuth token is never stored in the JWT payload (JWTs are signed, not encrypted — the
 payload is base64-decodable). It is stored encrypted in Redis:
@@ -561,7 +540,7 @@ async def get_github_token(github_user_id: str, redis: Redis) -> str | None:
     return fernet.decrypt(encrypted).decode()
 ```
 
-### 8.3 Token Availability in Worker Nodes
+### Token Availability in Worker Nodes
 
 The ARQ worker context does not carry the JWT. **`writer_node` does not post to GitHub** — it only
 prepares the draft. Actual posting is user-initiated via `POST /jobs/{id}/post-comment` (see
@@ -596,7 +575,7 @@ async def post_comment(
     # ... post comment via GitHub API ...
 ```
 
-### 8.4 Token Expiry
+### Token Expiry
 
 GitHub OAuth tokens for OAuth Apps do not expire by default. However, GitHub App user tokens
 expire after 8 hours (with refresh tokens). v1 uses an OAuth App (non-expiring tokens). v2
@@ -604,9 +583,9 @@ migration to GitHub Apps requires implementing the token refresh cycle.
 
 ---
 
-## 9. Inter-Service Authentication
+## Inter-Service Authentication
 
-### 9.1 The Gap
+### The Gap
 
 The ARQ worker calls LangServe agent endpoints with a plain `httpx.post` and no auth header:
 
@@ -622,7 +601,7 @@ guard. `get_current_user` does not protect them — it applies only to the publi
 Anyone who can reach those ports can invoke agents directly, burning LLM API credits and bypassing
 all job ownership checks.
 
-### 9.2 Primary Control: Network Isolation
+### Primary Control: Network Isolation
 
 Agent services **must not be reachable from the public internet**. This is non-negotiable:
 
@@ -634,7 +613,7 @@ Agent services **must not be reachable from the public internet**. This is non-n
 
 Network isolation alone prevents external abuse. Everything below is defense-in-depth.
 
-### 9.3 Defense-in-Depth: Shared Secret Header
+### Defense-in-Depth: Shared Secret Header
 
 Network isolation can fail (misconfigured proxy, SSRF pivot from another internal service). A
 shared secret header provides a second independent layer.
@@ -676,7 +655,7 @@ router = APIRouter(
 `secrets.compare_digest` prevents timing attacks. The secret is rotated by updating the env var
 and redeploying all affected services — no token store or expiry mechanism required.
 
-### 9.4 What Is Not Used Here
+### What Is Not Used Here
 
 | Rejected option | Reason |
 |-----------------|--------|
@@ -687,9 +666,9 @@ and redeploying all affected services — no token store or expiry mechanism req
 
 ---
 
-## 10. Token Lifecycle
+## Token Lifecycle
 
-### 10.1 Access Token
+### Access Token
 
 | Property | Value |
 |----------|-------|
@@ -699,7 +678,7 @@ and redeploying all affected services — no token store or expiry mechanism req
 | Lost on | Page refresh (triggers silent refresh via refresh cookie) |
 | Revocation | Not supported in v1 (15-min window is the effective revocation delay) |
 
-### 10.2 Refresh Token
+### Refresh Token
 
 | Property | Value |
 |----------|-------|
@@ -710,7 +689,7 @@ and redeploying all affected services — no token store or expiry mechanism req
 | Revocation | Delete Redis key → immediate revocation |
 | Rotation | Not in v1; add on v1.1 (new refresh token issued on every `/auth/refresh` call) |
 
-### 10.3 Silent Token Refresh Flow
+### Silent Token Refresh Flow
 
 On page load and on every `401` response from the API, React calls `POST /auth/refresh`. The
 browser automatically sends the HttpOnly refresh cookie; the backend validates it, issues a new
@@ -736,7 +715,7 @@ api.interceptors.response.use(
 );
 ```
 
-### 10.4 Logout
+### Logout
 
 `POST /auth/logout`:
 1. Delete the refresh token from Redis (immediate revocation)
@@ -748,9 +727,9 @@ is an accepted tradeoff (no server-side access token revocation in v1).
 
 ---
 
-## 11. CORS & Security Headers
+## CORS & Security Headers
 
-### 11.1 CORS Configuration
+### CORS Configuration
 
 ```python
 from fastapi.middleware.cors import CORSMiddleware
@@ -767,7 +746,7 @@ app.add_middleware(
 `allow_origins` is a strict allowlist — never `["*"]` with `allow_credentials=True` (browsers
 reject this combination, and it would negate cookie security).
 
-### 11.2 Security Headers
+### Security Headers
 
 ```python
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -787,7 +766,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
 `Strict-Transport-Security` is only meaningful in production (behind HTTPS). In development it
 is harmless.
 
-### 11.3 HTTPS
+### HTTPS
 
 All production traffic terminates TLS at the reverse proxy (nginx / Caddy). The FastAPI app itself
 runs on HTTP internally. The `Secure` cookie flag and `SameSite=Strict` on the refresh token
@@ -795,9 +774,9 @@ cookie are meaningless without HTTPS, so production deployment must enforce it.
 
 ---
 
-## 12. Dependencies & Libraries
+## Dependencies & Libraries
 
-### 12.1 Backend (add to `[project.dependencies]` in pyproject.toml)
+### Backend (add to `[project.dependencies]` in pyproject.toml)
 
 ```toml
 "PyJWT>=2.8",           # JWT encode/decode (HS256/RS256)
@@ -807,7 +786,7 @@ cookie are meaningless without HTTPS, so production deployment must enforce it.
 
 No `python-jose` — it is effectively unmaintained. `PyJWT` is the actively maintained standard.
 
-### 12.2 Frontend (add to package.json)
+### Frontend (add to package.json)
 
 ```json
 "@microsoft/fetch-event-source": "^2.0.1"
@@ -819,9 +798,9 @@ with a hook-based API compatible with React.
 
 ---
 
-## 13. Implementation Patterns
+## Implementation Patterns
 
-### 13.1 Auth Router
+### Auth Router
 
 ```python
 # src/auth/router.py
@@ -956,7 +935,7 @@ async def exchange_token(
     return AccessTokenResponse(access_token=access_token, token_type="bearer")
 ```
 
-### 13.2 Protecting a Job Endpoint (Full Example)
+### Protecting a Job Endpoint (Full Example)
 
 ```python
 @router.get("/{job_id}/stream")
@@ -995,7 +974,7 @@ async def stream_job(
 
 ---
 
-## 14. Out of Scope (v1)
+## Out of Scope (v1)
 
 | Feature | Rationale for Deferral |
 |---------|------------------------|
