@@ -1,6 +1,13 @@
-# PRD-005 — Observability & Evaluation: LangSmith
+---
+id: PRD-005
+title: Observability & Evaluation — LangSmith
+status: DRAFT
+domain: observability
+depends_on: [PRD-001, PRD-003, PRD-004]
+key_decisions: [trace-hierarchy, cost-per-job-tracking, prompt-iteration-workflow, run-id-pre-assigned]
+---
 
-## AgentOps Dashboard — Monitoring, Tracing & Quality Requirements
+# PRD-005 — Observability & Evaluation: LangSmith
 
 | Field        | Value                                          |
 |--------------|------------------------------------------------|
@@ -13,24 +20,7 @@
 
 ---
 
-## Table of Contents
-
-1. [Overview](#1-overview)
-2. [Why LangSmith](#2-why-langsmith)
-3. [Trace Architecture](#3-trace-architecture)
-4. [Integration Setup](#4-integration-setup)
-5. [Trace Hierarchy](#5-trace-hierarchy)
-6. [UI Integration — LangSmith Deep Links](#6-ui-integration--langsmith-deep-links)
-7. [Evaluation Framework](#7-evaluation-framework)
-8. [Golden Dataset](#8-golden-dataset)
-9. [Automated Eval Pipeline](#9-automated-eval-pipeline)
-10. [Cost and Latency Monitoring](#10-cost-and-latency-monitoring)
-11. [Prompt Iteration Workflow](#11-prompt-iteration-workflow)
-12. [Alerting and Anomaly Detection](#12-alerting-and-anomaly-detection)
-
----
-
-## 1. Overview
+## Overview
 
 LangSmith is the observability and evaluation layer of AgentOps Dashboard. It wraps every layer of the stack
 automatically — LCEL chains inside each agent, LangGraph orchestration decisions, and full end-to-end job runs — and
@@ -48,7 +38,7 @@ LangSmith is used in three modes in this product:
 
 ---
 
-## 2. Why LangSmith
+## Why LangSmith
 
 | Need                                                           | LangSmith Solution                                                                  |
 |----------------------------------------------------------------|-------------------------------------------------------------------------------------|
@@ -64,59 +54,40 @@ endpoints (automatically). Zero extra instrumentation code is required beyond se
 
 ---
 
-## 3. Trace Architecture
+## Trace Architecture
 
-### 3.1 Trace Levels
+### Trace Levels
 
 LangSmith captures traces at three levels, all linked in a parent–child hierarchy:
 
-```text
-Job Run (top-level trace)
-│   job_id: "uuid-1234"
-│   total_tokens: 12,450
-│   total_cost: $0.043
-│   duration: 127s
-│   status: success
-│
-├── LangGraph: supervisor [node 1]
-│       prompt_tokens: 840
-│       completion_tokens: 120
-│       decision: "call investigator"
-│
-├── LangGraph: investigator [node 2]
-│   │   duration: 12s
-│   │
-│   └── LCEL Chain: investigator
-│           prompt: [full system prompt + human message]
-│           response: [full LLM output]
-│           structured_output: { hypothesis: "...", confidence: 0.8 }
-│           model: gpt-4o-mini
-│           tokens: 1,240
-│
-├── LangGraph: supervisor [node 3]
-│       decision: "call codebase_search"
-│
-├── LangGraph: codebase_search [node 4]
-│   │
-│   └── LCEL Chain: codebase-search
-│       ├── Retriever: VectorStoreRetriever
-│       │       query: "JWT token expiry UTC"
-│       │       results: [3 chunks from auth/middleware.py]
-│       └── LLM Call: gpt-4o
-│               tokens: 3,200
-│
-├── LangGraph: human_input [node 5]
-│       interrupt fired: true
-│       question: "Focus on auth or DB layer?"
-│       answer: "Auth layer — recent deploy changed JWT lib"
-│       wait_duration: 145s
-│
-└── LangGraph: writer [node N]
-        └── LCEL Chain: writer
-                parallel_calls: [report_chain, comment_chain, ticket_chain]
+```mermaid
+flowchart TD
+    JOB["Job Run\njob_id: uuid-1234\ntokens: 12,450 · cost: $0.043 · duration: 127s"]
+
+    SUP1["supervisor [node 1]\nprompt: 840 tokens\ndecision: call investigator"]
+    INV["investigator [node 2] — 12s"]
+    LCEL_I["LCEL Chain: investigator\ngpt-4o-mini · 1,240 tokens\noutput: {hypothesis, confidence: 0.8}"]
+
+    SUP3["supervisor [node 3]\ndecision: call codebase_search"]
+    CS["codebase_search [node 4]"]
+    RET["Retriever: VectorStoreRetriever\nquery: JWT token expiry UTC\n→ 3 chunks from auth/middleware.py"]
+    LLM_C["LLM: gpt-4o · 3,200 tokens"]
+
+    HI["human_input [node 5]\nq: Focus on auth or DB layer?\na: Auth layer — recent JWT lib change\nwait: 145s"]
+
+    WR["writer [node N]"]
+    LCEL_W["LCEL Chain: writer\nparallel: report_chain · comment_chain · ticket_chain"]
+
+    JOB --> SUP1
+    JOB --> INV --> LCEL_I
+    JOB --> SUP3
+    JOB --> CS --> RET
+    CS --> LLM_C
+    JOB --> HI
+    JOB --> WR --> LCEL_W
 ```
 
-### 3.2 What Gets Automatically Captured
+### What Gets Automatically Captured
 
 No manual instrumentation is needed for:
 
@@ -133,9 +104,9 @@ Manual tagging is added for:
 
 ---
 
-## 4. Integration Setup
+## Integration Setup
 
-### 4.1 Environment Variables
+### Environment Variables
 
 ```bash
 # Set in all services (orchestration + all LangServe agents)
@@ -148,7 +119,7 @@ LANGSMITH_ENDPOINT=https://api.smith.langchain.com
 No other code changes are required. LangSmith auto-instruments all LangChain and LangGraph calls when
 `LANGSMITH_TRACING=true`.
 
-### 4.2 Project Separation
+### Project Separation
 
 | Environment | LangSmith Project  | Purpose                                  |
 |-------------|--------------------|------------------------------------------|
@@ -156,38 +127,47 @@ No other code changes are required. LangSmith auto-instruments all LangChain and
 | Staging     | `agentops-staging` | Eval runs against golden dataset         |
 | Production  | `agentops-prod`    | Live monitoring; alerts configured here  |
 
-### 4.3 Tagging Runs
+### Tagging Runs
 
-Each LangGraph job run is tagged with metadata for filtering:
-
-```python
-config = {
-    "configurable": {"thread_id": job_id},
-    "metadata": {
-        "job_id": job_id,
-        "repository": state["repository"],
-        "issue_url": state["issue_url"],
-        "env": os.getenv("ENVIRONMENT", "dev"),
-    },
-    "tags": ["bug-triage", state["repository"]]
-}
-```
+Each LangGraph job run is tagged with `metadata` and `tags` for filtering in the
+LangSmith dashboard. Both are set in the combined `config` dict assembled in the
+ARQ worker — see [Accessing the Trace URL](#accessing-the-trace-url) for the
+full example.
 
 ---
 
-## 5. Trace Hierarchy
+## Trace Hierarchy
 
-### 5.1 Accessing the Trace URL
+### Accessing the Trace URL
 
-LangSmith returns a `run_id` at the start of each traced execution. This is captured and stored in
-`BugTriageState.langsmith_run_id` so the frontend can construct a deep-link:
+The `run_id` is generated **before** graph invocation and passed via `config["run_id"]`.
+LangGraph forwards it to LangSmith as the root run ID. Because the ID is pre-assigned,
+it is stored in `BugTriageState.langsmith_run_id` and the DB before the graph runs —
+no callback manager, no `traced_runs` access, no race condition.
 
 ```python
-# FastAPI: capture run ID when starting a job
-with tracing_v2_enabled(project_name="agentops-prod") as cb:
-    result = await graph.ainvoke(initial_state, config=config)
-    run_id = cb.traced_runs[0].id  # top-level run ID
-    # Store run_id → job_id mapping in DB
+# worker.py — inside run_triage(), before astream_events
+import uuid
+
+langsmith_run_id = uuid.uuid4()
+
+config = {
+    "configurable": {"thread_id": job_id},
+    "run_id": langsmith_run_id,   # LangSmith root run ID; pre-assigned, never read back
+    "metadata": {
+        "job_id": job_id,
+        "repository": initial_state["repository"],
+        "issue_url": initial_state["issue_url"],
+        "env": os.getenv("ENVIRONMENT", "dev"),
+    },
+    "tags": ["bug-triage", initial_state["repository"]],
+}
+
+# Persist run ID in graph state so checkpointer carries it through the job lifetime
+initial_state["langsmith_run_id"] = str(langsmith_run_id)
+
+async for event in graph.astream_events(initial_state, config=config, version="v2"):
+    ...
 ```
 
 Deep-link format:
@@ -198,9 +178,9 @@ https://smith.langchain.com/o/{org_id}/projects/p/{project_id}/r/{run_id}
 
 ---
 
-## 6. UI Integration — LangSmith Deep Links
+## UI Integration — LangSmith Deep Links
 
-### 6.1 "View in LangSmith" Button
+### "View in LangSmith" Button
 
 Every completed or failed job in the AgentOps Dashboard UI shows a **"View in LangSmith"** button in the Output Panel (
 [PRD-002](PRD-002-frontend-ux.md), Zone 3). This button opens the full job trace in a new tab.
@@ -213,7 +193,7 @@ The trace shows:
 - The human interrupt: question asked, time waited, answer given
 - Any errors with full stack traces
 
-### 6.2 Job-Level Trace Summary (In-App)
+### Job-Level Trace Summary (In-App)
 
 A lightweight summary of the LangSmith trace is shown directly in the AgentOps UI (no need to navigate to LangSmith for
 basic info):
@@ -232,124 +212,14 @@ This data is fetched from the LangSmith API after job completion and cached in t
 
 ---
 
-## 7. Evaluation Framework
-
-### 7.1 What Gets Evaluated
-
-The eval framework measures three things:
-
-| Dimension             | Question                                                             | Evaluator Type                                    |
-|-----------------------|----------------------------------------------------------------------|---------------------------------------------------|
-| **Triage Accuracy**   | Does the root cause match what a human engineer would identify?      | LLM-as-judge + human comparison                   |
-| **Report Usefulness** | Is the final report helpful and actionable?                          | LLM-as-judge (GPT-4o rubric)                      |
-| **Question Quality**  | When the supervisor asks the user a question, is it a good question? | Human feedback (thumbs up/down in UI)             |
-| **Agent Efficiency**  | Did the supervisor route optimally (no redundant agent calls)?       | Automated: count supervisor hops vs. minimum path |
-
-### 7.2 LLM-as-Judge Setup
-
-```python
-from langsmith.evaluation import evaluate, LangChainStringEvaluator
-
-# Helpfulness evaluator
-helpfulness_evaluator = LangChainStringEvaluator(
-    "criteria",
-    config={
-        "criteria": {
-            "helpfulness": "Is this triage report specific, actionable, and correct?",
-            "completeness": "Does the report cover severity, root cause, relevant files, and a fix suggestion?",
-            "accuracy": "Does the root cause match the reference answer?"
-        },
-        "llm": ChatOpenAI(model="gpt-4o", temperature=0)
-    }
-)
-
-results = evaluate(
-    lambda inputs: run_triage_job(inputs["issue_url"]),
-    data="agentops-golden-dataset-v1",
-    evaluators=[helpfulness_evaluator],
-    experiment_prefix="prompt-change-2026-03",
-)
-```
-
-### 7.3 Scoring Rubric
-
-| Score | Meaning                                                                             |
-|-------|-------------------------------------------------------------------------------------|
-| 5     | Perfect: root cause is correct, files are exact, report is clear and actionable     |
-| 4     | Good: root cause is correct, minor gaps in files or report formatting               |
-| 3     | Partial: hypothesis is on the right track but root cause is incomplete or imprecise |
-| 2     | Poor: wrong code area identified, or report is too vague to be actionable           |
-| 1     | Fail: completely wrong diagnosis or empty output                                    |
-
-**Target:** Average score ≥ 4.0 / 5.0 on the golden dataset before any prompt change is deployed to production.
+Evaluation methodology — golden dataset, LLM-as-judge setup, scoring rubrics, and CI pipeline
+— is specified in [PRD-010 §Evaluation Framework](PRD-010-evaluation-framework.md).
 
 ---
 
-## 8. Golden Dataset
+## Cost and Latency Monitoring
 
-### 8.1 Structure
-
-The golden dataset is a collection of real GitHub issues with human-authored reference answers:
-
-```python
-{
-    "issue_url": "https://github.com/org/repo/issues/1042",
-    "issue_title": "Auth token expiry causes 500 on /api/me",
-    "issue_body": "...",
-    "reference": {
-        "severity": "HIGH",
-        "root_cause": "JWT expiry check in auth/middleware.py:L142 uses local time instead of UTC",
-        "relevant_files": ["auth/middleware.py", "tests/test_auth.py"],
-        "expected_keywords": ["JWT", "UTC", "timezone", "token expiry"]
-    }
-}
-```
-
-### 8.2 Dataset Growth Plan
-
-| Phase       | Dataset Size | Source                                      |
-|-------------|--------------|---------------------------------------------|
-| v1.0 launch | 20 issues    | Manually authored from real repos           |
-| v1.1        | 50 issues    | User feedback thumbs up/down on job outputs |
-| v2.0        | 200+ issues  | Crowdsourced from community contributors    |
-
-### 8.3 Dataset Management
-
-The golden dataset is managed in LangSmith's Datasets UI. New examples can be added directly from a LangSmith trace: if
-a live production job produces a high-quality output, it can be added to the dataset in one click via LangSmith's "Add
-to Dataset" feature.
-
----
-
-## 9. Automated Eval Pipeline
-
-### 9.1 When Evals Run
-
-| Trigger                                         | Action                                                                          |
-|-------------------------------------------------|---------------------------------------------------------------------------------|
-| Any agent prompt change proposed in a PR to `main` | CI pipeline runs eval against golden dataset; fails PR if avg score drops > 0.3 |
-| New LangServe agent version deployed to staging | Eval runs automatically; results posted to PR as a comment                      |
-| Daily at 02:00 UTC                              | Production eval: random sample of 10 recent jobs scored and logged              |
-| Manual trigger                                  | Developer can run evals on demand from LangSmith UI or CLI                      |
-
-### 9.2 CI Integration
-
-```yaml
-# .github/workflows/eval.yml
-- name: Run LangSmith Evals
-  run: |
-    python scripts/run_evals.py \
-      --dataset agentops-golden-dataset-v1 \
-      --project agentops-staging \
-      --min-score 4.0 \
-      --fail-on-regression
-```
-
----
-
-## 10. Cost and Latency Monitoring
-
-### 10.1 Per-Job Cost Tracking
+### Per-Job Cost Tracking
 
 LangSmith automatically tracks token usage per run. The backend aggregates this into per-job cost estimates shown in the
 AgentOps UI:
@@ -366,12 +236,12 @@ AgentOps UI:
 
 *Estimates based on GPT-4o-mini at $0.15/1M input tokens, GPT-4o at $2.50/1M input tokens.*
 
-### 10.2 Cost Budget Alerts
+### Cost Budget Alerts
 
 Users can set a per-job cost limit in Settings. If a job's running cost (tracked via LangSmith's API) exceeds the limit,
 the supervisor is notified and moves toward the `writer` node to wrap up, rather than spawning more agents.
 
-### 10.3 Latency Dashboard
+### Latency Dashboard
 
 The Analytics page (v1.1) shows rolling 7-day charts from LangSmith data:
 
@@ -382,7 +252,7 @@ The Analytics page (v1.1) shows rolling 7-day charts from LangSmith data:
 
 ---
 
-## 11. Prompt Iteration Workflow
+## Prompt Iteration Workflow
 
 The workflow for safely improving agent quality using LangSmith:
 
@@ -418,9 +288,9 @@ The workflow for safely improving agent quality using LangSmith:
 
 ---
 
-## 12. Alerting and Anomaly Detection
+## Alerting and Anomaly Detection
 
-### 12.1 Automated Alerts (v1.1)
+### Automated Alerts (v1.1)
 
 LangSmith supports rule-based automations that trigger actions when conditions are met:
 
@@ -431,7 +301,7 @@ LangSmith supports rule-based automations that trigger actions when conditions a
 | Agent error spike   | Error rate > 10% in last hour           | PagerDuty alert                        |
 | Slow job            | Job duration > 5 minutes                | Warning badge in UI                    |
 
-### 12.2 Manual Review Queue
+### Manual Review Queue
 
 Any job where:
 

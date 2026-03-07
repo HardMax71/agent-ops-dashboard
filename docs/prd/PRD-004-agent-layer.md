@@ -1,6 +1,13 @@
-# PRD-004 — Agent Layer: LangChain, LCEL, LangServe & LangFlow
+---
+id: PRD-004
+title: Agent Layer — LangChain, LCEL, LangServe & LangFlow
+status: DRAFT
+domain: backend/agents
+depends_on: [PRD-001, PRD-003, PRD-005]
+key_decisions: [lcel-chain-pattern, langserve-microservices, langflow-prototyping-workflow, chroma-vector-index, agent-finding-base-contract]
+---
 
-## AgentOps Dashboard — Individual Agent Requirements
+# PRD-004 — Agent Layer: LangChain, LCEL, LangServe & LangFlow
 
 | Field        | Value                                            |
 |--------------|--------------------------------------------------|
@@ -13,25 +20,7 @@
 
 ---
 
-## Table of Contents
-
-1. [Overview](#1-overview)
-2. [LangChain + LCEL — Agent Internals](#2-langchain--lcel--agent-internals)
-3. [LangServe — Agent Microservices](#3-langserve--agent-microservices)
-4. [LangFlow — Prototyping Workflow](#4-langflow--prototyping-workflow)
-5. [Agent Specifications](#5-agent-specifications)
-    - [5.1 Investigator Agent](#51-investigator-agent)
-    - [5.2 Codebase Search Agent](#52-codebase-search-agent)
-    - [5.3 Web Search Agent](#53-web-search-agent)
-    - [5.4 Critic Agent](#54-critic-agent)
-    - [5.5 Writer Agent](#55-writer-agent)
-6. [Codebase Vector Index](#6-codebase-vector-index)
-7. [Agent Configuration](#7-agent-configuration)
-8. [Inter-Agent Contract](#8-inter-agent-contract)
-
----
-
-## 1. Overview
+## Overview
 
 This document covers the **individual agent layer** — the internals of each of the five specialized worker agents. These
 agents are the leaves of the system: the LangGraph supervisor ([PRD-003](PRD-003-langgraph-orchestration.md)) calls them, but doesn't know or care what's
@@ -49,9 +38,9 @@ orchestration layer.
 
 ---
 
-## 2. LangChain + LCEL — Agent Internals
+## LangChain + LCEL — Agent Internals
 
-### 2.1 Why LCEL
+### Why LCEL
 
 Every agent's core logic is an LCEL (LangChain Expression Language) chain. LCEL is chosen over the legacy `LLMChain`
 approach because:
@@ -62,7 +51,7 @@ approach because:
 - **LangSmith integration** — LCEL chains are automatically traced without any additional instrumentation code
 - **Parallel execution** — `RunnableParallel` lets agents fetch context from multiple sources simultaneously
 
-### 2.2 Standard LCEL Chain Pattern
+### Standard LCEL Chain Pattern
 
 Every agent in this system follows this base pattern:
 
@@ -71,25 +60,26 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import PydanticOutputParser
 from langchain_openai import ChatOpenAI
 
-# 1. Prompt template
 prompt = ChatPromptTemplate.from_messages([
     ("system", AGENT_SYSTEM_PROMPT),
     ("human", AGENT_HUMAN_TEMPLATE),
 ])
 
-# 2. LLM (swappable — see Agent Configuration section)
-llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+llm = ChatOpenAI(
+    model="gpt-4o-mini",
+    temperature=0,
+    base_url=settings.model_gateway_url,  # e.g. http://litellm:4000
+    api_key=settings.service_token,        # internal token, not the OpenAI key
+)
 
-# 3. Output parser — all agents return structured Pydantic models
 parser = PydanticOutputParser(pydantic_object=AgentFinding)
 
-# 4. Chain — the pipe operator is LCEL
 chain = prompt | llm | parser
 ```
 
 The `chain` object is what gets served via LangServe.
 
-### 2.3 LCEL Features Used Per Agent
+### LCEL Features Used Per Agent
 
 | Feature               | Agents          | Purpose                                                      |
 |-----------------------|-----------------|--------------------------------------------------------------|
@@ -102,9 +92,9 @@ The `chain` object is what gets served via LangServe.
 
 ---
 
-## 3. LangServe — Agent Microservices
+## LangServe — Agent Microservices
 
-### 3.1 Architecture Decision
+### Architecture Decision
 
 Rather than importing agent functions directly into the LangGraph process, each agent is deployed as a **standalone
 FastAPI + LangServe microservice**. The LangGraph nodes call these services over HTTP.
@@ -117,7 +107,7 @@ Benefits:
 - Clear ownership boundary: a team member can "own" one agent service
 - The agent config UI (Zone 3 settings) just stores endpoint URLs — fully pluggable
 
-### 3.2 Service Registry
+### Service Registry
 
 | Service Name               | Default Port | Endpoint                  | Description                            |
 |----------------------------|--------------|---------------------------|----------------------------------------|
@@ -127,29 +117,47 @@ Benefits:
 | `agentops-critic`          | 8004         | `/agents/critic`          | Reviews findings for correctness       |
 | `agentops-writer`          | 8005         | `/agents/writer`          | Produces final structured report       |
 
-### 3.3 LangServe Setup Pattern
+### LangServe Setup Pattern
 
 Each service uses the same setup pattern:
 
 ```python
 # agent_service/server.py
+from functools import lru_cache
+from pydantic_settings import BaseSettings
 from fastapi import FastAPI
 from langserve import add_routes
-from .chain import chain  # the LCEL chain
+from .chain import chain
 
-app = FastAPI(title="AgentOps — Investigator Agent")
 
-add_routes(
-    app,
-    chain,
-    path="/agents/investigator",
-    enable_feedback_endpoint=True,  # lets LangSmith capture feedback
-)
+class Settings(BaseSettings):
+    enable_playground: bool = False  # ENABLE_PLAYGROUND=true to opt in (dev only)
+    model_gateway_url: str   # e.g. http://litellm:4000
+    service_token: str       # unique per service, validated by gateway
 
-if __name__ == "__main__":
-    import uvicorn
 
-    uvicorn.run(app, host="0.0.0.0", port=8001)
+@lru_cache
+def get_settings() -> Settings:
+    return Settings()
+
+
+def create_app() -> FastAPI:
+    settings = get_settings()
+    app = FastAPI(title="AgentOps — Investigator Agent")
+
+    # playground_type=None removes /playground from the router at registration time.
+    # "default" re-enables it only when ENABLE_PLAYGROUND=true.
+    add_routes(
+        app,
+        chain,
+        path="/agents/investigator",
+        playground_type="default" if settings.enable_playground else None,
+        enable_feedback_endpoint=True,
+    )
+    return app
+
+
+app = create_app()
 ```
 
 LangServe automatically generates:
@@ -159,23 +167,69 @@ LangServe automatically generates:
 - `POST /agents/investigator/batch` — batch processing
 - `GET  /agents/investigator/playground` — interactive testing UI
 
-### 3.4 LangServe Playground
+### LangServe Playground
 
 Each LangServe endpoint comes with a built-in `/playground` UI at no extra cost. This is used during development to
 manually test agent behavior with real GitHub issues before running full end-to-end jobs. This complements the LangFlow
 prototyping workflow.
 
-**Security requirement:** The `/playground` route must be disabled in staging and production. It is enabled only in
-local development environments. Implementers must control this via a deployment flag (e.g. `ENABLE_PLAYGROUND=true`,
-defaulting to `false`); when disabled, requests to `/agents/{name}/playground` must return 404 or be blocked at the
-network boundary. In staging, if access is required for debugging, it must be restricted to internal networks
-(VPN/localhost) or protected by authentication before being enabled.
+**Security requirement:** The `/playground` route must be disabled in staging and production. LangServe exposes the
+playground by default; it is disabled by passing `playground_type=None` to `add_routes()`, which removes the route
+from the FastAPI router at registration time — no middleware or network rule required. The `ENABLE_PLAYGROUND`
+environment variable (default: `false`) controls this via a `pydantic-settings` `BaseSettings` class; the value is
+read inside `create_app()` so no module-level globals are introduced. `ENABLE_PLAYGROUND=true` must only appear in
+local development environments. In staging, if playground access is required for debugging, the service must be
+redeployed with `ENABLE_PLAYGROUND=true` behind an internal network or VPN — it must never be reachable from the
+public internet.
+
+### Model Gateway
+
+Each LangServe service does **not** hold an OpenAI API key. Instead, all five services authenticate
+to a shared model gateway (LiteLLM proxy). The gateway is the only component that holds the real
+`OPENAI_API_KEY`.
+
+**Why:**
+- **Single key surface** — rotate or revoke in one place; no per-service key management
+- **Unified rate limiting and spend cap** — LiteLLM enforces a single RPM/TPM budget across all agents
+- **Audit log** — every LLM call is logged centrally with the originating service token
+- **Key isolation** — a compromised agent service can only call the gateway with its own service token,
+  which can be revoked without cycling the OpenAI key
+
+**Authentication flow:**
+
+Each service is issued a unique `SERVICE_TOKEN` environment variable. The gateway validates this
+token and forwards the request to OpenAI using the real API key.
+
+| Service                    | Service Token Env Var                  |
+|----------------------------|----------------------------------------|
+| `agentops-investigator`    | `GATEWAY_TOKEN_INVESTIGATOR`           |
+| `agentops-codebase-search` | `GATEWAY_TOKEN_CODEBASE_SEARCH`        |
+| `agentops-web-search`      | `GATEWAY_TOKEN_WEB_SEARCH`             |
+| `agentops-critic`          | `GATEWAY_TOKEN_CRITIC`                 |
+| `agentops-writer`          | `GATEWAY_TOKEN_WRITER`                 |
+
+**Configuration in each service:**
+
+```python
+class Settings(BaseSettings):
+    enable_playground: bool = False
+    model_gateway_url: str   # e.g. http://litellm:4000
+    service_token: str       # unique per service, validated by gateway
+```
+
+The `ChatOpenAI` client in each LCEL chain is initialized with `base_url=settings.model_gateway_url`
+and `api_key=settings.service_token`. LiteLLM's OpenAI-compatible API surface means no other code
+changes are needed.
+
+**Gateway deployment:** The LiteLLM proxy runs as a sixth Docker service (`agentops-model-gateway`,
+port 4000). It is the only container with `OPENAI_API_KEY` in its environment. It is not exposed
+externally — only reachable within the Docker network.
 
 ---
 
-## 4. LangFlow — Prototyping Workflow
+## LangFlow — Prototyping Workflow
 
-### 4.1 Role in Development Process
+### Role in Development Process
 
 LangFlow is the **first stop for any new agent or prompt change**. The development workflow is:
 
@@ -199,7 +253,7 @@ LangFlow is the **first stop for any new agent or prompt change**. The developme
 
 LangFlow prevents wasted engineering time. A prompt that fails visually in LangFlow won't get deployed to LangServe.
 
-### 4.2 Agent Configuration UI
+### Agent Configuration UI
 
 In v1.1, the Settings page of AgentOps Dashboard will embed LangFlow's canvas (via iframe or the LangFlow API). This
 allows users to:
@@ -210,7 +264,7 @@ allows users to:
 
 This is the product's equivalent of a "plugin editor" — power users can customize agent behavior without writing code.
 
-### 4.3 What Gets Prototyped in LangFlow
+### What Gets Prototyped in LangFlow
 
 | Agent           | LangFlow Prototype Focus                                                               |
 |-----------------|----------------------------------------------------------------------------------------|
@@ -222,9 +276,9 @@ This is the product's equivalent of a "plugin editor" — power users can custom
 
 ---
 
-## 5. Agent Specifications
+## Agent Specifications
 
-### 5.1 Investigator Agent
+### Investigator Agent
 
 **Purpose:** First agent to run. Reads the full GitHub issue body and forms an initial hypothesis about the bug's
 nature, affected areas, and likely root cause.
@@ -235,18 +289,17 @@ nature, affected areas, and likely root cause.
 class InvestigatorInput(BaseModel):
     issue_title: str
     issue_body: str
-    prior_findings: list[dict] = []  # empty on first call
+    prior_findings: list[dict] = []
 ```
 
 **Output:**
 
 ```python
 class InvestigatorFinding(AgentFindingBase):
-    hypothesis: str  # plain English statement of likely root cause
-    affected_areas: list[str]  # e.g. ["authentication", "database"]
-    keywords_for_search: list[str]  # passed to codebase/web search agents
-    error_messages: list[str]  # extracted verbatim error strings
-    # confidence, reasoning, agent_name, summary, error — inherited from AgentFindingBase
+    hypothesis: str
+    affected_areas: list[str]
+    keywords_for_search: list[str]
+    error_messages: list[str]
 ```
 
 **LCEL Chain:**
@@ -264,7 +317,7 @@ chain = (
 
 ---
 
-### 5.2 Codebase Search Agent
+### Codebase Search Agent
 
 **Purpose:** Searches the repository's source code for files and code snippets relevant to the bug. Uses semantic vector
 search against a pre-built Chroma index of the repository.
@@ -273,9 +326,9 @@ search against a pre-built Chroma index of the repository.
 
 ```python
 class CodebaseSearchInput(BaseModel):
-    repository: str  # "org/repo"
-    keywords: list[str]  # from Investigator's keywords_for_search
-    hypothesis: str  # guides query formulation
+    repository: str
+    keywords: list[str]
+    hypothesis: str
     affected_areas: list[str]
 ```
 
@@ -283,15 +336,13 @@ class CodebaseSearchInput(BaseModel):
 
 ```python
 class CodebaseFinding(AgentFindingBase):
-    relevant_files: list[RelevantFile]  # filepath + relevant snippet + line numbers
-    root_cause_location: Optional[str]  # "auth/middleware.py:L142" if found
-    # confidence, reasoning, agent_name, summary, error — inherited from AgentFindingBase
+    relevant_files: list[RelevantFile]
+    root_cause_location: str | None
 ```
 
 **LCEL Chain (with RAG):**
 
 ```python
-# RunnableParallel fetches vector context and passes input simultaneously
 chain = (
         RunnableParallel({
             "context": codebase_retriever,  # Chroma vector store
@@ -309,7 +360,7 @@ chain = (
 
 ---
 
-### 5.3 Web Search Agent
+### Web Search Agent
 
 **Purpose:** Searches the web for the error messages, stack traces, and library issues mentioned in the GitHub issue.
 Particularly useful for third-party library bugs and environment-specific errors.
@@ -327,9 +378,8 @@ class WebSearchInput(BaseModel):
 
 ```python
 class WebSearchFinding(AgentFindingBase):
-    relevant_results: list[WebResult]  # URL + title + relevant excerpt
-    external_root_cause: Optional[str]  # e.g. "Known bug in requests v2.31"
-    # confidence, reasoning, agent_name, summary, error — inherited from AgentFindingBase
+    relevant_results: list[WebResult]
+    external_root_cause: str | None
 ```
 
 **LCEL Chain (with tool):**
@@ -355,7 +405,7 @@ chain = (
 
 ---
 
-### 5.4 Critic Agent
+### Critic Agent
 
 **Purpose:** Reviews the accumulated findings from other agents and challenges weak hypotheses. Outputs a revised
 confidence score and flags gaps that need more investigation.
@@ -374,11 +424,10 @@ class CriticInput(BaseModel):
 ```python
 class CritiqueFinding(AgentFindingBase):
     verdict: Literal["CONFIRMED", "UNCERTAIN", "CHALLENGED"]
-    confidence_adjustment: float  # delta to apply to current confidence
-    gaps: list[str]  # what's still missing
-    revised_hypothesis: Optional[str]
-    ready_for_report: bool  # supervisor uses this to decide next step
-    # confidence (overall), reasoning, agent_name, summary, error — inherited from AgentFindingBase
+    confidence_adjustment: float
+    gaps: list[str]
+    revised_hypothesis: str | None
+    ready_for_report: bool
 ```
 
 **LCEL Chain:**
@@ -396,7 +445,7 @@ chain = (
 
 ---
 
-### 5.5 Writer Agent
+### Writer Agent
 
 **Purpose:** Takes all accumulated findings and produces the final structured outputs: triage report, GitHub comment
 draft, and ticket draft.
@@ -443,15 +492,15 @@ chain = (
 
 ---
 
-## 6. Codebase Vector Index
+## Codebase Vector Index
 
-### 6.1 Purpose
+### Purpose
 
 The Codebase Search Agent needs semantic search over the repository's source code. A keyword-based search is
 insufficient for finding the code path related to "JWT token expiry on UTC server" when the actual code says
 `if token.exp < time.time()`.
 
-### 6.2 Implementation
+### Implementation
 
 ```
 Repository Clone → Code Chunking → Embedding → Chroma Vector Store
@@ -463,7 +512,7 @@ Repository Clone → Code Chunking → Embedding → Chroma Vector Store
 - **Vector store:** Chroma (local, persistent) — one collection per repository
 - **Retriever:** `VectorStoreRetriever` with `k=8`, `similarity_threshold=0.3`
 
-### 6.3 Index Lifecycle
+### Index Lifecycle
 
 | Trigger                                        | Action                                                 |
 |------------------------------------------------|--------------------------------------------------------|
@@ -471,7 +520,7 @@ Repository Clone → Code Chunking → Embedding → Chroma Vector Store
 | Repository updated (webhook or manual trigger) | Incremental re-index of changed files only             |
 | Index older than 24 hours on an active repo    | Background refresh triggered before next job           |
 
-### 6.4 Limitations (v1.0)
+### Limitations (v1.0)
 
 - Maximum repository size: 500MB
 - Supported languages: Python, JavaScript, TypeScript, Go, Java
@@ -479,7 +528,7 @@ Repository Clone → Code Chunking → Embedding → Chroma Vector Store
 
 ---
 
-## 7. Agent Configuration
+## Agent Configuration
 
 Users can configure each agent via the Settings page (Zone 1 header → Settings → Agents):
 
@@ -488,6 +537,7 @@ Users can configure each agent via the Settings page (Zone 1 header → Settings
 | LLM Provider           | OpenAI, Anthropic                                        | OpenAI             |
 | Model (per agent)      | gpt-4o-mini, gpt-4o, claude-3-5-haiku, claude-3-5-sonnet | See per-agent spec |
 | LangServe Endpoint URL | Any valid URL                                            | localhost defaults |
+| Model Gateway URL      | Any valid internal URL                                   | `http://litellm:4000` |
 | System Prompt          | Free text (advanced)                                     | Built-in default   |
 | Max Tokens             | 500–4000                                                 | 1500               |
 | Temperature            | 0.0–0.5                                                  | 0.0                |
@@ -496,28 +546,28 @@ Configuration is stored per-repository in the backend database. Changes take eff
 
 ---
 
-## 8. Inter-Agent Contract
+## Inter-Agent Contract
 
 All agents share a common interface contract to ensure the LangGraph supervisor can treat them uniformly.
 
-### 8.1 HTTP Contract (LangServe)
+### HTTP Contract (LangServe)
 
 Every LangServe endpoint must accept:
 
 - `POST /agents/{name}/invoke` with JSON body `{ "input": { ...AgentInput fields } }`
 - Return `{ "output": { ...AgentFinding fields } }`
 
-### 8.2 AgentFinding Base Fields
+### AgentFinding Base Fields
 
 Every agent output must include these base fields regardless of agent-specific fields:
 
 ```python
 class AgentFindingBase(BaseModel):
-    agent_name: str  # matches node name in LangGraph
-    summary: str  # 1–2 sentence summary for UI agent card
-    confidence: float  # 0.0–1.0 — used by supervisor for routing decisions
-    reasoning: str  # full reasoning shown in UI (streamed token by token)
-    error: Optional[str]  # set if agent encountered an error internally
+    agent_name: str
+    summary: str
+    confidence: float  # 0.0–1.0
+    reasoning: str
+    error: str | None
 ```
 
 The supervisor reads `confidence` and `error` to decide whether to accept the finding, retry, or escalate to human

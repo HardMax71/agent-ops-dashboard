@@ -1,6 +1,13 @@
-# PRD-001 — AgentOps Dashboard
+---
+id: PRD-001
+title: Master Overview
+status: DRAFT
+domain: product
+depends_on: []
+key_decisions: [architecture, tech-stack, langchain-ecosystem-map, release-roadmap]
+---
 
-## Master Product Requirements Document
+# PRD-001 — AgentOps Dashboard
 
 | Field        | Value                              |
 |--------------|------------------------------------|
@@ -9,28 +16,11 @@
 | Status       | DRAFT                              |
 | Date         | March 2026                         |
 | Author       | Product & Engineering Team         |
-| Related Docs | [PRD-002](PRD-002-frontend-ux.md), [PRD-003](PRD-003-langgraph-orchestration.md), [PRD-004](PRD-004-agent-layer.md), [PRD-005](PRD-005-langsmith-observability.md) |
+| Related Docs | [PRD-002](PRD-002-frontend-ux.md), [PRD-003](PRD-003-langgraph-orchestration.md), [PRD-004](PRD-004-agent-layer.md), [PRD-005](PRD-005-langsmith-observability.md), [PRD-006](PRD-006-data-validation.md), [PRD-007](PRD-007-developer-tooling.md), [PRD-008](PRD-008-authentication.md), [PRD-009](PRD-009-documentation-standards.md) |
 
 ---
 
-## Table of Contents
-
-1. [Executive Summary](#1-executive-summary)
-2. [Problem Statement](#2-problem-statement)
-3. [Goals and Non-Goals](#3-goals-and-non-goals)
-4. [User Personas](#4-user-personas)
-5. [Product Overview](#5-product-overview)
-6. [LangChain Ecosystem Map](#6-langchain-ecosystem-map)
-7. [High-Level Architecture](#7-high-level-architecture)
-8. [Feature Summary](#8-feature-summary)
-9. [Success Metrics](#9-success-metrics)
-10. [Release Roadmap](#10-release-roadmap)
-11. [Risks and Mitigations](#11-risks-and-mitigations)
-12. [Assumptions, Constraints, Dependencies](#12-assumptions-constraints-dependencies)
-
----
-
-## 1. Executive Summary
+## Executive Summary
 
 AgentOps Dashboard is a developer-facing platform for orchestrating, supervising, and debugging multi-agent AI workflows
 for software development tasks. The product combines the full LangChain ecosystem — **LangChain, LCEL, LangGraph,
@@ -48,9 +38,9 @@ coordinated team of AI agents. AgentOps Dashboard fills this gap.
 
 ---
 
-## 2. Problem Statement
+## Problem Statement
 
-### 2.1 The Multi-Agent Visibility Gap
+### The Multi-Agent Visibility Gap
 
 Modern LLM agents are capable of autonomous reasoning, tool use, and multi-step planning. However, when multiple agents
 collaborate on a complex task, developers currently face:
@@ -61,7 +51,7 @@ collaborate on a complex task, developers currently face:
 - No clean separation between agent logic (what agents do) and orchestration logic (how they coordinate)
 - No human-friendly interface — everything lives in terminal logs or raw LangSmith traces
 
-### 2.2 The Software Dev Triage Pain Point
+### The Software Dev Triage Pain Point
 
 Bug triage is a high-value, time-consuming workflow with clear AI ROI. A typical senior engineer spends 30–45 minutes
 per complex issue: reading the issue, searching the codebase, checking similar past bugs, forming a hypothesis, and
@@ -70,9 +60,9 @@ excel at — but only if a human can trust and steer the process.
 
 ---
 
-## 3. Goals and Non-Goals
+## Goals and Non-Goals
 
-### 3.1 Goals
+### Goals
 
 1. Deliver a working multi-agent **bug triage system** for GitHub repositories using the full LangChain ecosystem
 2. Provide a **Jira-inspired real-time dashboard** where each job is a "ticket" that agents fill in live via streaming
@@ -84,7 +74,7 @@ excel at — but only if a human can trust and steer the process.
 7. Deploy each agent chain as an independent **LangServe** microservice endpoint
 8. Serve as a strong portfolio project demonstrating production-grade LangX ecosystem usage
 
-### 3.2 Non-Goals (v1.0)
+### Non-Goals (v1.0)
 
 - Support for non-GitHub trackers (Jira, Linear, GitLab) — v2 roadmap
 - Fully autonomous operation with zero human oversight
@@ -95,7 +85,7 @@ excel at — but only if a human can trust and steer the process.
 
 ---
 
-## 4. User Personas
+## User Personas
 
 | Persona    | Role                    | Primary Goal                                                 | Key Pain Point                                                            |
 |------------|-------------------------|--------------------------------------------------------------|---------------------------------------------------------------------------|
@@ -106,9 +96,9 @@ excel at — but only if a human can trust and steer the process.
 
 ---
 
-## 5. Product Overview
+## Product Overview
 
-### 5.1 What It Is
+### What It Is
 
 AgentOps Dashboard is a web application with a Python/FastAPI backend and a React frontend. Users connect a GitHub
 repository, submit an issue URL, and the system:
@@ -121,7 +111,7 @@ repository, submit an issue URL, and the system:
 5. Produces a final structured output: severity rating, root cause, relevant files, a drafted GitHub comment, and a
    ticket draft — all editable before posting
 
-### 5.2 The Jira Analogy
+### The Jira Analogy
 
 The product is intentionally modeled after Jira's mental model:
 
@@ -138,7 +128,7 @@ The product is intentionally modeled after Jira's mental model:
 
 ---
 
-## 6. LangChain Ecosystem Map
+## LangChain Ecosystem Map
 
 Every tool in the LangX ecosystem plays a specific, non-forced role in this product.
 
@@ -152,65 +142,58 @@ Every tool in the LangX ecosystem plays a specific, non-forced role in this prod
 
 ---
 
-## 7. High-Level Architecture
+## High-Level Architecture
 
-```text
-GitHub Issue URL
-       │
-       ▼
-┌─────────────────────────────────────────────────────────┐
-│  FastAPI Backend                                         │
-│  POST /jobs  →  creates LangGraph thread                │
-│  GET  /jobs/{id}/stream  →  SSE stream of state diffs   │
-│  POST /jobs/{id}/answer  →  resume after human input    │
-└──────────────────┬──────────────────────────────────────┘
-                   │
-                   ▼
-┌─────────────────────────────────────────────────────────┐
-│  LangGraph Orchestration Layer                           │
-│                                                         │
-│   [supervisor] ──routes──▶ [investigator_node]          │
-│        │                   [codebase_search_node]       │
-│        │                   [web_search_node]            │
-│        │                   [critic_node]                │
-│        │                   [human_input_node] ◀── PAUSE │
-│        └──────────────────▶ [writer_node]               │
-│                                                         │
-│   Checkpointer: persists full state to SQLite/Postgres  │
-└──────────────────┬──────────────────────────────────────┘
-                   │  HTTP calls to LangServe endpoints
-                   ▼
-┌─────────────────────────────────────────────────────────┐
-│  LangServe Agent Microservices                           │
-│  /agents/investigator    ← LCEL chain (LangChain)        │
-│  /agents/codebase-search ← LCEL chain + RAG retriever   │
-│  /agents/web-search      ← LCEL chain + Tavily tool     │
-│  /agents/critic          ← LCEL chain                   │
-│  /agents/writer          ← LCEL chain                   │
-└─────────────────────────────────────────────────────────┘
-                   │
-                   ▼  (wraps everything automatically)
-┌─────────────────────────────────────────────────────────┐
-│  LangSmith                                               │
-│  Traces: LCEL chains + LangGraph nodes + full jobs      │
-│  Evals: score triage quality vs. golden dataset         │
-│  Dashboard: latency, cost, error rates per agent        │
-└─────────────────────────────────────────────────────────┘
-                   │  SSE stream
-                   ▼
-┌─────────────────────────────────────────────────────────┐
-│  React Frontend (Jira-style)                             │
-│  Left: Job queue (ticket list with statuses)            │
-│  Center: Live workspace (streaming agent outputs)       │
-│  Center: Agent question cards (blocking human input)    │
-│  Right: Final output panel (report, comment, ticket)    │
-│  Footer: "View in LangSmith" deep-link per job          │
-└─────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    GH(["GitHub Issue URL"])
+
+    subgraph BE["FastAPI Backend"]
+        JOBS["POST /jobs — creates LangGraph thread"]
+        STREAM["GET /jobs/{id}/stream — SSE state diffs"]
+        ANSWER["POST /jobs/{id}/answer — resume after human input"]
+    end
+
+    subgraph ORCH["LangGraph Orchestration Layer"]
+        SUP["supervisor"]
+        WORKERS["investigator | codebase_search\nweb_search | critic | human_input"]
+        WR["writer"]
+        CP[("Checkpointer — SQLite / Postgres")]
+        SUP -->|routes to| WORKERS
+        WORKERS -->|returns to| SUP
+        SUP -->|when done| WR
+    end
+
+    subgraph SVC["LangServe Agent Microservices"]
+        S1["/agents/investigator — LCEL"]
+        S2["/agents/codebase-search — LCEL + RAG"]
+        S3["/agents/web-search — LCEL + Tavily"]
+        S4["/agents/critic — LCEL"]
+        S5["/agents/writer — LCEL"]
+    end
+
+    subgraph OBS["LangSmith (auto-instrumented)"]
+        direction LR
+        T["Traces"] --- E["Evals"] --- D["Dashboard"]
+    end
+
+    subgraph FE["React Frontend — Jira-style"]
+        direction LR
+        JQ["Job queue"] --- LW["Live workspace"] --- OP["Output panel"]
+    end
+
+    GH --> BE
+    BE --> ORCH
+    ORCH -->|"HTTP calls"| SVC
+    BE -.->|instruments| OBS
+    ORCH -.->|instruments| OBS
+    SVC -.->|instruments| OBS
+    BE -->|"SSE stream"| FE
 ```
 
 ---
 
-## 8. Feature Summary
+## Feature Summary
 
 | Feature                                          | Priority | PRD Reference |
 |--------------------------------------------------|----------|---------------|
@@ -227,10 +210,13 @@ GitHub Issue URL
 | Codebase vector index (semantic search)          | P1       | [PRD-004](PRD-004-agent-layer.md)                   |
 | Agent configuration UI (model, prompt, endpoint) | P2       | [PRD-004](PRD-004-agent-layer.md)                   |
 | Cost and latency analytics dashboard             | P2       | [PRD-005](PRD-005-langsmith-observability.md)        |
+| Input validation (issue_url, Pydantic v2)        | P0       | [PRD-006](PRD-006-data-validation.md)                |
+| Python tooling (uv / ruff / ty / pyproject.toml) | P0       | [PRD-007](PRD-007-developer-tooling.md)              |
+| Authentication & authorization (GitHub OAuth, JWT) | P0     | [PRD-008](PRD-008-authentication.md)                 |
 
 ---
 
-## 9. Success Metrics
+## Success Metrics
 
 | Metric                                  | Target (v1.0)                                         |
 |-----------------------------------------|-------------------------------------------------------|
@@ -243,7 +229,7 @@ GitHub Issue URL
 
 ---
 
-## 10. Release Roadmap
+## Release Roadmap
 
 | Phase                           | Scope                                                                         | Target      |
 |---------------------------------|-------------------------------------------------------------------------------|-------------|
@@ -256,7 +242,7 @@ GitHub Issue URL
 
 ---
 
-## 11. Risks and Mitigations
+## Risks and Mitigations
 
 | Risk                                                      | Likelihood | Impact | Mitigation                                                                                          |
 |-----------------------------------------------------------|------------|--------|-----------------------------------------------------------------------------------------------------|
@@ -269,7 +255,7 @@ GitHub Issue URL
 
 ---
 
-## 12. Assumptions, Constraints, Dependencies
+## Assumptions, Constraints, Dependencies
 
 ### Assumptions
 
@@ -292,3 +278,5 @@ GitHub Issue URL
 - Tavily API — web search tool for the Web Search agent
 - LangSmith API — observability and evaluation
 - LangChain, LangGraph, LangServe, LangFlow — open-source packages (MIT licensed)
+- **Redis** — job queue (ARQ), Pub/Sub event bus for SSE fanout, and job status storage
+- **ARQ** — async Redis queue for distributed LangGraph job execution across worker processes; provides `Job.abort()` for cross-process kill, built-in status tracking, and automatic requeue on worker crash

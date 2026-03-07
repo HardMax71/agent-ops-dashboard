@@ -1,35 +1,26 @@
+---
+id: PRD-002
+title: Frontend & UX
+status: DRAFT
+domain: frontend
+depends_on: [ PRD-001, PRD-003, PRD-005 ]
+key_decisions: [ jira-layout, sse-streaming, zustand-state, write-back-manual, sse-reconnect-v1-event-loss, sse-concurrent-tabs, github-settings-page ]
+---
+
 # PRD-002 — Frontend & User Experience
 
-## AgentOps Dashboard — UI/UX Requirements
-
-| Field        | Value                                            |
-|--------------|--------------------------------------------------|
-| Document ID  | PRD-002                                          |
-| Version      | 1.0                                              |
-| Status       | DRAFT                                            |
-| Date         | March 2026                                       |
-| Parent Doc   | [PRD-001](PRD-001-master-overview.md)            |
+| Field        | Value                                                                                                                        |
+|--------------|------------------------------------------------------------------------------------------------------------------------------|
+| Document ID  | PRD-002                                                                                                                      |
+| Version      | 1.0                                                                                                                          |
+| Status       | DRAFT                                                                                                                        |
+| Date         | March 2026                                                                                                                   |
+| Parent Doc   | [PRD-001](PRD-001-master-overview.md)                                                                                        |
 | Related Docs | [PRD-003](PRD-003-langgraph-orchestration.md) (Human-in-the-Loop), [PRD-005](PRD-005-langsmith-observability.md) (LangSmith) |
 
 ---
 
-## Table of Contents
-
-1. [Overview](#1-overview)
-2. [Design Principles](#2-design-principles)
-3. [Application Layout](#3-application-layout)
-4. [Zone 1 — Job Queue Sidebar](#4-zone-1--job-queue-sidebar)
-5. [Zone 2 — Live Workspace](#5-zone-2--live-workspace)
-6. [Zone 3 — Output Panel](#6-zone-3--output-panel)
-7. [Streaming Architecture](#7-streaming-architecture)
-8. [GitHub Write-Back Flow](#8-github-write-back-flow)
-9. [Component Tree](#9-component-tree)
-10. [Tech Stack](#10-tech-stack)
-11. [Non-Functional Requirements](#11-non-functional-requirements)
-
----
-
-## 1. Overview
+## Overview
 
 The AgentOps Dashboard frontend is a **Jira-inspired single-page application** that makes multi-agent AI execution
 visible, interactive, and controllable in real time. The UI is intentionally modeled after issue tracking tools because:
@@ -43,7 +34,7 @@ for user actions (submit job, answer agent question, pause/kill agent).
 
 ---
 
-## 2. Design Principles
+## Design Principles
 
 | Principle                      | Description                                                                                                                                        |
 |--------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -55,39 +46,27 @@ for user actions (submit job, answer agent question, pause/kill agent).
 
 ---
 
-## 3. Application Layout
+## Application Layout
 
 The application is a three-zone layout, always visible simultaneously on desktop (≥1280px wide):
 
-```text
-┌──────────────────────────────────────────────────────────────────┐
-│  HEADER — AgentOps Dashboard            [+ New Job]  [Settings]  │
-├─────────────┬───────────────────────────┬────────────────────────┤
-│             │                           │                        │
-│  ZONE 1     │  ZONE 2                   │  ZONE 3                │
-│  Job Queue  │  Live Workspace           │  Output Panel          │
-│  (sidebar)  │  (center, ~50% width)     │  (~25% width)          │
-│             │                           │                        │
-│  Ticket     │  Agent cards streaming    │  Final report          │
-│  list with  │  in real time             │  GitHub comment draft  │
-│  statuses   │                           │  Ticket draft          │
-│             │  Agent question cards     │  Post to GitHub btn    │
-│             │  (blocking, highlighted)  │                        │
-│             │                           │  [View in LangSmith]   │
-│  ~25% width │                           │                        │
-└─────────────┴───────────────────────────┴────────────────────────┘
-```
+| Zone 1 — Job Queue (25%)   | Zone 2 — Live Workspace (50%)          | Zone 3 — Output Panel (25%)   |
+|----------------------------|----------------------------------------|-------------------------------|
+| Ticket cards with statuses | Agent cards streaming in real time     | Final triage report           |
+| Filter bar                 | Agent question cards (amber, blocking) | GitHub comment draft          |
+| New Job button             | Execution timeline                     | Ticket draft + Post to GitHub |
+|                            |                                        | View in LangSmith link        |
 
 ---
 
-## 4. Zone 1 — Job Queue Sidebar
+## Zone 1 — Job Queue Sidebar
 
-### 4.1 Purpose
+### Purpose
 
 Displays all submitted triage jobs as ticket cards, analogous to Jira's issue list. Clicking a job loads it in Zone 2
 and 3.
 
-### 4.2 Job Card Structure
+### Job Card Structure
 
 Each card shows:
 
@@ -108,17 +87,22 @@ Each card shows:
 | Timestamp           | Relative time since submission                                                                                        |
 | Active agents count | Only shown when RUNNING                                                                                               |
 
-### 4.3 Status Definitions
+### Status Definitions
 
 | Status  | LangGraph State             | Color                  | Description                            |
 |---------|-----------------------------|------------------------|----------------------------------------|
 | QUEUED  | Thread created, not started | Gray                   | Job submitted, waiting for resources   |
 | RUNNING | Graph executing             | Blue (pulse animation) | At least one agent node is active      |
+| PAUSING | Pause flag set, not yet reached supervisor boundary | Blue (static) | Pause requested — waiting for current supervisor iteration to complete |
 | WAITING | `interrupt()` fired         | Amber (pulse)          | Graph paused — user answer required    |
 | DONE    | Graph reached END node      | Green                  | All outputs produced                   |
 | FAILED  | Unhandled exception         | Red                    | Job errored; LangSmith trace available |
 
-### 4.4 Interactions
+> PAUSING is a **client-side-only** status: set optimistically on `POST /jobs/{id}/pause` 200
+> response; cleared when a `graph.paused` SSE event arrives (transitions to WAITING) or a
+> `graph.resumed` event arrives (transitions back to RUNNING, e.g. if pause was cancelled).
+
+### Interactions
 
 - **Click job card** → loads workspace in Zone 2/3
 - **New Job button** → opens a modal: paste GitHub issue URL, optional notes to supervisor, submit
@@ -126,15 +110,15 @@ Each card shows:
 
 ---
 
-## 5. Zone 2 — Live Workspace
+## Zone 2 — Live Workspace
 
-### 5.1 Purpose
+### Purpose
 
 The center panel is the heart of the product. It shows the active job's execution in real time: each agent's activity,
 reasoning, tool calls, and outputs stream in as they happen. This is where the Jira analogy extends: the workspace is
 like a Jira ticket that writes itself, section by section, as agents work.
 
-### 5.2 Workspace Header
+### Workspace Header
 
 ```text
 ┌────────────────────────────────────────────────────────────────┐
@@ -144,7 +128,7 @@ like a Jira ticket that writes itself, section by section, as agents work.
 └────────────────────────────────────────────────────────────────┘
 ```
 
-### 5.3 Agent Cards
+### Agent Cards
 
 Each active or completed agent gets an **Agent Card** in the workspace. Cards appear as agents are spawned and fill in
 as they execute:
@@ -171,7 +155,7 @@ Agent Card states:
 | Done            | Green checkmark; elapsed time shown                              |
 | Error           | Red border; error message; link to LangSmith trace               |
 
-### 5.4 Agent Question Cards
+### Agent Question Cards
 
 When the supervisor decides to ask the user a question, a **question card** appears above all other agents, with amber
 styling to communicate urgency. The entire graph is paused until the user responds.
@@ -196,27 +180,33 @@ styling to communicate urgency. The entire graph is paused until the user respon
 
 Full specification in **[PRD-003](PRD-003-langgraph-orchestration.md)**.
 
-### 5.5 Execution Timeline
+### Execution Timeline
 
 Below the agent cards, a compact horizontal timeline shows the sequence of node executions:
 
-```text
-START → investigator → codebase_search → [⚠ human_input] → web_search → critic → writer → END
-         ✓ 12s           ✓ 18s              ● waiting          ...
+```mermaid
+flowchart LR
+    S([START]) --> INV["investigator\n✓ 12s"]
+    INV --> CS["codebase_search\n✓ 18s"]
+    CS --> HI["⚠ human_input\n● waiting"]
+    HI -.-> WS["web_search\n..."]
+    WS -.-> CRIT["critic\n..."]
+    CRIT -.-> WR["writer\n..."]
+    WR -.-> E([END])
 ```
 
 This is the most direct visualization of the LangGraph graph state — nodes light up as they complete.
 
 ---
 
-## 6. Zone 3 — Output Panel
+## Zone 3 — Output Panel
 
-### 6.1 Purpose
+### Purpose
 
 The right panel accumulates the final structured outputs as the Writer agent produces them. Content is editable before
 any GitHub write-back occurs.
 
-### 6.2 Structured Report Card
+### Structured Report Card
 
 ```text
 TRIAGE REPORT
@@ -239,7 +229,7 @@ Similar Past Issues:
   · #891 — Fixed 2024-11 (same root cause, different endpoint)
 ```
 
-### 6.3 GitHub Comment Draft
+### GitHub Comment Draft
 
 A text area, pre-populated by the Writer agent, editable by the user:
 
@@ -256,7 +246,7 @@ The token expiry check uses local time instead of UTC...
 *Triaged by AgentOps Dashboard · [View full trace](#)*
 ```
 
-### 6.4 Ticket Draft
+### Ticket Draft
 
 A structured form (also pre-filled by Writer agent):
 
@@ -267,24 +257,31 @@ A structured form (also pre-filled by Writer agent):
 | Assignee suggestion | `@backend-team`                                                 |
 | Effort estimate     | `M (2–4 hours)`                                                 |
 
-### 6.5 Action Buttons
+### Action Buttons
 
 - **Post Comment to GitHub** — posts the comment draft to the original issue (requires GitHub auth)
 - **Create GitHub Issue** — creates a new ticket with the ticket draft fields
 - **Copy Report** — copies the structured report as markdown
-- **View in LangSmith** — deep-link to the full job trace in LangSmith (see [PRD-005](PRD-005-langsmith-observability.md))
+- **View in LangSmith** — deep-link to the full job trace in LangSmith (
+  see [PRD-005](PRD-005-langsmith-observability.md))
 
 ---
 
-## 7. Streaming Architecture
+## Streaming Architecture
 
-### 7.1 SSE Event Types
+### SSE Event Types
 
 The FastAPI backend emits the following event types over the SSE stream. Every
 message is emitted with an SSE `id:` field set to a per-job monotonically
 incrementing integer (e.g. `id: 42`). On reconnect the browser sends this value
-as the `Last-Event-ID` header automatically; the backend resumes the stream from
-that sequence number, satisfying the reconnect NFR in §11.
+as the `Last-Event-ID` header automatically. **v1 behavior:** the backend
+reconnects the stream but does not replay missed events — Redis Pub/Sub has no
+message history, so events emitted during the disconnect window are silently
+lost. Gapless resume (e.g., via Redis Streams or a DB event log) is a v2
+concern.
+See [PRD-008 §Token Expiry During an Active Stream](PRD-008-authentication.md#token-expiry-during-an-active-stream) for
+the token-expiry
+reconnect flow.
 
 | Event                 | Payload                                   | Frontend Action                     |
 |-----------------------|-------------------------------------------|-------------------------------------|
@@ -297,18 +294,41 @@ that sequence number, satisfying the reconnect NFR in §11.
 | `graph.interrupt`     | `{ question, context }`                   | Show question card, amber status    |
 | `graph.resumed`       | `{}`                                      | Remove question card, resume status |
 | `graph.node_complete` | `{ node_name }`                           | Update timeline                     |
-| `output.token`        | `{ section, token }`                      | Stream into output panel section    |
-| `job.done`            | `{ report, comment_draft, ticket_draft }` | Finalize output panel, green status |
+| `output.token`        | `{ section, token }`                      | Stream into output panel section              |
+| `output.section_done` | `{ section }`                              | Enable edit/copy controls for that section    |
+| `job.done`            | `{ report, comment_draft, ticket_draft }` | Finalize output panel, green status           |
 | `job.failed`          | `{ error, langsmith_url }`                | Red status, show error card         |
 
-### 7.2 Frontend State Management
+**Concurrent section streaming:** The Writer agent uses `RunnableParallel`, so `output.token`
+events for `report`, `comment_draft`, and `ticket_draft` are interleaved — there is no ordering
+guarantee across sections. The frontend must buffer tokens per section and may not assume a section
+is complete until it receives `output.section_done` for that section. `job.done` is emitted only
+after all three `output.section_done` events have been emitted.
+
+### Concurrent connections (multiple tabs)
+
+Opening the same job in more than one browser tab is safe and fully supported. Each `GET
+/jobs/{job_id}/stream` request creates an **independent Redis Pub/Sub subscriber** on the
+`jobs:{job_id}:events` channel. The ARQ worker publishes each event once; Redis delivers a copy to
+every active subscriber. Consequences:
+
+- **No duplicate processing** — subscribers are read-only; publishing happens once in the worker.
+- **No missed events** — each subscriber receives its own copy from Redis from the moment it subscribes.
+- **No interference** — closing or losing one tab's connection unsubscribes only that connection's
+  `pubsub` object; the worker and all other subscribers are unaffected.
+
+This is specified at the backend level in
+[PRD-003 §Streaming to Frontend](PRD-003-langgraph-orchestration.md#streaming-to-frontend).
+Events emitted *before* a tab connects are not replayed (same v1 limitation as reconnect — see above).
+
+### Frontend State Management
 
 State is managed with **Zustand**. Each job has its own state slice:
 
 ```typescript
 interface JobState {
     id: string
-    status: 'queued' | 'running' | 'waiting' | 'done' | 'failed'
+    status: 'queued' | 'running' | 'pausing' | 'waiting' | 'done' | 'failed'
     agents: AgentCardState[]
     timelineNodes: TimelineNode[]
     pendingQuestion: Question | null
@@ -316,12 +336,13 @@ interface JobState {
     commentDraft: string
     ticketDraft: TicketDraft | null
     langsmithUrl: string | null
+    completedSections: Set<string>   // populated by output.section_done events
 }
 ```
 
 ---
 
-## 8. GitHub Write-Back Flow
+## GitHub Write-Back Flow
 
 Write-back to GitHub is always a **manual, user-initiated action**. The flow:
 
@@ -330,53 +351,71 @@ Write-back to GitHub is always a **manual, user-initiated action**. The flow:
 3. User clicks "Post Comment to GitHub"
 4. Frontend calls `POST /jobs/{id}/post-comment` with final comment text
 5. Backend posts to GitHub API using stored OAuth token
+   (Fernet-encrypted in Redis — see [PRD-008 §GitHub OAuth Token Management](PRD-008-authentication.md#github-oauth-token-management))
 6. UI shows confirmation with link to the GitHub comment
 
 **No agent can post to GitHub autonomously.** This is a hard constraint in v1.0.
 
 ---
 
-## 9. Component Tree
+## Settings Page
 
-```text
-<App>
-  <Header />
-  <AppLayout>
-    <JobQueueSidebar>
-      <NewJobModal />
-      <JobFilterBar />
-      <JobCard /> × N
-    </JobQueueSidebar>
+A minimal Settings page (`/settings`) lets users manage their GitHub connection and session.
 
-    <LiveWorkspace>
-      <WorkspaceHeader>
-        <PauseButton />
-        <KillButton />
-      </WorkspaceHeader>
-      <ExecutionTimeline />
-      <AgentQuestionCard />        ← conditional, amber
-      <AgentCardList>
-        <AgentCard /> × N          ← streams tokens live
-      </AgentCardList>
-    </LiveWorkspace>
+### GitHub Account Panel
 
-    <OutputPanel>
-      <TriageReportCard />
-      <GitHubCommentEditor />
-      <TicketDraftForm />
-      <OutputActions>
-        <PostCommentButton />
-        <CreateTicketButton />
-        <LangSmithDeepLink />
-      </OutputActions>
-    </OutputPanel>
-  </AppLayout>
-</App>
+| Element | Behaviour |
+|---------|-----------|
+| Connected account row | Shows GitHub avatar, `@login`, and connection date |
+| **Disconnect GitHub** button | Calls `DELETE /auth/github-token`; disables write-back buttons until re-auth |
+| Re-connect link | Opens the GitHub OAuth flow (`GET /auth/login`) to restore write-back capability |
+
+After disconnect, the "Post Comment to GitHub" and "Create GitHub Issue" buttons in the Output
+Panel are replaced with a "Reconnect GitHub to enable write-back" notice. No triage or analysis
+functionality is affected — only GitHub write-back is blocked.
+
+### Session Panel
+
+| Element | Behaviour |
+|---------|-----------|
+| **Log out** button | Calls `POST /auth/logout`; invalidates refresh token in Redis, clears cookie, redirects to `/login` |
+
+---
+
+## Component Tree
+
+```mermaid
+graph TD
+    App --> Header
+    App --> AppLayout
+    AppLayout --> JQS["JobQueueSidebar"]
+    AppLayout --> LW["LiveWorkspace"]
+    AppLayout --> OP["OutputPanel"]
+
+    JQS --> NJM["NewJobModal"]
+    JQS --> JFB["JobFilterBar"]
+    JQS --> JC["JobCard × N"]
+
+    LW --> WH["WorkspaceHeader"]
+    LW --> ET["ExecutionTimeline"]
+    LW --> AQC["AgentQuestionCard (conditional)"]
+    LW --> ACL["AgentCardList"]
+    ACL --> AC["AgentCard × N"]
+    WH --> PB["PauseButton"]
+    WH --> KB["KillButton"]
+
+    OP --> TRC["TriageReportCard"]
+    OP --> GCE["GitHubCommentEditor"]
+    OP --> TDF["TicketDraftForm"]
+    OP --> OA["OutputActions"]
+    OA --> PCB["PostCommentButton"]
+    OA --> CTB["CreateTicketButton"]
+    OA --> LSD["LangSmithDeepLink"]
 ```
 
 ---
 
-## 10. Tech Stack
+## Tech Stack
 
 | Concern          | Choice                     | Rationale                                                           |
 |------------------|----------------------------|---------------------------------------------------------------------|
@@ -389,13 +428,13 @@ Write-back to GitHub is always a **manual, user-initiated action**. The flow:
 
 ---
 
-## 11. Non-Functional Requirements
+## Non-Functional Requirements
 
-| Requirement                         | Target                                                                         |
-|-------------------------------------|--------------------------------------------------------------------------------|
-| Time to first streaming token in UI | < 5 seconds from job submission                                                |
-| SSE reconnect on drop               | Automatic, within 2 seconds, resuming from last event                          |
-| Concurrent jobs in UI               | Support up to 10 simultaneously with no performance degradation                |
-| Browser support                     | Chrome 110+, Firefox 115+, Safari 16+                                          |
-| Accessibility                       | WCAG 2.1 AA for all static content; streaming regions use `aria-live="polite"` |
-| Responsive layout                   | Full functionality at 1280px+; graceful degradation at 1024px                  |
+| Requirement                         | Target                                                                                       |
+|-------------------------------------|----------------------------------------------------------------------------------------------|
+| Time to first streaming token in UI | < 5 seconds from job submission                                                              |
+| SSE reconnect on drop               | Automatic, within 2 seconds; v1 may miss events emitted during disconnect window (no replay) |
+| Concurrent jobs in UI               | Support up to 10 simultaneously with no performance degradation                              |
+| Browser support                     | Chrome 110+, Firefox 115+, Safari 16+                                                        |
+| Accessibility                       | WCAG 2.1 AA for all static content; streaming regions use `aria-live="polite"`               |
+| Responsive layout                   | Full functionality at 1280px+; graceful degradation at 1024px                                |

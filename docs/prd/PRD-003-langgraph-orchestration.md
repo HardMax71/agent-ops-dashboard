@@ -1,6 +1,13 @@
-# PRD-003 — LangGraph Orchestration & Human-in-the-Loop
+---
+id: PRD-003
+title: LangGraph Orchestration & Human-in-the-Loop
+status: DRAFT
+domain: backend/orchestration
+depends_on: [PRD-001, PRD-002]
+key_decisions: [bug-triage-state-schema, interrupt-hitl, arq-worker-separation, redis-pubsub-fanout, postgres-checkpointing, human-input-timeout, human-exchanges-reducer, investigator-first, state-schema-versioning]
+---
 
-## AgentOps Dashboard — Agent Runtime Requirements
+# PRD-003 — LangGraph Orchestration & Human-in-the-Loop
 
 | Field        | Value                                             |
 |--------------|---------------------------------------------------|
@@ -13,23 +20,7 @@
 
 ---
 
-## Table of Contents
-
-1. [Overview](#1-overview)
-2. [LangGraph Fundamentals Used](#2-langgraph-fundamentals-used)
-3. [Shared State Schema](#3-shared-state-schema)
-4. [Graph Structure](#4-graph-structure)
-5. [Supervisor Agent Design](#5-supervisor-agent-design)
-6. [Worker Agent Node Specs](#6-worker-agent-node-specs)
-7. [Human-in-the-Loop Implementation](#7-human-in-the-loop-implementation)
-8. [Pause, Redirect, and Kill](#8-pause-redirect-and-kill)
-9. [Checkpointing and Persistence](#9-checkpointing-and-persistence)
-10. [Streaming to Frontend](#10-streaming-to-frontend)
-11. [Error Handling](#11-error-handling)
-
----
-
-## 1. Overview
+## Overview
 
 This document specifies the LangGraph orchestration layer of AgentOps Dashboard — the system's brain. It covers how the
 supervisor coordinates worker agents, how shared state flows through the graph, how human interrupts are handled, and
@@ -41,31 +32,35 @@ LangGraph is used here in its intended role: **low-level orchestration of long-r
 
 ---
 
-## 2. LangGraph Fundamentals Used
+## LangGraph Fundamentals Used
 
 | Concept           | Usage in This Product                                                                                                                     |
 |-------------------|-------------------------------------------------------------------------------------------------------------------------------------------|
-| `StateGraph`      | The main graph class; holds the shared `BugTriageState` across all nodes                                                                  |
+| `StateGraph`      | The main graph class; holds the shared `BugTriageState` (Pydantic `BaseModel`) across all nodes                                           |
 | Nodes             | Each agent and decision point is a node: `supervisor`, `investigator`, `codebase_search`, `web_search`, `critic`, `human_input`, `writer` |
 | Conditional edges | Supervisor's output determines which worker runs next via `add_conditional_edges`                                                         |
 | `interrupt()`     | Pauses graph execution mid-node to await human input; resumes via `Command(resume=answer)`                                                |
 | Checkpointer      | `SqliteSaver` (dev) / `PostgresSaver` (prod) — persists full graph state so jobs survive restarts                                         |
 | Thread ID         | Each triage job maps to a LangGraph thread; jobs are fully isolated                                                                       |
-| Streaming         | `graph.astream_events()` emits fine-grained events consumed by FastAPI SSE endpoint                                                       |
+| Streaming         | `graph.astream_events()` runs inside the ARQ worker; the API server is a pure Redis Pub/Sub consumer                                      |
+| ARQ               | Async Redis Queue — distributed job execution, cross-worker `Job.abort()`, built-in status tracking (QUEUED / IN_PROGRESS / COMPLETE / FAILED) |
+| Redis Pub/Sub     | Event fanout channel (`jobs:{id}:events`) — worker publishes events, SSE endpoint subscribes; supports multiple simultaneous subscribers  |
 
 ---
 
-## 3. Shared State Schema
+## Shared State Schema
 
-The `BugTriageState` TypedDict is the central data structure. Every node reads from and writes to this state. It is
+The `BugTriageState` Pydantic model is the central data structure. Every node reads from and writes to this state. It is
 persisted at every checkpoint.
 
 ```python
-from typing import TypedDict, Optional, Annotated
-from langgraph.graph.message import add_messages
+from __future__ import annotations
+
+from typing import Annotated
+from pydantic import BaseModel, Field, model_validator
 
 
-class AgentFinding(TypedDict):
+class AgentFinding(BaseModel):
     agent_name: str
     summary: str
     details: str
@@ -73,13 +68,13 @@ class AgentFinding(TypedDict):
     relevant_files: list[str]
 
 
-class HumanExchange(TypedDict):
+class HumanExchange(BaseModel):
     question: str
-    context: str  # why the agent is asking
-    answer: Optional[str]  # None until user responds
+    context: str
+    answer: str | None = None
 
 
-class TriageReport(TypedDict):
+class TriageReport(BaseModel):
     severity: str  # LOW / MEDIUM / HIGH / CRITICAL
     category: str
     root_cause: str
@@ -88,51 +83,115 @@ class TriageReport(TypedDict):
     confidence: float
 
 
-class BugTriageState(TypedDict):
-    # Input
+_CURRENT_SCHEMA_VERSION = 1
+
+
+class BugTriageState(BaseModel):
+    """
+    Central graph state. Persisted by LangGraph's checkpointer after every node execution.
+
+    Schema evolution rules:
+    - Adding a field: add it with a Field(default=...) default. Pydantic fills missing keys
+      from old checkpoints automatically at deserialization — no migration code required.
+    - Renaming or changing the type of a field: add a branch inside migrate_from_checkpoint()
+      and bump _CURRENT_SCHEMA_VERSION.
+    """
+
+    # --- Issue metadata ---
     issue_url: str
     issue_title: str
     issue_body: str
     repository: str
 
-    # Orchestration control
-    current_node: str
-    next_node: Optional[str]
-    supervisor_reasoning: str  # why supervisor chose next agent
-    iterations: int  # guard against infinite loops
-    max_iterations: int  # default: 12
-    paused: bool  # set by POST /jobs/{id}/pause; supervisor fires interrupt() when True
+    # --- Routing ---
+    current_node: str = Field(default="")
+    next_node: str | None = Field(default=None)
+    supervisor_reasoning: str = Field(default="")
+    iterations: int = Field(default=0)   # total node executions; not reset on resume
+    max_iterations: int = Field(default=12)
+    paused: bool = Field(default=False)
+    redirect_instructions: Annotated[list[str], lambda a, b: a + b] = Field(default_factory=list)
 
-    # Agent findings (accumulated)
-    findings: Annotated[list[AgentFinding], lambda a, b: a + b]  # reducer: append
+    # --- Agent outputs ---
+    findings: Annotated[list[AgentFinding], lambda a, b: a + b] = Field(default_factory=list)
 
-    # Human-in-the-loop
-    human_exchanges: list[HumanExchange]  # full Q&A history
-    awaiting_human: bool
+    # --- Human-in-the-loop ---
+    human_exchanges: Annotated[list[HumanExchange], lambda a, b: a + b] = Field(default_factory=list)
+    pending_exchange: HumanExchange | None = Field(default=None)
+    awaiting_human: bool = Field(default=False)
 
-    # Codebase context
-    codebase_chunks: list[str]  # retrieved from vector index
-    similar_past_issues: list[str]  # from issue search
+    # --- Collected context ---
+    codebase_chunks: list[str] = Field(default_factory=list)
+    similar_past_issues: list[str] = Field(default_factory=list)
+    web_results: list[str] = Field(default_factory=list)
 
-    # Web search context
-    web_results: list[str]
+    # --- Outputs ---
+    report: TriageReport | None = Field(default=None)
+    github_comment_draft: str | None = Field(default=None)
+    ticket_draft: dict[str, object] | None = Field(default=None)
 
-    # Final outputs
-    report: Optional[TriageReport]
-    github_comment_draft: Optional[str]
-    ticket_draft: Optional[dict]
-
-    # Metadata
+    # --- Job metadata ---
     job_id: str
-    langsmith_run_id: Optional[str]
-    status: str  # matches frontend JobStatus enum
+    owner_id: str
+    langsmith_run_id: str | None = Field(default=None)
+    status: str = Field(default="queued")
+
+    # --- Schema versioning ---
+    schema_version: int = Field(default=0)
+    # 0 = pre-versioning checkpoint; always written as CURRENT_SCHEMA_VERSION by
+    # migrate_from_checkpoint() on the first supervisor execution after a schema bump.
+
+    @model_validator(mode="before")
+    @classmethod
+    def migrate_from_checkpoint(cls, data: object) -> object:
+        """
+        Runs before Pydantic field validation on every deserialization.
+        For additive schema changes this method does nothing — Pydantic fills Field
+        defaults automatically. Add a branch here only when a field is renamed or its
+        type changes in a breaking way, then bump _CURRENT_SCHEMA_VERSION.
+        """
+        if not isinstance(data, dict):
+            return data
+
+        # Example (not yet needed): if the field "web_results" was renamed from
+        # "search_results" in schema v2, the branch would be:
+        #
+        #   if data.get("schema_version", 0) < 2 and "search_results" in data:
+        #       data["web_results"] = data.pop("search_results")
+        #
+        data["schema_version"] = _CURRENT_SCHEMA_VERSION
+        return data
+
+    model_config = {"arbitrary_types_allowed": True}
 ```
+
+### Schema Versioning
+
+`BugTriageState` uses Pydantic `BaseModel` rather than `TypedDict` specifically to leverage
+Pydantic's deserialization lifecycle for checkpoint compatibility.
+
+**Additive changes (adding a new field):** Supply a `Field(default=...)` or
+`Field(default_factory=...)`. LangGraph's checkpointer passes the stored JSON dict to Pydantic,
+which fills any missing key with its declared default. No migration code is required.
+
+**Non-additive changes (renaming a field, incompatible type change):** Add a conditional branch
+inside `migrate_from_checkpoint()` guarded by `data.get("schema_version", 0) < N`, then bump
+`CURRENT_SCHEMA_VERSION`. The validator is a classmethod on `BugTriageState` — no module-level
+functions or global registries.
+
+**`schema_version`** starts at `0` in all pre-versioning checkpoints (the field is absent, so
+Pydantic uses `Field(default=0)`). `migrate_from_checkpoint()` always writes
+`CURRENT_SCHEMA_VERSION` into the dict before field validation, so after the first supervisor
+execution following a schema bump the checkpoint is updated automatically.
+
+**`_CURRENT_SCHEMA_VERSION`** is a module-level constant defined immediately above `BugTriageState`
+so it is always co-located with the class it describes.
 
 ---
 
-## 4. Graph Structure
+## Graph Structure
 
-### 4.1 Node List
+### Node List
 
 | Node              | Type           | Description                                              |
 |-------------------|----------------|----------------------------------------------------------|
@@ -146,7 +205,7 @@ class BugTriageState(TypedDict):
 | `writer`          | Tool node      | Calls LangServe `/agents/writer`; produces final outputs |
 | `END`             | Built-in       | Exit point                                               |
 
-### 4.2 Graph Definition (Pseudocode)
+### Graph Definition (Pseudocode)
 
 ```python
 from langgraph.graph import StateGraph, START, END
@@ -154,7 +213,6 @@ from langgraph.checkpoint.sqlite import SqliteSaver
 
 builder = StateGraph(BugTriageState)
 
-# Add all nodes
 builder.add_node("supervisor", supervisor_node)
 builder.add_node("investigator", investigator_node)
 builder.add_node("codebase_search", codebase_search_node)
@@ -163,13 +221,11 @@ builder.add_node("critic", critic_node)
 builder.add_node("human_input", human_input_node)
 builder.add_node("writer", writer_node)
 
-# Entry: always start at supervisor
 builder.add_edge(START, "supervisor")
 
-# Supervisor routes conditionally
 builder.add_conditional_edges(
     "supervisor",
-    route_from_supervisor,  # returns the next node name
+    route_from_supervisor,
     {
         "investigator": "investigator",
         "codebase_search": "codebase_search",
@@ -181,39 +237,52 @@ builder.add_conditional_edges(
     }
 )
 
-# All worker agents return to supervisor after completing
 for node in ["investigator", "codebase_search", "web_search", "critic"]:
     builder.add_edge(node, "supervisor")
 
-# Human input returns to supervisor with enriched state
 builder.add_edge("human_input", "supervisor")
-
-# Writer goes straight to END (final node)
 builder.add_edge("writer", END)
 
-# Compile with checkpointer
 checkpointer = SqliteSaver.from_conn_string("jobs.db")
 graph = builder.compile(checkpointer=checkpointer)
 ```
 
-### 4.3 Routing Logic
+### Routing Logic
 
 ```python
 def route_from_supervisor(state: BugTriageState) -> str:
     """
     Supervisor LLM outputs structured JSON with 'next' field.
     This function extracts it and returns the node name.
-    Guards: max_iterations check, required-findings check.
+    Guards: max_iterations check, investigator-first enforcement.
     """
     if state["iterations"] >= state["max_iterations"]:
         return "writer"  # force completion
 
-    return state["next_node"]  # set by supervisor node
+    # Enforce design invariant: investigator must always run first.
+    # The supervisor prompt instructs this, but LLM compliance is not guaranteed.
+    # state["iterations"] == 0 means no worker node has executed yet.
+    if state["iterations"] == 0 and state["next_node"] != "investigator":
+        return "investigator"
+
+    return state["next_node"]
 ```
+
+`iterations` counts total worker-node executions across the full job lifetime, including any
+cycles that occur after a human-interrupt resume. The value `max_iterations` is chosen to
+accommodate a typical flow (investigation → optional human interrupt → continued investigation
+→ write) without premature termination. It is **not** reset on resume.
+
+**Investigator-first guard:** When `iterations == 0`, no worker node has yet executed. The
+supervisor prompt instructs the LLM to always call `investigator` first, but prompt compliance
+is not guaranteed — edge-case inputs or model drift could cause the LLM to skip straight to
+`codebase_search` or `writer`. The guard in `route_from_supervisor` overrides any such decision
+deterministically. Once `investigator` has run, `iterations` becomes 1 and the guard no longer
+fires; subsequent routing is left entirely to the supervisor.
 
 ---
 
-## 5. Supervisor Agent Design
+## Supervisor Agent Design
 
 The supervisor is the most critical node. It reads the full current state and decides:
 
@@ -221,7 +290,7 @@ The supervisor is the most critical node. It reads the full current state and de
 2. Whether it has enough information to write the final report
 3. Whether it needs to ask the user a clarifying question
 
-### 5.1 Supervisor System Prompt (Abbreviated)
+### Supervisor System Prompt (Abbreviated)
 
 ```
 You are the supervisor of a bug triage team. You coordinate specialized agents
@@ -249,7 +318,7 @@ Human input rules:
 Output JSON with fields: next_node, reasoning, question (if asking human), confidence.
 ```
 
-### 5.2 Supervisor Output Schema
+### Supervisor Output Schema
 
 ```python
 class SupervisorDecision(BaseModel):
@@ -257,15 +326,20 @@ class SupervisorDecision(BaseModel):
         "investigator", "codebase_search", "web_search",
         "critic", "human_input", "writer", "end"
     ]
-    reasoning: str  # shown in UI as supervisor's thinking
-    question: Optional[str]  # only if next_node == "human_input"
-    question_context: Optional[str]
-    confidence: float  # 0.0–1.0; used for quality metrics
+    reasoning: str
+    question: str | None  # only populated when next_node == "human_input"
+    question_context: str | None
+    confidence: float  # 0.0–1.0
 ```
+
+> When `next_node == "human_input"`, the supervisor node returns
+> `{"pending_exchange": HumanExchange(question=..., context=...),
+> "awaiting_human": True}`. It does **not** append to `human_exchanges` directly — that
+> field is written only by `human_input_node` via the append reducer.
 
 ---
 
-## 6. Worker Agent Node Specs
+## Worker Agent Node Specs
 
 Each worker node follows the same pattern: call the corresponding LangServe endpoint, get back an `AgentFinding`, append
 it to state, return updated state to supervisor.
@@ -300,9 +374,9 @@ async def investigator_node(state: BugTriageState) -> dict:
 
 ---
 
-## 7. Human-in-the-Loop Implementation
+## Human-in-the-Loop Implementation
 
-### 7.1 Triggering an Interrupt
+### Triggering an Interrupt
 
 When the supervisor routes to `human_input`, the node fires `interrupt()`:
 
@@ -311,98 +385,268 @@ from langgraph.types import interrupt
 
 
 def human_input_node(state: BugTriageState) -> dict:
-    # Get the question set by supervisor in prior step
-    last_exchange = state["human_exchanges"][-1]
+    exchange = state["pending_exchange"]
 
-    # This pauses the graph and surfaces the question to the user
     answer = interrupt({
-        "question": last_exchange["question"],
-        "context": last_exchange["context"],
+        "question": exchange["question"],
+        "context": exchange["context"],
     })
 
-    # When resumed, `answer` contains the user's response
-    updated_exchanges = state["human_exchanges"].copy()
-    updated_exchanges[-1]["answer"] = answer
-
     return {
-        "human_exchanges": updated_exchanges,
+        "human_exchanges": [exchange.model_copy(update={"answer": answer})],  # reducer appends
+        "pending_exchange": None,
         "awaiting_human": False,
     }
 ```
 
-### 7.2 Resuming from FastAPI
+> **State design note:** `human_exchanges` uses an append reducer
+> (`Annotated[list[HumanExchange], lambda a, b: a + b]`), so nodes may safely return
+> `[new_item]` without reading or copying the existing list. `pending_exchange` uses plain
+> overwrite semantics and holds at most one unanswered question at a time. The supervisor
+> writes to `pending_exchange`; `human_input_node` reads it, fills the answer, appends the
+> completed exchange to `human_exchanges`, and clears `pending_exchange` — no list mutation
+> anywhere.
 
-When the user submits an answer via `POST /jobs/{id}/answer`:
+### Resuming from FastAPI
+
+When the user submits an answer via `POST /jobs/{id}/answer`, the endpoint cancels the pending timeout ARQ job and
+resumes the graph. Full implementation is in the [Interrupt Timeout Mechanism](#interrupt-timeout-mechanism) section.
+
+`Command(resume=answer)` does not restart the graph from the beginning. LangGraph restores the
+full `BugTriageState` from the checkpoint saved at the interrupt and continues execution from
+the `human_input` node forward. The `iterations` counter therefore reflects work done both
+before and after the interrupt.
+
+Before resuming, the endpoint reads the checkpointed state via `graph.aget_state()` and
+checks `awaiting_human`. If the job is not currently paused at a `human_input` interrupt
+(e.g., the job is still running, has already completed, or the timeout already fired and
+auto-resumed), the endpoint returns **HTTP 409 Conflict** rather than calling
+`Command(resume=...)` on a non-interrupted thread.
+
+### Interrupt Timeout Mechanism
+
+`interrupt()` blocks the graph indefinitely — LangGraph has no built-in timeout. The 30-minute timeout is implemented
+by enqueuing a deferred ARQ job (`expire_human_input`) with a 30-minute delay at the moment the interrupt fires. If the
+user has not answered by then, the job resumes the graph with a best-effort signal via `graph.ainvoke(Command(resume=...))`.
+If the user answers first, the answer endpoint cancels the deferred job via `Job.abort()` before resuming the graph.
+
+```python
+# worker.py
+
+TIMEOUT_ANSWER = "[no answer provided — proceeding with best-effort]"
+HUMAN_INPUT_TIMEOUT_SECONDS = 1800  # 30 minutes
+
+async def expire_human_input(ctx: dict, job_id: str):
+    """
+    Scheduled ARQ job: fires 30 min after a human_input interrupt if unanswered.
+    Resumes the graph with a best-effort signal so the supervisor can proceed.
+    """
+    redis: Redis = ctx["redis"]
+
+    job = Job(job_id, redis)
+    info = await job.info()
+    if info is not None and info.status in (JobStatus.complete, JobStatus.not_found):
+        return
+
+    config = {"configurable": {"thread_id": job_id}}
+    await graph.ainvoke(Command(resume=TIMEOUT_ANSWER), config=config)
+
+    channel = f"jobs:{job_id}:events"
+    await redis.publish(channel, json.dumps({
+        "type": "human_input.timeout",
+        "message": "No answer received after 30 minutes. Proceeding with best-effort.",
+    }))
+```
+
+The timeout job is enqueued at the moment the ARQ worker detects the graph has paused at a `human_input` node (i.e.,
+`astream_events` yields an `on_chain_end` event whose metadata indicates an interrupt):
+
+```python
+# worker.py — inside run_triage(), after the astream_events loop
+async def run_triage(ctx: dict, job_id: str, initial_state: dict):
+    redis: Redis = ctx["redis"]
+    config = {"configurable": {"thread_id": job_id}}
+    channel = f"jobs:{job_id}:events"
+
+    async for event in graph.astream_events(initial_state, config=config, version="v2"):
+        sse_event = transform_langgraph_event(event)
+        if sse_event:
+            await redis.publish(channel, json.dumps(sse_event))
+
+        if _is_human_input_interrupt(event):
+            await arq_queue.enqueue_job(
+                "expire_human_input",
+                job_id,
+                _job_id=f"timeout:{job_id}",
+                _defer_by=timedelta(seconds=HUMAN_INPUT_TIMEOUT_SECONDS),
+            )
+
+    await redis.publish(channel, json.dumps({"type": "job.done"}))
+```
+
+**Answer endpoint cancels the timeout** by aborting the scheduled ARQ job before resuming the graph:
 
 ```python
 @app.post("/jobs/{job_id}/answer")
-async def submit_answer(job_id: str, body: AnswerRequest):
+async def submit_answer(job_id: str, body: AnswerRequest, redis: Redis = Depends(get_redis)):
     config = {"configurable": {"thread_id": job_id}}
 
-    # Resume the graph with the user's answer
-    await graph.ainvoke(
-        Command(resume=body.answer),
-        config=config,
-    )
+    snapshot = await graph.aget_state(config)
+    if not snapshot.values.get("awaiting_human"):
+        raise HTTPException(status_code=409, detail="Job is not awaiting human input")
+
+    timeout_job_id = f"timeout:{job_id}"
+    timeout_job = Job(timeout_job_id, redis)
+    await timeout_job.abort(timeout=2)  # no-op if already fired or not found
+
+    await graph.ainvoke(Command(resume=body.answer), config=config)
 ```
 
-### 7.3 Question Constraints
+### Question Constraints
 
-| Rule                  | Value                                                  | Rationale                                               |
-|-----------------------|--------------------------------------------------------|---------------------------------------------------------|
-| Max questions per job | 2                                                      | Prevent over-reliance on user; agents should be capable |
-| Timeout (no answer)   | 30 minutes                                             | After timeout, supervisor proceeds with best-effort     |
-| Question format       | Single question + 2–3 concrete options when applicable | Reduces cognitive load                                  |
-| Blocker scope         | Entire graph pauses, not just one agent                | Ensures answer is incorporated before any further work  |
+| Rule                  | Value                                                         | Rationale                                               |
+|-----------------------|---------------------------------------------------------------|---------------------------------------------------------|
+| Max questions per job | 2                                                             | Prevent over-reliance on user; agents should be capable |
+| Timeout (no answer)   | 30 minutes — enforced via deferred ARQ job (`expire_human_input`) | Prevents indefinite graph hang; graph resumes with best-effort signal |
+| Question format       | Single question + 2–3 concrete options when applicable        | Reduces cognitive load                                  |
+| Blocker scope         | Entire graph pauses, not just one agent                       | Ensures answer is incorporated before any further work  |
 
 ---
 
-## 8. Pause, Redirect, and Kill
+## Pause, Redirect, and Kill
 
-### 8.1 Pause
+### Pause
 
 Triggered by user clicking "Pause" in the UI. Sends `POST /jobs/{id}/pause`.
 
-Implementation: Sets a flag in the checkpointed state. The supervisor checks this flag at the start of each iteration
-and fires `interrupt()` with a "manual pause" signal if set. User can resume by clicking "Resume".
+Implementation: Sets `paused: True` in the checkpointed state. The supervisor checks this flag **at
+the start of each iteration** and fires `interrupt()` with a `"manual_pause"` signal if set. User
+can resume by clicking "Resume".
 
-### 8.2 Redirect
+**"At-next-iteration" behaviour:** The pause takes effect at the next supervisor node boundary, not
+immediately. If the supervisor is already mid-LLM-call (e.g. deciding which worker to dispatch) when
+the API call arrives, execution continues until that LLM call completes and the supervisor node runs
+again. In practice this means up to one additional worker agent may be spawned before the graph
+actually pauses.
 
-Triggered after a pause. User can type a new instruction into a text field in the UI: e.g., "Focus only on the database
-layer — ignore the auth middleware."
+This is by design — LangGraph does not expose a mid-node cancellation hook for the flag-based
+pattern. The alternative (a hard `Job.abort()` followed by re-enqueue) is lossy and not used here.
 
-Implementation: Resumes the graph via `Command(resume={"type": "redirect", "instruction": "..."})`. The supervisor node
-treats redirect instructions as high-priority context prepended to its system prompt for all subsequent steps.
+**UI implication:** The frontend must show a **"Pause requested…"** intermediate status from the
+moment `POST /jobs/{id}/pause` returns 200 until a `graph.paused` SSE event is received. See
+[PRD-002 §Status Definitions](PRD-002-frontend-ux.md#status-definitions).
 
-### 8.3 Kill
+### Redirect
 
-Sends `DELETE /jobs/{id}`. Immediately terminates the LangGraph thread. Final state is checkpointed with
-`status: "killed"`. Any partial outputs already in state are preserved and shown in the output panel.
+Triggered after a pause. User can type a new instruction into a text field in the UI: e.g., "Focus
+only on the database layer — ignore the auth middleware."
 
-`running_tasks` is a module-level `dict[str, asyncio.Task]` populated by the
-`POST /jobs` handler when it spawns each graph execution as a background
-`asyncio.Task`. The kill handler looks up the task by job ID, persists the
-killed status via `graph.aupdate_state()` (the async counterpart to
-`update_state`), then cancels the task.
+Implementation: Resumes the graph via `Command(resume={"type": "redirect", "instruction": "..."})`.
+When the supervisor node receives this command, it:
+
+1. Reads the `instruction` string from the `Command` payload (the return value of `interrupt()`).
+2. **Appends it to `redirect_instructions`** in its returned state dict, so the instruction is
+   written into the LangGraph checkpoint immediately.
+3. Prepends all accumulated `redirect_instructions` (not just the latest) to its system prompt for
+   the current and all subsequent supervisor iterations.
+
+**Persistence guarantee:** Because the instruction is stored in `BugTriageState.redirect_instructions`
+before any further LLM work is done, it survives server restarts. If the worker process crashes and
+the job is resumed from checkpoint, the full list of redirect instructions is restored and the
+supervisor continues to honour them.
+
+**Multiple redirects:** Each redirect appends to the list. The supervisor concatenates all entries
+in order, so earlier redirects remain in effect unless a later one explicitly overrides them.
+
+### Kill
+
+Sends `DELETE /jobs/{id}`. Immediately terminates the LangGraph thread via ARQ's cross-process abort mechanism.
+Final state is checkpointed with `status: "killed"`. Any partial outputs already in state are preserved and shown in
+the output panel.
+
+**Architecture:** The API server never runs the graph. Jobs are enqueued to ARQ workers via Redis. `Job.abort()` sends
+an abort signal through Redis; the worker process holding that job cancels its asyncio task — this works across any
+number of workers and processes by design. No module-level `running_tasks` dict is needed.
+
+```mermaid
+flowchart LR
+    subgraph API["FastAPI API server (REST + SSE)"]
+        REST["REST endpoints\n/jobs/*"]
+        SSE["SSE subscriber\njobs:{id}:events"]
+    end
+
+    subgraph WORKER["ARQ Worker(s)"]
+        GRAPH["graph.ainvoke()"]
+        PUB["publishes events\nto Redis channel"]
+    end
+
+    REDIS[("Redis\nARQ queue + Pub/Sub\n+ job status")]
+    PG[("PostgreSQL\nLangGraph state")]
+
+    API -->|"enqueue_job()"| WORKER
+    WORKER -->|"Redis Pub/Sub events"| API
+    API -->|"Job.abort()"| REDIS
+    REDIS -->|"job queue"| WORKER
+    WORKER -->|"PostgresSaver"| PG
+```
+
+**ARQ worker function** — runs on a worker process, not the API server:
+
+```python
+# worker.py
+async def run_triage(ctx: dict, job_id: str, initial_state: dict):
+    redis: Redis = ctx["redis"]
+    config = {"configurable": {"thread_id": job_id}}
+    channel = f"jobs:{job_id}:events"
+
+    async for event in graph.astream_events(initial_state, config=config, version="v2"):
+        sse_event = transform_langgraph_event(event)
+        if sse_event:
+            await redis.publish(channel, json.dumps(sse_event))
+
+    await redis.publish(channel, json.dumps({"type": "job.done"}))
+
+
+class WorkerSettings:
+    functions = [run_triage]
+    allow_abort_jobs = True   # enables Job.abort() cross-worker
+    max_jobs = 10             # concurrent job cap per worker
+    retry_jobs = False        # ARQ retries disabled; at-most-once deduplication is enforced
+                              # at the API layer via a Redis idempotency key (see PRD-006)
+```
+
+**Kill endpoint** — no dict lookup, no task tracking:
 
 ```python
 @app.delete("/jobs/{job_id}")
-async def kill_job(job_id: str):
-    task = running_tasks.get(job_id)
-    if task is None:
-        raise HTTPException(status_code=404, detail="Job not found or already completed")
+async def kill_job(job_id: str, redis: Redis = Depends(get_redis)):
+    job = Job(job_id, redis)
+    info = await job.info()
+    if info is None:
+        raise HTTPException(status_code=404, detail="Job not found")
+
+    aborted = await job.abort(timeout=5)
+    if not aborted:
+        # run_triage exits normally when interrupt() suspends the graph, so ARQ
+        # marks the job complete while the LangGraph thread sits checkpointed.
+        # The pending timeout job is present exactly in that window.
+        timeout_job = Job(f"timeout:{job_id}", redis)
+        timeout_info = await timeout_job.info()
+        if timeout_info is None or timeout_info.status in (JobStatus.complete, JobStatus.not_found):
+            raise HTTPException(status_code=409, detail="Job could not be aborted (may already be complete)")
+        await timeout_job.abort(timeout=2)  # no-op if already fired
+
     config = {"configurable": {"thread_id": job_id}}
-    # Update state to killed before cancelling
     await graph.aupdate_state(config, {"status": "killed"})
-    # Cancel the background task running the graph
-    task.cancel()
+
+    return {"job_id": job_id, "status": "killed"}
 ```
 
 ---
 
-## 9. Checkpointing and Persistence
+## Checkpointing and Persistence
 
-### 9.1 Why Checkpointing Matters
+### Why Checkpointing Matters
 
 LangGraph's checkpointer saves the full `BugTriageState` to a database after every node execution. This means:
 
@@ -411,44 +655,83 @@ LangGraph's checkpointer saves the full `BugTriageState` to a database after eve
 - The full execution history is available for debugging
 - Paused jobs (waiting for human input) persist indefinitely until answered
 
-### 9.2 Configuration
+### Configuration
 
 | Environment | Checkpointer    | Connection             |
 |-------------|-----------------|------------------------|
 | Development | `SqliteSaver`   | `jobs.db` (local file) |
 | Production  | `PostgresSaver` | `DATABASE_URL` env var |
 
-### 9.3 Thread IDs
+### Thread IDs
 
 Each job is identified by a UUID that maps 1:1 to a LangGraph thread ID. This UUID is generated at `POST /jobs` and is
 the same ID used in SSE stream URLs, answer endpoints, and LangSmith trace grouping.
 
 ---
 
-## 10. Streaming to Frontend
+## Streaming to Frontend
 
-LangGraph's `astream_events()` emits fine-grained events. The FastAPI SSE handler subscribes to these and transforms
-them into the frontend event types defined in [PRD-002](PRD-002-frontend-ux.md).
+**Separation of concerns:** `graph.astream_events()` runs inside the ARQ worker (see [Kill](#kill)). The worker publishes each
+transformed event to a Redis Pub/Sub channel (`jobs:{job_id}:events`). The FastAPI SSE endpoint is a pure subscriber
+— it never executes graph logic.
+
+This means multiple browser tabs can subscribe to the same job stream independently (each gets a separate Redis
+subscriber), and a client disconnect drops only that subscriber — the running job in the ARQ worker is unaffected.
+
+**Disconnect handling:** Starlette's `StreamingResponse` runs the generator inside an anyio cancel scope. When the
+client disconnects, Starlette cancels the scope, which raises `asyncio.CancelledError` at whichever `await` the
+generator is blocked on inside `pubsub.listen()`. The `finally` block fires unconditionally and cleans up the
+subscriber. No polling, no `request.is_disconnected()` checks, no extra tasks.
 
 ```python
-@app.get("/jobs/{job_id}/stream")
-async def stream_job(job_id: str):
+@router.get("/{job_id}/stream")
+async def stream_job(
+    job_id: Annotated[str, Depends(get_job_and_verify_owner)],
+    redis: Annotated[Redis, Depends(get_redis)],
+) -> StreamingResponse:
+    channel = f"jobs:{job_id}:events"
+
     async def event_generator():
-        config = {"configurable": {"thread_id": job_id}}
-        async for event in graph.astream_events(None, config=config, version="v2"):
-            sse_event = transform_langgraph_event(event)
-            if sse_event:
-                yield f"data: {json.dumps(sse_event)}\n\n"
+        pubsub = redis.pubsub()
+        await pubsub.subscribe(channel)
+        seq = 0
+        try:
+            async for message in pubsub.listen():
+                if message["type"] != "message":
+                    continue
+                yield f"id: {seq}\ndata: {message['data']}\n\n"
+                seq += 1
+                if json.loads(message["data"]).get("type") == "job.done":
+                    break
+        finally:
+            await pubsub.unsubscribe(channel)
+            await pubsub.close()
 
     return StreamingResponse(event_generator(), media_type="text/event-stream")
 ```
 
-The `transform_langgraph_event()` function maps LangGraph's internal event types (e.g., `on_chat_model_stream`,
-`on_tool_start`, `on_chain_end`) to the frontend event schema in [PRD-002](PRD-002-frontend-ux.md).
+The `transform_langgraph_event()` function (called in the ARQ worker) maps LangGraph's internal event types (e.g.,
+`on_chat_model_stream`, `on_tool_start`, `on_chain_end`) to the frontend event schema in
+[PRD-002](PRD-002-frontend-ux.md). When a Writer `RunnableParallel` branch completes,
+the corresponding `on_chain_end` event is translated to `output.section_done { section }` so the
+frontend can enable per-section controls without waiting for `job.done`.
+
+**FastAPI lifespan** — no graph tasks to drain on shutdown; only the Redis pool needs cleanup:
+
+```python
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    app.state.redis = await create_redis_pool(RedisSettings())
+    app.state.arq_queue = ArqRedis(app.state.redis)
+    yield
+    await app.state.redis.close()
+
+app = FastAPI(lifespan=lifespan)
+```
 
 ---
 
-## 11. Error Handling
+## Error Handling
 
 | Error Scenario                          | Behavior                                                                                                                      |
 |-----------------------------------------|-------------------------------------------------------------------------------------------------------------------------------|
@@ -458,3 +741,4 @@ The `transform_langgraph_event()` function maps LangGraph's internal event types
 | `max_iterations` reached                | Graph routes directly to `writer` with whatever findings have been accumulated                                                |
 | Unhandled exception in any node         | Job status set to FAILED; full traceback captured in LangSmith; error event sent to frontend                                  |
 | Checkpointer DB unavailable             | Job continues in-memory; warning logged; user notified that job will not survive restart                                      |
+| `POST /jobs/{id}/answer` called while job is not awaiting input | Returns HTTP 409 Conflict; `awaiting_human` flag checked via `graph.aget_state()` before resuming |
