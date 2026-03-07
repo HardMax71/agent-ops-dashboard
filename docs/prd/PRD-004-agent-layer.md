@@ -8,8 +8,8 @@
 | Version      | 1.0                                              |
 | Status       | DRAFT                                            |
 | Date         | March 2026                                       |
-| Parent Doc   | PRD-001                                          |
-| Related Docs | PRD-003 (Orchestration), PRD-005 (Observability) |
+| Parent Doc   | [PRD-001](PRD-001-master-overview.md)            |
+| Related Docs | [PRD-003](PRD-003-langgraph-orchestration.md) (Orchestration), [PRD-005](PRD-005-langsmith-observability.md) (Observability) |
 
 ---
 
@@ -34,7 +34,7 @@
 ## 1. Overview
 
 This document covers the **individual agent layer** — the internals of each of the five specialized worker agents. These
-agents are the leaves of the system: the LangGraph supervisor (PRD-003) calls them, but doesn't know or care what's
+agents are the leaves of the system: the LangGraph supervisor ([PRD-003](PRD-003-langgraph-orchestration.md)) calls them, but doesn't know or care what's
 inside.
 
 Each agent follows the same lifecycle:

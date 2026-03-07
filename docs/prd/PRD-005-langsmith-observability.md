@@ -8,8 +8,8 @@
 | Version      | 1.0                                            |
 | Status       | DRAFT                                          |
 | Date         | March 2026                                     |
-| Parent Doc   | PRD-001                                        |
-| Related Docs | PRD-003 (Orchestration), PRD-004 (Agent Layer) |
+| Parent Doc   | [PRD-001](PRD-001-master-overview.md)          |
+| Related Docs | [PRD-003](PRD-003-langgraph-orchestration.md) (Orchestration), [PRD-004](PRD-004-agent-layer.md) (Agent Layer) |
 
 ---
 
@@ -203,7 +203,7 @@ https://smith.langchain.com/o/{org_id}/projects/p/{project_id}/r/{run_id}
 ### 6.1 "View in LangSmith" Button
 
 Every completed or failed job in the AgentOps Dashboard UI shows a **"View in LangSmith"** button in the Output Panel (
-PRD-002, Zone 3). This button opens the full job trace in a new tab.
+[PRD-002](PRD-002-frontend-ux.md), Zone 3). This button opens the full job trace in a new tab.
 
 The trace shows:
 

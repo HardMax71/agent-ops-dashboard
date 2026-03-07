@@ -8,8 +8,8 @@
 | Version      | 1.0                                              |
 | Status       | DRAFT                                            |
 | Date         | March 2026                                       |
-| Parent Doc   | PRD-001                                          |
-| Related Docs | PRD-003 (Human-in-the-Loop), PRD-005 (LangSmith) |
+| Parent Doc   | [PRD-001](PRD-001-master-overview.md)            |
+| Related Docs | [PRD-003](PRD-003-langgraph-orchestration.md) (Human-in-the-Loop), [PRD-005](PRD-005-langsmith-observability.md) (LangSmith) |
 
 ---
 
@@ -194,7 +194,7 @@ styling to communicate urgency. The entire graph is paused until the user respon
 └────────────────────────────────────────────────────────────────┘
 ```
 
-Full specification in **PRD-003**.
+Full specification in **[PRD-003](PRD-003-langgraph-orchestration.md)**.
 
 ### 5.5 Execution Timeline
 
@@ -272,7 +272,7 @@ A structured form (also pre-filled by Writer agent):
 - **Post Comment to GitHub** — posts the comment draft to the original issue (requires GitHub auth)
 - **Create GitHub Issue** — creates a new ticket with the ticket draft fields
 - **Copy Report** — copies the structured report as markdown
-- **View in LangSmith** — deep-link to the full job trace in LangSmith (see PRD-005)
+- **View in LangSmith** — deep-link to the full job trace in LangSmith (see [PRD-005](PRD-005-langsmith-observability.md))
 
 ---
 

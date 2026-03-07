@@ -8,8 +8,8 @@
 | Version      | 1.0                                               |
 | Status       | DRAFT                                             |
 | Date         | March 2026                                        |
-| Parent Doc   | PRD-001                                           |
-| Related Docs | PRD-002 (Frontend), PRD-004 (LangChain/LangServe) |
+| Parent Doc   | [PRD-001](PRD-001-master-overview.md)             |
+| Related Docs | [PRD-002](PRD-002-frontend-ux.md) (Frontend), [PRD-004](PRD-004-agent-layer.md) (LangChain/LangServe) |
 
 ---
 
@@ -37,7 +37,7 @@ how job state is persisted across sessions.
 
 LangGraph is used here in its intended role: **low-level orchestration of long-running, stateful, multi-agent workflows
 **. It is deliberately not used for simple linear chains (those live in LangChain/LCEL at the LangServe layer — see
-PRD-004).
+[PRD-004](PRD-004-agent-layer.md)).
 
 ---
 
@@ -418,7 +418,7 @@ the same ID used in SSE stream URLs, answer endpoints, and LangSmith trace group
 ## 10. Streaming to Frontend
 
 LangGraph's `astream_events()` emits fine-grained events. The FastAPI SSE handler subscribes to these and transforms
-them into the frontend event types defined in PRD-002.
+them into the frontend event types defined in [PRD-002](PRD-002-frontend-ux.md).
 
 ```python
 @app.get("/jobs/{job_id}/stream")
@@ -434,7 +434,7 @@ async def stream_job(job_id: str):
 ```
 
 The `transform_langgraph_event()` function maps LangGraph's internal event types (e.g., `on_chat_model_stream`,
-`on_tool_start`, `on_chain_end`) to the frontend event schema in PRD-002.
+`on_tool_start`, `on_chain_end`) to the frontend event schema in [PRD-002](PRD-002-frontend-ux.md).
 
 ---
 

@@ -9,7 +9,7 @@
 | Status       | DRAFT                              |
 | Date         | March 2026                         |
 | Author       | Product & Engineering Team         |
-| Related Docs | PRD-002, PRD-003, PRD-004, PRD-005 |
+| Related Docs | [PRD-002](PRD-002-frontend-ux.md), [PRD-003](PRD-003-langgraph-orchestration.md), [PRD-004](PRD-004-agent-layer.md), [PRD-005](PRD-005-langsmith-observability.md) |
 
 ---
 
@@ -214,19 +214,19 @@ GitHub Issue URL
 
 | Feature                                          | Priority | PRD Reference |
 |--------------------------------------------------|----------|---------------|
-| Job queue with Jira-style ticket cards           | P0       | PRD-002       |
-| Real-time streaming agent output in workspace    | P0       | PRD-002       |
-| Agent question cards (human-in-the-loop)         | P0       | PRD-003       |
-| Pause / redirect / kill agent mid-execution      | P0       | PRD-003       |
-| Supervisor + 5 worker agents (LangGraph)         | P0       | PRD-003       |
-| LCEL agent chains deployed via LangServe         | P0       | PRD-004       |
-| LangFlow canvas for agent prototyping            | P1       | PRD-004       |
-| LangSmith trace deep-link per job                | P0       | PRD-005       |
-| Eval dataset + quality scoring                   | P1       | PRD-005       |
-| GitHub write-back (comment + label)              | P1       | PRD-002       |
-| Codebase vector index (semantic search)          | P1       | PRD-004       |
-| Agent configuration UI (model, prompt, endpoint) | P2       | PRD-004       |
-| Cost and latency analytics dashboard             | P2       | PRD-005       |
+| Job queue with Jira-style ticket cards           | P0       | [PRD-002](PRD-002-frontend-ux.md)                   |
+| Real-time streaming agent output in workspace    | P0       | [PRD-002](PRD-002-frontend-ux.md)                   |
+| Agent question cards (human-in-the-loop)         | P0       | [PRD-003](PRD-003-langgraph-orchestration.md)        |
+| Pause / redirect / kill agent mid-execution      | P0       | [PRD-003](PRD-003-langgraph-orchestration.md)        |
+| Supervisor + 5 worker agents (LangGraph)         | P0       | [PRD-003](PRD-003-langgraph-orchestration.md)        |
+| LCEL agent chains deployed via LangServe         | P0       | [PRD-004](PRD-004-agent-layer.md)                   |
+| LangFlow canvas for agent prototyping            | P1       | [PRD-004](PRD-004-agent-layer.md)                   |
+| LangSmith trace deep-link per job                | P0       | [PRD-005](PRD-005-langsmith-observability.md)        |
+| Eval dataset + quality scoring                   | P1       | [PRD-005](PRD-005-langsmith-observability.md)        |
+| GitHub write-back (comment + label)              | P1       | [PRD-002](PRD-002-frontend-ux.md)                   |
+| Codebase vector index (semantic search)          | P1       | [PRD-004](PRD-004-agent-layer.md)                   |
+| Agent configuration UI (model, prompt, endpoint) | P2       | [PRD-004](PRD-004-agent-layer.md)                   |
+| Cost and latency analytics dashboard             | P2       | [PRD-005](PRD-005-langsmith-observability.md)        |
 
 ---
 
