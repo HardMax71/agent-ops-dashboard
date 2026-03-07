@@ -1,3 +1,12 @@
+/* Full-width tables */
+.md-typeset__table {
+  width: 100%;
+}
+
+.md-typeset__table table {
+  width: 100%;
+}
+
 /* Auto-number h2 and h3 headings inside article content */
 .md-content article {
   counter-reset: h2counter;
