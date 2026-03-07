@@ -1,22 +1,26 @@
 ---
 id: PRD-011
-title: Metrics Collection & Domain Events
+title: Metrics Collection — OTel + LangChain Callback
 status: DRAFT
 domain: observability
 depends_on: [PRD-003, PRD-004, PRD-005]
-key_decisions: [domain-event-bus, prometheus-handlers, no-metrics-in-business-logic]
+key_decisions: [otel-metrics-api, langchain-callback-handler, minimal-event-bus, no-prometheus-client-in-app-code]
 ---
 
-# PRD-011 — Metrics Collection & Domain Events
+# PRD-011 — Metrics Collection: OTel + LangChain Callback
 
 | Field        | Value                                                                            |
 |--------------|----------------------------------------------------------------------------------|
 | Document ID  | PRD-011                                                                          |
-| Version      | 1.0                                                                              |
+| Version      | 2.0                                                                              |
 | Status       | DRAFT                                                                            |
 | Date         | March 2026                                                                       |
 | Parent Doc   | [PRD-001](PRD-001-master-overview.md)                                            |
 | Related Docs | [PRD-003](PRD-003-langgraph-orchestration.md), [PRD-005-1](PRD-005-1-langsmith-api-spec.md) |
+
+> **v2.0 revision note:** The original domain-event-bus-for-all-metrics design (v1.0) had two
+> unsolved problems that made it unsuitable. This document replaces that design entirely.
+> See §1 for the full analysis.
 
 ---
 
@@ -42,11 +46,36 @@ def supervisor_node(state: BugTriageState) -> dict:
 ```
 
 **Hard to change.** When a Prometheus label name needs updating or LangSmith's `create_feedback`
-signature changes, the change is scattered across every file that calls it. There is no single
-place to find all metric recording.
+signature changes, the change is scattered across every file that calls it.
 
 **The rule:** Business code must be provably correct without knowing anything about metrics.
 Metric recording must be provably complete without knowing anything about business logic.
+
+### Why the Original Event Bus Design (v1.0) Was Insufficient
+
+The v1.0 domain-event-bus approach solved *business logic coupling* but left two problems
+unsolved:
+
+**Problem A — Handlers still import module-level prometheus_client globals.**
+`prometheus_handler.py` defines `Counter("job_total", ...)` at module scope. Importing that
+module registers counters in the Prometheus default registry. Any test that imports the module
+(directly or transitively) triggers registration. Multiple test runs accumulate global counter
+state. Tests that assert exact counter values become order-dependent. Mocking
+`prometheus_client` in handler tests is still required.
+
+**Problem B — The worker still has metric infrastructure in its hot path.**
+Even though the worker emits events rather than calling Prometheus directly, it must call
+`await event_bus.publish(AgentInvoked(...))` and `await event_bus.publish(AgentTokensConsumed(...))`
+inside the `astream_events()` loop — for roughly 20 events per job run. This is still metric
+infrastructure code inside the business execution path.
+
+### Rejected Patterns (and Why)
+
+| Pattern | Why it fails |
+|---------|-------------|
+| `xxMetrics` wrapper class | Still imports `prometheus_client`; test must mock the class; module-level counter registration problem persists |
+| Base class inheritance | Code duplication across handlers; same module-level registration coupling problem |
+| Lazy counter creation | Adds complexity; still requires mocking in tests that happen to trigger the lazy path |
 
 ---
 
@@ -54,157 +83,311 @@ Metric recording must be provably complete without knowing anything about busine
 
 This PRD covers all metric recording that requires explicit code:
 
-| Metric category                | Sink              | Mechanism              |
-|--------------------------------|-------------------|------------------------|
-| Prometheus infrastructure      | `/metrics` endpoint | Prometheus counters/histograms |
-| LangSmith custom feedback      | LangSmith API     | `client.create_feedback()`, annotation queue |
+| Metric category                | Sink              | Mechanism                                      |
+|--------------------------------|-------------------|------------------------------------------------|
+| Prometheus infrastructure      | `/metrics` endpoint | OTel Metrics API → PrometheusMetricReader    |
+| LangSmith custom feedback      | LangSmith API     | `client.create_feedback()`, annotation queue   |
 | In-app job statistics          | PostgreSQL        | `job_trace_summaries` table (see PRD-005-1 §4) |
 
 **Not in scope:**
 
 - LangSmith auto-instrumentation (zero-code via env vars; covered in PRD-005 §Integration Setup)
-- Structured application logging (separate concern; use Python `logging` module directly)
+- Structured application logging (use Python `logging` module directly)
 - Distributed tracing beyond LangSmith (out of v1 scope)
 
 ---
 
-## 3. Architecture: Three Layers
+## 3. Architecture
+
+### The Two-Pronged Solution
 
 ```
-┌────────────────────────────────────────────────────────────────────┐
-│  Layer 1: Business Logic                                            │
-│  LangGraph nodes · LCEL chains · LangServe agents · FastAPI routes │
-│  Imports ONLY from agentops.events — emits typed domain events     │
-│  Zero knowledge of Prometheus, LangSmith SDK, or DB metric writes  │
-└───────────────────────────┬────────────────────────────────────────┘
-                            │  await event_bus.publish(SomeEvent(...))
-┌───────────────────────────▼────────────────────────────────────────┐
-│  Layer 2: Event Bus (agentops.metrics.bus)                          │
-│  Routes events to subscribed handlers                               │
-│  Handler exceptions never propagate to business logic              │
-└───────────────────────────┬────────────────────────────────────────┘
-                            │
-        ┌───────────────────┼───────────────────┐
-        ▼                   ▼                   ▼
-┌───────────────┐  ┌─────────────────┐  ┌──────────────┐
-│ Prometheus    │  │ LangSmith       │  │ DbCache      │
-│ Handler       │  │ Feedback Handler│  │ Handler      │
-│               │  │                 │  │              │
-│ All Prometheus│  │ create_feedback │  │ list_runs,   │
-│ counter/histo │  │ annotation queue│  │ DB upsert    │
-│ gauge ops     │  │                 │  │              │
-└───────────────┘  └─────────────────┘  └──────────────┘
+┌────────────────────────────────────────────────────────────────────────┐
+│  LangGraph nodes · LCEL chains · LangServe agents                       │
+│  Zero metric calls. Zero event_bus calls. Zero OTel imports.            │
+└────────────────────────────────────────────────────────────────────────┘
+
+ARQ Worker startup:
+  config["callbacks"] = [AgentOpsMetricsCallback()]
+                              │
+                              │  LangGraph/LangChain framework fires these
+                              │  automatically at every node/chain/LLM call:
+                              ▼
+  ┌──────────────────────────────────────────────────────────────────┐
+  │  AgentOpsMetricsCallback (BaseCallbackHandler)                    │
+  │  agentops/metrics/callback.py                                     │
+  │                                                                   │
+  │  on_chain_start  → agent_calls_total.add(1)                      │
+  │  on_chain_end    → agent_duration_seconds.record(elapsed)        │
+  │  on_chain_error  → agent_errors_total.add(1)                     │
+  │  on_llm_end      → token_usage_total.add(...), cost_usd_total    │
+  │                                                                   │
+  │  Records via OTel Metrics API — not prometheus_client            │
+  └──────────────────────────────────────────────────────────────────┘
+
+Explicit emission points (4 total — not in business logic):
+  ┌────────────────────────────────────────────────────────────────┐
+  │  Worker post-graph  → meter.add() / meter.record() (2 lines)  │
+  │  POST /answer       → meter.record() (1 line)                 │
+  │  POST /feedback     → event_bus.publish(UserFeedbackSubmitted) │
+  │  Indexer job        → meter.add() / meter.record() (2 lines)  │
+  └────────────────────────────────────────────────────────────────┘
+                              │ (only feedback goes through bus)
+                              ▼
+  ┌──────────────────────────────────────────────────────────────┐
+  │  LangSmithFeedbackHandler                                     │
+  │  → create_feedback(), add_runs_to_annotation_queue()         │
+  └──────────────────────────────────────────────────────────────┘
+
+OTel MeterProvider (configured once at startup):
+  ┌──────────────────────────────────────────────────────────────┐
+  │  Production (main.py):                                        │
+  │    PrometheusMetricReader → /metrics endpoint                 │
+  │                                                               │
+  │  Tests (conftest.py, one line):                               │
+  │    metrics.set_meter_provider(NoOpMeterProvider())            │
+  │    → all counter/histogram calls silently no-op              │
+  │    → zero mocking, zero per-test setup                       │
+  └──────────────────────────────────────────────────────────────┘
 ```
+
+### Why OTel Replaces prometheus_client
+
+The OpenTelemetry Metrics API (`opentelemetry.metrics`) is a vendor-neutral interface.
+Application code calls the API; Prometheus is just one *exporter*, wired up once at startup.
+
+- **No module-level registration.** `meter.create_counter(...)` does not register anything in
+  the Prometheus default registry. It registers in the OTel SDK, which is configurable.
+- **Test isolation via NoOpMeterProvider.** One line in `conftest.py` replaces all counters
+  and histograms with silent no-ops. No mock patching. No registry accumulation.
+- **Same `/metrics` output.** The Prometheus exporter produces identical output to
+  `prometheus_client` — Grafana dashboards and alert rules are unaffected.
 
 ---
 
-## 4. Domain Event Catalog
-
-All domain events are typed Python dataclasses in `agentops/events.py`. Business logic imports
-from this module only. No handler imports are allowed in this file.
+## 4. LangChain Callback Handler
 
 ```python
-# agentops/events.py
-from dataclasses import dataclass
+# agentops/metrics/callback.py
+import time
+import uuid
+from typing import Any, Union
+from langchain_core.callbacks import BaseCallbackHandler
+from opentelemetry import metrics
 
-# --- Job lifecycle ---
+MODEL_PRICING: dict[str, dict[str, float]] = {
+    "gpt-4o":      {"input": 2.50 / 1_000_000, "output": 10.00 / 1_000_000},
+    "gpt-4o-mini": {"input": 0.15 / 1_000_000, "output":  0.60 / 1_000_000},
+}
 
-@dataclass
-class JobStarted:
-    job_id: str
-    repository: str
-    issue_url: str
+AGENT_NAMES = {"investigator", "codebase_search", "web_search", "critic", "writer", "supervisor"}
 
-@dataclass
-class JobCompleted:
-    job_id: str
-    duration_ms: float
-    final_confidence: float
-    severity: str          # "LOW" | "MEDIUM" | "HIGH" | "CRITICAL"
 
-@dataclass
-class JobFailed:
-    job_id: str
-    error: str
+class AgentOpsMetricsCallback(BaseCallbackHandler):
+    """Records all agent/token/duration metrics via OTel Metrics API.
 
-# --- Agent lifecycle ---
+    Injected into the ARQ worker via config["callbacks"]. Business logic
+    (nodes, chains) has zero metric calls. Worker has zero explicit metric
+    calls inside the astream_events() loop.
+    """
 
-@dataclass
-class AgentInvoked:
-    job_id: str
-    agent_name: str        # "investigator" | "codebase_search" | "web_search" | "critic" | "writer"
+    def __init__(self) -> None:
+        meter = metrics.get_meter("agentops")
+        self._agent_calls    = meter.create_counter(
+            "agent_calls_total", description="Total agent invocations",
+        )
+        self._agent_duration = meter.create_histogram(
+            "agent_duration_seconds", description="Per-agent execution time",
+            unit="s",
+        )
+        self._agent_errors   = meter.create_counter(
+            "agent_errors_total", description="Total agent errors",
+        )
+        self._token_usage    = meter.create_counter(
+            "token_usage_total", description="Total tokens consumed",
+        )
+        self._cost_usd       = meter.create_counter(
+            "cost_usd_total", description="Total LLM cost in USD",
+        )
+        # Track start times keyed by run_id (UUID → float)
+        self._start_times: dict[str, float] = {}
 
-@dataclass
-class AgentCompleted:
-    job_id: str
-    agent_name: str
-    duration_ms: float
-    confidence: float
+    def _agent_name(self, serialized: dict, kwargs: dict) -> str | None:
+        """Extract the LangGraph node name if this is a tracked agent."""
+        name = (
+            kwargs.get("metadata", {}).get("langgraph_node")
+            or serialized.get("name", "")
+        )
+        return name if name in AGENT_NAMES else None
 
-@dataclass
-class AgentFailed:
-    job_id: str
-    agent_name: str
-    error: str
+    def on_chain_start(
+        self,
+        serialized: dict[str, Any],
+        inputs: dict[str, Any],
+        *,
+        run_id: uuid.UUID,
+        **kwargs: Any,
+    ) -> None:
+        agent = self._agent_name(serialized, kwargs)
+        if agent:
+            self._start_times[str(run_id)] = time.perf_counter()
+            self._agent_calls.add(1, {"agent": agent})
 
-@dataclass
-class AgentTokensConsumed:
-    job_id: str
-    agent_name: str
-    model: str             # "gpt-4o" | "gpt-4o-mini"
-    input_tokens: int
-    output_tokens: int
-    cost_usd: float
+    def on_chain_end(
+        self,
+        outputs: dict[str, Any],
+        *,
+        run_id: uuid.UUID,
+        **kwargs: Any,
+    ) -> None:
+        key = str(run_id)
+        if key in self._start_times:
+            elapsed = time.perf_counter() - self._start_times.pop(key)
+            agent = kwargs.get("metadata", {}).get("langgraph_node", "unknown")
+            self._agent_duration.record(elapsed, {"agent": agent})
 
-# --- Cost budget ---
+    def on_chain_error(
+        self,
+        error: Union[Exception, KeyboardInterrupt],
+        *,
+        run_id: uuid.UUID,
+        **kwargs: Any,
+    ) -> None:
+        self._start_times.pop(str(run_id), None)
+        agent = kwargs.get("metadata", {}).get("langgraph_node", "unknown")
+        if agent in AGENT_NAMES:
+            self._agent_errors.add(1, {"agent": agent})
 
-@dataclass
-class CostBudgetExceeded:
-    job_id: str
-    current_cost_usd: float
-    budget_usd: float
+    def on_llm_end(self, response: Any, *, run_id: uuid.UUID, **kwargs: Any) -> None:
+        usage = getattr(response, "usage_metadata", None) or {}
+        model = kwargs.get("metadata", {}).get("ls_model_name", "gpt-4o-mini")
+        agent = kwargs.get("metadata", {}).get("langgraph_node", "unknown")
+        pricing = MODEL_PRICING.get(model, MODEL_PRICING["gpt-4o-mini"])
 
-# --- Human interrupt ---
+        input_tokens  = usage.get("input_tokens", 0)
+        output_tokens = usage.get("output_tokens", 0)
+        cost = input_tokens * pricing["input"] + output_tokens * pricing["output"]
 
-@dataclass
-class HumanInterruptTriggered:
-    job_id: str
-
-@dataclass
-class HumanInterruptAnswered:
-    job_id: str
-    wait_seconds: float
-
-@dataclass
-class HumanInterruptTimedOut:
-    job_id: str
-
-# --- User feedback ---
-
-@dataclass
-class UserFeedbackSubmitted:
-    job_id: str
-    langsmith_run_id: str
-    positive: bool
-    comment: str | None
-
-# --- Codebase index ---
-
-@dataclass
-class IndexBuildCompleted:
-    repo_url: str
-    duration_ms: float
-    document_count: int
-
-@dataclass
-class IndexBuildFailed:
-    repo_url: str
-    error: str
+        if input_tokens or output_tokens:
+            self._token_usage.add(input_tokens,  {"agent": agent, "model": model, "token_type": "input"})
+            self._token_usage.add(output_tokens, {"agent": agent, "model": model, "token_type": "output"})
+            self._cost_usd.add(cost,             {"agent": agent, "model": model})
 ```
+
+### Injection Point
+
+```python
+# agentops/worker.py — inside run_triage(), before astream_events
+from agentops.metrics.callback import AgentOpsMetricsCallback
+
+config = {
+    "configurable": {"thread_id": job_id},
+    "run_id": langsmith_run_id,
+    "metadata": {...},
+    "tags": [...],
+    "callbacks": [AgentOpsMetricsCallback()],   # injected here; never in node code
+}
+
+async for event in graph.astream_events(initial_state, config=config, version="v2"):
+    ...  # no metric calls here — callback handles everything
+```
+
+### Testing the Callback
+
+```python
+# tests/metrics/test_callback.py
+from opentelemetry.sdk.metrics import MeterProvider
+from opentelemetry.sdk.metrics.export import InMemoryMetricReader
+from agentops.metrics.callback import AgentOpsMetricsCallback
+import uuid
+
+def test_agent_duration_recorded():
+    reader = InMemoryMetricReader()
+    provider = MeterProvider(metric_readers=[reader])
+    # Override global provider for this test
+    from opentelemetry import metrics as otel_metrics
+    otel_metrics.set_meter_provider(provider)
+
+    cb = AgentOpsMetricsCallback()
+    run_id = uuid.uuid4()
+    cb.on_chain_start(
+        {"name": "investigator"}, {},
+        run_id=run_id,
+        metadata={"langgraph_node": "investigator"},
+    )
+    cb.on_chain_end({}, run_id=run_id, metadata={"langgraph_node": "investigator"})
+
+    data = reader.get_metrics_data()
+    metrics_by_name = {
+        m.name: m
+        for rm in data.resource_metrics
+        for sm in rm.scope_metrics
+        for m in sm.metrics
+    }
+    assert "agent_duration_seconds" in metrics_by_name
+    # Exactly one data point recorded for "investigator"
+    dp = metrics_by_name["agent_duration_seconds"].data.data_points[0]
+    assert dp.attributes["agent"] == "investigator"
+    assert dp.sum > 0
+```
+
+No mocking needed. The callback is tested by calling its methods directly.
 
 ---
 
-## 5. In-Process Event Bus
+## 5. OTel MeterProvider Setup
+
+```python
+# agentops/metrics/setup.py
+from opentelemetry import metrics
+from opentelemetry.sdk.metrics import MeterProvider
+from opentelemetry.exporter.prometheus import PrometheusMetricReader
+from prometheus_client import start_http_server  # only import in this file
+
+
+def configure_metrics_production() -> None:
+    """Call once at application startup (main.py and ARQ worker entry)."""
+    reader = PrometheusMetricReader()
+    provider = MeterProvider(metric_readers=[reader])
+    metrics.set_meter_provider(provider)
+```
+
+```python
+# agentops/main.py
+from agentops.metrics.setup import configure_metrics_production
+configure_metrics_production()
+
+# Mount /metrics endpoint (PrometheusMetricReader auto-registers the ASGI app)
+import prometheus_client
+from starlette.routing import Mount
+app.mount("/metrics", prometheus_client.make_asgi_app())
+```
+
+### Test Isolation (one line in conftest.py)
+
+```python
+# tests/conftest.py
+from opentelemetry import metrics
+from opentelemetry.sdk.metrics import MeterProvider
+
+# NoOpMeterProvider makes all create_counter / create_histogram calls return
+# no-op instruments. All .add() and .record() calls silently succeed.
+# No Prometheus registry. No global state accumulation.
+metrics.set_meter_provider(MeterProvider())   # empty provider = effective no-op
+```
+
+This single line applies to **all** test files — no per-test setup, no mock patching.
+Tests that need to assert metric values use `InMemoryMetricReader` as shown in §4.
+
+---
+
+## 6. Minimal Event Bus (UserFeedbackSubmitted only)
+
+The event bus is kept for exactly one use case: routing `UserFeedbackSubmitted` to
+`LangSmithFeedbackHandler`. This is justified because the handler has real branching logic
+(4 conditions: positive/negative rating, confidence threshold, annotation queue call), making
+direct calls awkward in a route handler. For all other emission points, direct OTel calls
+(1–3 lines each) are simpler and clearer.
 
 ```python
 # agentops/metrics/bus.py
@@ -230,292 +413,206 @@ class EventBus:
                 await handler(event)
             except Exception:
                 logger.exception(
-                    "Metric handler %s failed for event %s — continuing",
+                    "Handler %s failed for %s — continuing",
                     handler.__name__,
                     type(event).__name__,
                 )
 
-# Module-level singleton — no dependency injection needed
+# Module-level singleton
 event_bus = EventBus()
 ```
 
-**Key properties:**
+### Domain Event (single event type uses the bus)
 
-- Synchronous iteration over handlers; `await` each handler in sequence
-- Handler exceptions are caught and logged; they never propagate to the caller
-- No external dependencies (no Redis, no Celery); in-process only
-- `event_bus` is the single import needed by emission points
+```python
+# agentops/events.py
+from dataclasses import dataclass
+
+@dataclass
+class UserFeedbackSubmitted:
+    job_id: str
+    langsmith_run_id: str
+    positive: bool
+    comment: str | None
+```
 
 ### App Startup Registration
 
 ```python
-# agentops/main.py (FastAPI app startup)
+# agentops/main.py
 from agentops.metrics.bus import event_bus
-from agentops.metrics.handlers import (
-    prometheus_handler,
-    langsmith_feedback_handler,
-    db_cache_handler,
-)
-from agentops.events import (
-    JobStarted, JobCompleted, JobFailed,
-    AgentInvoked, AgentCompleted, AgentFailed, AgentTokensConsumed,
-    CostBudgetExceeded, HumanInterruptTriggered, HumanInterruptAnswered,
-    HumanInterruptTimedOut, UserFeedbackSubmitted,
-    IndexBuildCompleted, IndexBuildFailed,
-)
+from agentops.metrics.handlers.langsmith_feedback_handler import on_user_feedback
+from agentops.metrics.handlers.db_cache_handler import on_job_completed, on_job_failed
+from agentops.events import UserFeedbackSubmitted
 
 @app.on_event("startup")
 async def register_metric_handlers() -> None:
-    # Prometheus
-    event_bus.subscribe(JobStarted,              prometheus_handler.on_job_started)
-    event_bus.subscribe(JobCompleted,            prometheus_handler.on_job_completed)
-    event_bus.subscribe(JobFailed,               prometheus_handler.on_job_failed)
-    event_bus.subscribe(AgentInvoked,            prometheus_handler.on_agent_invoked)
-    event_bus.subscribe(AgentCompleted,          prometheus_handler.on_agent_completed)
-    event_bus.subscribe(AgentFailed,             prometheus_handler.on_agent_failed)
-    event_bus.subscribe(AgentTokensConsumed,     prometheus_handler.on_tokens_consumed)
-    event_bus.subscribe(HumanInterruptAnswered,  prometheus_handler.on_interrupt_answered)
-    event_bus.subscribe(IndexBuildCompleted,     prometheus_handler.on_index_build_completed)
-
-    # LangSmith
-    event_bus.subscribe(UserFeedbackSubmitted,   langsmith_feedback_handler.on_user_feedback)
-
-    # DB cache
-    event_bus.subscribe(JobCompleted,            db_cache_handler.on_job_completed)
-    event_bus.subscribe(JobFailed,               db_cache_handler.on_job_failed)
+    event_bus.subscribe(UserFeedbackSubmitted, on_user_feedback)
 ```
+
+> **Why no JobCompleted/JobFailed bus events?** The `DbCacheHandler` still needs to run after
+> job completion, but it is called directly from the ARQ post-job hook rather than via the bus.
+> The bus overhead (subscription, exception wrapping) is unnecessary for a single call site.
+> Direct call: `await fetch_and_cache_trace_summary(job_id, langsmith_run_id, db, client)`.
 
 ---
 
-## 6. Event Emission Points
+## 7. Domain Event Catalog
 
-Only specific components may emit domain events. The list below is exhaustive.
+All conceptual domain events are documented here. The implementation mechanism for each is
+noted — only `UserFeedbackSubmitted` is a live Python dataclass routed through the event bus.
+The others are handled automatically by `AgentOpsMetricsCallback` or via direct OTel calls.
 
-### ARQ Worker (`run_triage`)
+| Event | Implementation | Handled by |
+|---|---|---|
+| `JobStarted` | Direct OTel | Worker pre-graph: `jobs_active.add(1)` |
+| `JobCompleted` | Direct OTel | Worker post-graph: `job_total.add(1)`, `job_duration.record()` |
+| `JobFailed` | Direct OTel | Worker post-graph: `job_total.add(1, {"status": "failed"})` |
+| `AgentInvoked` | Callback | `on_chain_start` → `agent_calls_total.add(1)` |
+| `AgentCompleted` | Callback | `on_chain_end` → `agent_duration_seconds.record()` |
+| `AgentFailed` | Callback | `on_chain_error` → `agent_errors_total.add(1)` |
+| `AgentTokensConsumed` | Callback | `on_llm_end` → `token_usage_total.add()`, `cost_usd_total.add()` |
+| `CostBudgetExceeded` | State field | Worker reads `cost_budget_exceeded` from state (see PRD-005-1 §5) |
+| `HumanInterruptTriggered` | Implicit | No metric recorded; logged only |
+| `HumanInterruptAnswered` | Direct OTel | `POST /answer`: `human_wait_seconds.record()` |
+| `HumanInterruptTimedOut` | Implicit | No metric recorded; logged only |
+| `UserFeedbackSubmitted` | **Event bus** | `LangSmithFeedbackHandler`: `create_feedback()`, annotation queue |
+| `IndexBuildCompleted` | Direct OTel | Indexer job: `index_build_duration_seconds.record()` |
+| `IndexBuildFailed` | Direct OTel | Indexer job: `index_build_duration_seconds.record({"status": "failed"})` |
 
-The primary emission point for all job and agent lifecycle events. The worker drives the
-`astream_events()` loop and maps LangGraph callback events to domain events:
+### Dataclass Definitions
+
+Only `UserFeedbackSubmitted` requires a dataclass (it is passed through the event bus):
 
 ```python
+# agentops/events.py
+from dataclasses import dataclass
+
+@dataclass
+class UserFeedbackSubmitted:
+    job_id: str
+    langsmith_run_id: str
+    positive: bool
+    comment: str | None
+```
+
+All other events in the table above are implicit — the metric is recorded directly at the
+point the event conceptually occurs, with no intermediate dataclass.
+
+---
+
+## 8. Explicit Metric Emission Points
+
+Only 4 explicit emission points remain in the codebase. All others are handled automatically
+by `AgentOpsMetricsCallback`.
+
+### ARQ Worker — Post-Graph (job lifecycle metrics)
+
+```python
+# agentops/worker.py — after astream_events loop completes
+from opentelemetry import metrics as otel_metrics
+
+_meter = otel_metrics.get_meter("agentops")
+_job_total          = _meter.create_counter("job_total", description="Total jobs processed")
+_job_duration       = _meter.create_histogram("job_duration_seconds", description="End-to-end job duration", unit="s")
+_jobs_active        = _meter.create_up_down_counter("jobs_active", description="Jobs currently running")
+
 async def run_triage(ctx: dict, job_id: str) -> None:
-    await event_bus.publish(JobStarted(
+    _jobs_active.add(1)
+    start = time.perf_counter()
+    try:
+        async for event in graph.astream_events(initial_state, config=config, version="v2"):
+            pass  # callback handles all in-loop metrics
+
+        final_state = await graph.aget_state(config)
+        elapsed = time.perf_counter() - start
+
+        if final_state.values.get("error"):
+            _job_total.add(1, {"status": "failed"})
+            # post-job hook: add_to_review_queue_if_needed(), etc.
+        else:
+            _job_total.add(1, {"status": "completed"})
+            _job_duration.record(elapsed)
+            await fetch_and_cache_trace_summary(...)
+            await add_to_review_queue_if_needed(...)
+    finally:
+        _jobs_active.add(-1)
+```
+
+### POST /answer — Human Interrupt Answered
+
+```python
+# agentops/routes/jobs.py
+from opentelemetry import metrics as otel_metrics
+
+_meter = otel_metrics.get_meter("agentops")
+_human_wait = _meter.create_histogram(
+    "human_wait_seconds", description="Human interrupt wait time", unit="s",
+)
+
+@router.post("/jobs/{job_id}/answer", status_code=204)
+async def submit_answer(job_id: str, body: AnswerRequest, db: AsyncSession = Depends(get_db)):
+    job = await db.get(Job, job_id)
+    # ... business logic: resume graph, update DB ...
+    wait_seconds = (datetime.utcnow() - job.interrupted_at).total_seconds()
+    _human_wait.record(wait_seconds)   # 1 line; no event bus needed
+```
+
+### POST /feedback — UserFeedbackSubmitted (bus event)
+
+```python
+# agentops/routes/jobs.py
+from agentops.metrics.bus import event_bus
+from agentops.events import UserFeedbackSubmitted
+
+@router.post("/jobs/{job_id}/feedback", status_code=204)
+async def submit_feedback(job_id: str, body: FeedbackRequest, db: AsyncSession = Depends(get_db)):
+    job = await db.get(Job, job_id)
+    if not job or not job.langsmith_run_id:
+        raise HTTPException(404, "Job not found or not traced")
+    await event_bus.publish(UserFeedbackSubmitted(
         job_id=job_id,
-        repository=initial_state["repository"],
-        issue_url=initial_state["issue_url"],
+        langsmith_run_id=job.langsmith_run_id,
+        positive=body.positive,
+        comment=body.comment,
     ))
-
-    agent_start_times: dict[str, float] = {}
-
-    async for event in graph.astream_events(initial_state, config=config, version="v2"):
-        name = event.get("name", "")
-        kind = event.get("event", "")
-
-        if kind == "on_chain_start" and name in AGENT_NAMES:
-            agent_start_times[name] = time.monotonic()
-            await event_bus.publish(AgentInvoked(job_id=job_id, agent_name=name))
-
-        elif kind == "on_chain_end" and name in AGENT_NAMES:
-            duration_ms = (time.monotonic() - agent_start_times.pop(name, 0)) * 1000
-            output = event.get("data", {}).get("output", {})
-            confidence = output.get("confidence", 1.0)
-            await event_bus.publish(AgentCompleted(
-                job_id=job_id,
-                agent_name=name,
-                duration_ms=duration_ms,
-                confidence=confidence,
-            ))
-
-        elif kind == "on_chain_error" and name in AGENT_NAMES:
-            error = str(event.get("data", {}).get("error", "unknown"))
-            await event_bus.publish(AgentFailed(
-                job_id=job_id, agent_name=name, error=error,
-            ))
-
-        elif kind == "on_chat_model_end":
-            cost, input_tok, output_tok, model = extract_token_event(event)
-            await event_bus.publish(AgentTokensConsumed(
-                job_id=job_id,
-                agent_name=event.get("metadata", {}).get("langgraph_node", "unknown"),
-                model=model,
-                input_tokens=input_tok,
-                output_tokens=output_tok,
-                cost_usd=cost,
-            ))
-
-    # Post-graph: emit job outcome
-    final_state = await graph.aget_state(config)
-    if final_state.values.get("error"):
-        await event_bus.publish(JobFailed(job_id=job_id, error=final_state.values["error"]))
-    else:
-        await event_bus.publish(JobCompleted(
-            job_id=job_id,
-            duration_ms=elapsed_ms,
-            final_confidence=final_state.values.get("final_confidence", 0.0),
-            severity=final_state.values.get("severity", "UNKNOWN"),
-        ))
-```
-
-### Human Interrupt Events
-
-| Emission point                             | Event                     |
-|--------------------------------------------|---------------------------|
-| Worker: `on_interrupt` from `astream_events` | `HumanInterruptTriggered` |
-| Worker: `expire_human_input` ARQ job fires   | `HumanInterruptTimedOut`  |
-| `POST /jobs/{id}/answer` route handler       | `HumanInterruptAnswered`  |
-
-```python
-# In POST /jobs/{id}/answer handler
-wait_seconds = (datetime.utcnow() - job.interrupted_at).total_seconds()
-await event_bus.publish(HumanInterruptAnswered(
-    job_id=job_id,
-    wait_seconds=wait_seconds,
-))
-```
-
-### Feedback Endpoint
-
-```python
-# POST /jobs/{id}/feedback
-await event_bus.publish(UserFeedbackSubmitted(
-    job_id=job_id,
-    langsmith_run_id=job.langsmith_run_id,
-    positive=body.positive,
-    comment=body.comment,
-))
+    # LangSmithFeedbackHandler does the SDK calls — route handler is metric-free
 ```
 
 ### Indexer ARQ Job
 
 ```python
-# In index_repository ARQ job
-await event_bus.publish(IndexBuildCompleted(
-    repo_url=repo_url,
-    duration_ms=elapsed_ms,
-    document_count=doc_count,
-))
-# or on failure:
-await event_bus.publish(IndexBuildFailed(repo_url=repo_url, error=str(exc)))
+# agentops/worker.py or agentops/indexer.py
+from opentelemetry import metrics as otel_metrics
+
+_meter = otel_metrics.get_meter("agentops")
+_index_duration = _meter.create_histogram(
+    "index_build_duration_seconds", description="Codebase index build time", unit="s",
+)
+
+async def index_repository(ctx: dict, repo_url: str) -> None:
+    start = time.perf_counter()
+    try:
+        doc_count = await build_index(repo_url)
+        _index_duration.record(time.perf_counter() - start, {"status": "completed"})
+    except Exception as exc:
+        _index_duration.record(time.perf_counter() - start, {"status": "failed"})
+        raise
 ```
 
 ### NOT Emission Points
 
-The following layers must **never** call `event_bus.publish()` or any metric function:
+The following layers must **never** call `event_bus.publish()`, any OTel metric call, or any
+`prometheus_client` call:
 
 - LangGraph nodes (supervisor, investigator, codebase_search, web_search, critic, writer, human_input)
 - LCEL chains inside LangServe agents
 - LangServe agent entrypoints
-- FastAPI route handlers (except answer and feedback endpoints listed above)
+- FastAPI route handlers (except the four explicit emission points above)
 
 ---
 
-## 7. `PrometheusHandler`
-
-All Prometheus metric definitions live in a single class. No metric is defined anywhere else.
-
-```python
-# agentops/metrics/handlers/prometheus_handler.py
-from prometheus_client import Counter, Histogram, Gauge
-from agentops.events import (
-    JobStarted, JobCompleted, JobFailed,
-    AgentInvoked, AgentCompleted, AgentFailed, AgentTokensConsumed,
-    HumanInterruptAnswered, IndexBuildCompleted,
-)
-
-# --- Metric definitions ---
-
-job_duration_seconds = Histogram(
-    "job_duration_seconds",
-    "End-to-end job duration",
-    buckets=[10, 30, 60, 120, 300, 600],
-)
-job_total = Counter(
-    "job_total",
-    "Total jobs processed",
-    ["status"],              # "completed" | "failed"
-)
-jobs_active = Gauge(
-    "jobs_active",
-    "Number of jobs currently running",
-)
-agent_calls_total = Counter(
-    "agent_calls_total",
-    "Total agent invocations",
-    ["agent"],
-)
-agent_duration_seconds = Histogram(
-    "agent_duration_seconds",
-    "Per-agent execution time",
-    ["agent"],
-    buckets=[0.5, 1, 2, 5, 10, 30, 60],
-)
-agent_errors_total = Counter(
-    "agent_errors_total",
-    "Total agent errors",
-    ["agent"],
-)
-token_usage_total = Counter(
-    "token_usage_total",
-    "Total tokens consumed",
-    ["agent", "model", "token_type"],   # token_type: "input" | "output"
-)
-cost_usd_total = Counter(
-    "cost_usd_total",
-    "Total LLM cost in USD",
-    ["agent", "model"],
-)
-human_wait_seconds = Histogram(
-    "human_wait_seconds",
-    "Time between human interrupt and answer",
-    buckets=[10, 30, 60, 120, 300, 600, 1800],
-)
-index_build_duration_seconds = Histogram(
-    "index_build_duration_seconds",
-    "Codebase index build time",
-    buckets=[5, 15, 30, 60, 120, 300],
-)
-
-# --- Handlers ---
-
-async def on_job_started(event: JobStarted) -> None:
-    jobs_active.inc()
-
-async def on_job_completed(event: JobCompleted) -> None:
-    jobs_active.dec()
-    job_total.labels(status="completed").inc()
-    job_duration_seconds.observe(event.duration_ms / 1000)
-
-async def on_job_failed(event: JobFailed) -> None:
-    jobs_active.dec()
-    job_total.labels(status="failed").inc()
-
-async def on_agent_invoked(event: AgentInvoked) -> None:
-    agent_calls_total.labels(agent=event.agent_name).inc()
-
-async def on_agent_completed(event: AgentCompleted) -> None:
-    agent_duration_seconds.labels(agent=event.agent_name).observe(event.duration_ms / 1000)
-
-async def on_agent_failed(event: AgentFailed) -> None:
-    agent_errors_total.labels(agent=event.agent_name).inc()
-
-async def on_tokens_consumed(event: AgentTokensConsumed) -> None:
-    token_usage_total.labels(
-        agent=event.agent_name, model=event.model, token_type="input"
-    ).inc(event.input_tokens)
-    token_usage_total.labels(
-        agent=event.agent_name, model=event.model, token_type="output"
-    ).inc(event.output_tokens)
-    cost_usd_total.labels(agent=event.agent_name, model=event.model).inc(event.cost_usd)
-
-async def on_interrupt_answered(event: HumanInterruptAnswered) -> None:
-    human_wait_seconds.observe(event.wait_seconds)
-
-async def on_index_build_completed(event: IndexBuildCompleted) -> None:
-    index_build_duration_seconds.observe(event.duration_ms / 1000)
-```
-
----
-
-## 8. `LangSmithFeedbackHandler`
+## 9. `LangSmithFeedbackHandler`
 
 Subscribes to `UserFeedbackSubmitted`. All LangSmith SDK calls are here. Zero business logic.
 
@@ -547,10 +644,6 @@ async def on_user_feedback(event: UserFeedbackSubmitted) -> None:
             score=0,
             comment="Negative user rating — added to review queue",
         )
-
-        # Also add to annotation queue if confidence was low (check job state from DB)
-        # Note: confidence check is done in the post-job hook (PRD-005-1 §7)
-        # Here we only handle the feedback-triggered case
         await asyncio.to_thread(
             langsmith_client.add_runs_to_annotation_queue,
             queue_id=settings.langsmith_review_queue_id,
@@ -559,39 +652,36 @@ async def on_user_feedback(event: UserFeedbackSubmitted) -> None:
 ```
 
 **Imports:** `langsmith.Client`, `asyncio`, `uuid`. Nothing from business logic modules.
+This is the **only** place in the codebase that imports `langsmith.Client` outside of
+`agentops/langsmith_client.py`.
 
 ---
 
-## 9. `DbCacheHandler`
+## 10. `DbCacheHandler`
 
-Subscribes to `JobCompleted` and `JobFailed`. Triggers the LangSmith trace fetch and DB write.
+Called directly from the ARQ post-job hook (not via event bus — see §6). Triggers the
+LangSmith trace fetch and DB write.
 
 ```python
-# agentops/metrics/handlers/db_cache_handler.py
-from agentops.events import JobCompleted, JobFailed
+# agentops/observability/trace_cache.py
 from agentops.langsmith_client import langsmith_client
 from agentops.db import async_session_factory
-from agentops.observability.trace_cache import fetch_and_cache_trace_summary
+from agentops.observability.trace_fetch import fetch_and_cache_trace_summary
 
-async def on_job_completed(event: JobCompleted) -> None:
+async def handle_job_completed(job_id: str, langsmith_run_id: str) -> None:
     async with async_session_factory() as db:
-        # job record must already have langsmith_run_id written by worker
-        from agentops.models import Job
-        job = await db.get(Job, event.job_id)
-        if job and job.langsmith_run_id:
-            await fetch_and_cache_trace_summary(
-                job_id=event.job_id,
-                langsmith_run_id=job.langsmith_run_id,
-                db=db,
-                langsmith_client=langsmith_client,
-            )
+        await fetch_and_cache_trace_summary(
+            job_id=job_id,
+            langsmith_run_id=langsmith_run_id,
+            db=db,
+            langsmith_client=langsmith_client,
+        )
 
-async def on_job_failed(event: JobFailed) -> None:
+async def handle_job_failed(job_id: str) -> None:
     async with async_session_factory() as db:
-        # Write stub row so /jobs/{id}/summary returns a consistent response
         from agentops.models import JobTraceSummaryRow
         await db.merge(JobTraceSummaryRow(
-            job_id=event.job_id,
+            job_id=job_id,
             status="failed",
             total_tokens=0,
             total_cost_usd=0,
@@ -604,29 +694,34 @@ async def on_job_failed(event: JobFailed) -> None:
         await db.commit()
 ```
 
+See [PRD-005-1 §4](PRD-005-1-langsmith-api-spec.md#4-job-trace-summary--db-table--cache-strategy-gap-1-continued)
+for `fetch_and_cache_trace_summary()` implementation and DB table schema.
+
 ---
 
-## 10. Prometheus `/metrics` Endpoint
+## 11. Prometheus `/metrics` Endpoint
 
 ```python
 # agentops/main.py
 import prometheus_client
 from starlette.routing import Mount
 
-# Mount at /metrics — internal network only (see docker-compose note below)
+# Mount at /metrics — served by PrometheusMetricReader via OTel SDK
+# prometheus_client.make_asgi_app() works because PrometheusMetricReader
+# registers metrics in the default prometheus_client registry
 app.mount("/metrics", prometheus_client.make_asgi_app())
 ```
 
 **Network access:** `/metrics` is not exposed through the public nginx reverse proxy. In
-docker-compose, the API service exposes port `8001` (metrics) on `127.0.0.1` only, accessible
-to Prometheus scraper on the internal `monitoring` network.
+docker-compose, the API service exposes the metrics port on `127.0.0.1` only, accessible
+to the Prometheus scraper on the internal `monitoring` network.
 
 ```yaml
 # docker-compose.yml (relevant excerpt)
 services:
   api:
     ports:
-      - "8000:8000"      # public — proxied through nginx
+      - "8000:8000"            # public — proxied through nginx
       - "127.0.0.1:8001:8001"  # metrics — internal only
   prometheus:
     networks:
@@ -637,32 +732,27 @@ services:
 
 ---
 
-## 11. FastAPI Metrics Middleware
+## 12. FastAPI Metrics Middleware
 
-HTTP-level metrics (request count, latency) are recorded in ASGI middleware, **not** in route
-handlers. Route handlers are metric-free.
+HTTP-level metrics (request count, latency) are recorded in ASGI middleware via the OTel
+Metrics API — **not** `prometheus_client` directly, and **not** in route handlers.
 
 ```python
 # agentops/middleware/metrics.py
-import time
 import re
+import time
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
-from prometheus_client import Counter, Histogram
+from opentelemetry import metrics
 
-http_requests_total = Counter(
-    "http_requests_total",
-    "Total HTTP requests",
-    ["method", "path", "status_code"],
+_meter = metrics.get_meter("agentops")
+_http_requests  = _meter.create_counter(
+    "http_requests_total", description="Total HTTP requests",
 )
-http_request_duration_seconds = Histogram(
-    "http_request_duration_seconds",
-    "HTTP request latency",
-    ["method", "path"],
-    buckets=[0.01, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5, 5.0],
+_http_duration  = _meter.create_histogram(
+    "http_request_duration_seconds", description="HTTP request latency", unit="s",
 )
 
-# Normalize dynamic path segments to avoid high-cardinality label explosion
 _PATH_PATTERNS = [
     (re.compile(r"/jobs/[^/]+"), "/jobs/{job_id}"),
     (re.compile(r"/repos/[^/]+"), "/repos/{repo_id}"),
@@ -673,115 +763,162 @@ def normalize_path(path: str) -> str:
         path = pattern.sub(replacement, path)
     return path
 
-class PrometheusMiddleware(BaseHTTPMiddleware):
+class MetricsMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         start = time.perf_counter()
         response = await call_next(request)
-        duration = time.perf_counter() - start
+        elapsed = time.perf_counter() - start
         path = normalize_path(request.url.path)
-        http_requests_total.labels(
-            method=request.method,
-            path=path,
-            status_code=str(response.status_code),
-        ).inc()
-        http_request_duration_seconds.labels(
-            method=request.method,
-            path=path,
-        ).observe(duration)
+        attrs = {"method": request.method, "path": path, "status_code": str(response.status_code)}
+        _http_requests.add(1, attrs)
+        _http_duration.record(elapsed, {"method": request.method, "path": path})
         return response
 ```
 
 Register in `main.py`:
 
 ```python
-from agentops.middleware.metrics import PrometheusMiddleware
-app.add_middleware(PrometheusMiddleware)
+from agentops.middleware.metrics import MetricsMiddleware
+app.add_middleware(MetricsMiddleware)
 ```
 
 ---
 
-## 12. Strict Rules
+## 13. Strict Rules
 
-| Layer | Allowed | Forbidden |
+| Layer | Metric mechanism | Forbidden |
 |---|---|---|
-| LangGraph nodes | Business logic, state reads/writes, `httpx` calls | Prometheus, LangSmith SDK, DB metric writes, `event_bus` |
-| LCEL chains | Prompts, LLM calls, output parsers | Any metric call |
-| LangServe agents | Chain invocation, error handling | Any metric call |
-| FastAPI route handlers | Request validation, DB reads, response assembly | Prometheus, LangSmith SDK |
-| ASGI middleware | HTTP metric recording via Prometheus | Business logic |
-| ARQ worker `run_triage` | Graph execution, Redis pub/sub, domain event emission | Direct Prometheus/LangSmith calls |
-| ARQ worker other jobs | Job-specific logic, domain event emission | Direct Prometheus/LangSmith calls |
-| EventBus handlers | Metric recording (Prometheus, LangSmith, DB) | Business logic, graph state reads |
+| LangGraph nodes | None — zero metric calls | Any metric call, `event_bus`, OTel |
+| LCEL chains | None | Any metric call |
+| LangServe agents | None | Any metric call |
+| ARQ worker (in loop) | None — callback fires automatically | Explicit metric calls inside loop |
+| ARQ worker (post-graph) | `meter.add()` / `meter.record()` directly | `prometheus_client` |
+| LangChain callback | OTel Metrics API | `prometheus_client`, `event_bus` |
+| `POST /feedback` handler | `event_bus.publish(UserFeedbackSubmitted)` | `prometheus_client`, `langsmith` |
+| `POST /answer` handler | `meter.record()` (1 line) | `prometheus_client`, `event_bus` |
+| `LangSmithFeedbackHandler` | LangSmith SDK calls | Business logic, OTel |
+| ASGI middleware | OTel Metrics API | `prometheus_client` |
+| `main.py` / `conftest.py` | `MeterProvider` configuration | Metric recording |
 
 **Enforcement:** In code review, any PR that adds a `prometheus_client` import or `langsmith`
-import outside of `agentops/metrics/` is blocked. Enforce with a `ruff` rule or pre-commit
-grep check:
+import outside of `agentops/metrics/` and `agentops/langsmith_client.py` is blocked.
 
 ```bash
 # .pre-commit-config.yaml addition
 - repo: local
   hooks:
     - id: no-metrics-in-business-logic
-      name: No metrics imports outside agentops/metrics/
+      name: No prometheus_client imports outside agentops/metrics/
       language: pygrep
-      entry: "from prometheus_client|import prometheus_client|from langsmith import Client"
+      entry: "from prometheus_client|import prometheus_client"
       files: "^agentops/(?!metrics/).*\\.py$"
-      exclude: "^agentops/langsmith_client\\.py$"
+    - id: no-langsmith-in-business-logic
+      name: No langsmith.Client imports outside designated modules
+      language: pygrep
+      entry: "from langsmith import Client|import langsmith"
+      files: "^agentops/(?!metrics/|langsmith_client).*\\.py$"
 ```
 
 ---
 
-## 13. Testing Strategy
+## 14. Complete Metric Catalog
 
-### Business Logic Tests (no metric mocking needed)
+All metrics produced by this system, with their source:
+
+| Metric name                    | Type      | Labels                              | Source                        |
+|--------------------------------|-----------|-------------------------------------|-------------------------------|
+| `agent_calls_total`            | Counter   | `agent`                             | `AgentOpsMetricsCallback`     |
+| `agent_duration_seconds`       | Histogram | `agent`                             | `AgentOpsMetricsCallback`     |
+| `agent_errors_total`           | Counter   | `agent`                             | `AgentOpsMetricsCallback`     |
+| `token_usage_total`            | Counter   | `agent`, `model`, `token_type`      | `AgentOpsMetricsCallback`     |
+| `cost_usd_total`               | Counter   | `agent`, `model`                    | `AgentOpsMetricsCallback`     |
+| `job_total`                    | Counter   | `status`                            | Worker post-graph             |
+| `job_duration_seconds`         | Histogram | —                                   | Worker post-graph             |
+| `jobs_active`                  | UpDownCounter | —                               | Worker post-graph             |
+| `human_wait_seconds`           | Histogram | —                                   | `POST /answer` handler        |
+| `index_build_duration_seconds` | Histogram | `status`                            | Indexer ARQ job               |
+| `http_requests_total`          | Counter   | `method`, `path`, `status_code`     | ASGI middleware               |
+| `http_request_duration_seconds`| Histogram | `method`, `path`                    | ASGI middleware               |
+
+---
+
+## 15. Testing Strategy
+
+### Node and Chain Tests (zero metric involvement)
 
 ```python
 # tests/nodes/test_supervisor.py
-from unittest.mock import AsyncMock, patch
-from agentops.metrics.bus import EventBus
+# No event_bus, no OTel, no mocking needed.
+# conftest.py already set NoOpMeterProvider — all OTel calls are safe no-ops.
 
 async def test_supervisor_routes_to_writer_when_budget_exceeded():
-    # Patch event_bus to a no-op — no metric mocking needed
-    with patch("agentops.worker.event_bus", new=EventBus()):
-        state = make_state(cost_budget_exceeded=True)
-        result = supervisor_node(state)
-        assert result["next_agent"] == "writer"
+    state = make_state(cost_budget_exceeded=True)
+    result = supervisor_node(state)
+    assert result["next_agent"] == "writer"
 ```
 
-### Handler Tests (inject synthetic events)
+Not passing `AgentOpsMetricsCallback` in config → zero metric involvement.
+`conftest.py` NoOpMeterProvider → any accidental OTel call silently succeeds.
+
+### Callback Tests (InMemoryMetricReader, no mocking)
 
 ```python
-# tests/metrics/test_prometheus_handler.py
-from agentops.metrics.handlers import prometheus_handler
-from agentops.events import AgentCompleted
-import prometheus_client
-
-async def test_agent_duration_recorded():
-    before = prometheus_client.REGISTRY.get_sample_value(
-        "agent_duration_seconds_sum", {"agent": "investigator"}
-    ) or 0.0
-    await prometheus_handler.on_agent_completed(
-        AgentCompleted(job_id="j1", agent_name="investigator", duration_ms=1500.0, confidence=0.8)
-    )
-    after = prometheus_client.REGISTRY.get_sample_value(
-        "agent_duration_seconds_sum", {"agent": "investigator"}
-    )
-    assert after - before == pytest.approx(1.5)
+# tests/metrics/test_callback.py
+# See §4 for full example. Pattern:
+# 1. Create InMemoryMetricReader + MeterProvider
+# 2. Call callback methods directly (on_chain_start, on_chain_end, etc.)
+# 3. Assert data points via reader.get_metrics_data()
 ```
 
-### Integration Tests (real event bus)
+No mocking. No patching. Pure unit test on the callback class.
+
+### Worker Integration Tests (callback + InMemoryMetricReader)
 
 ```python
-# tests/integration/test_event_pipeline.py
-async def test_job_completion_records_all_metrics(real_event_bus):
-    await real_event_bus.publish(JobCompleted(
-        job_id="j1", duration_ms=30000.0, final_confidence=0.85, severity="HIGH"
-    ))
-    # Assert Prometheus counter incremented
-    assert get_counter("job_total", {"status": "completed"}) == 1
-    # Assert DB cache row written (via DbCacheHandler)
-    ...
+# tests/integration/test_worker_metrics.py
+async def test_job_completion_increments_job_total():
+    reader = InMemoryMetricReader()
+    provider = MeterProvider(metric_readers=[reader])
+    otel_metrics.set_meter_provider(provider)
+
+    # Run worker with real callback
+    await run_triage(ctx=mock_ctx, job_id="j1")
+
+    data = reader.get_metrics_data()
+    job_total = find_metric(data, "job_total")
+    assert sum(dp.value for dp in job_total.data.data_points
+               if dp.attributes.get("status") == "completed") == 1
 ```
 
-**Key invariant:** No test file ever needs to simultaneously mock both business logic and metrics.
-Business logic tests are metric-free. Handler tests are business-logic-free.
+### Feedback Handler Tests (only mock needed in the system)
+
+```python
+# tests/metrics/test_langsmith_feedback_handler.py
+from unittest.mock import AsyncMock, patch
+from agentops.metrics.handlers.langsmith_feedback_handler import on_user_feedback
+from agentops.events import UserFeedbackSubmitted
+
+async def test_negative_feedback_calls_needs_review():
+    event = UserFeedbackSubmitted(
+        job_id="j1", langsmith_run_id=str(uuid.uuid4()),
+        positive=False, comment="Wrong answer",
+    )
+    with patch("agentops.metrics.handlers.langsmith_feedback_handler.langsmith_client") as mock_client:
+        await on_user_feedback(event)
+
+    calls = mock_client.create_feedback.call_args_list
+    keys = [c.kwargs["key"] for c in calls]
+    assert "user_rating" in keys
+    assert "needs_review" in keys
+    mock_client.add_runs_to_annotation_queue.assert_called_once()
+```
+
+This is the **only** test in the system that needs to mock an external SDK.
+
+### Global Rule
+
+`conftest.py` sets `MeterProvider()` (empty, no exporters) at module level:
+- All `create_counter` / `create_histogram` calls return no-op instruments
+- All `.add()` and `.record()` calls silently succeed
+- No Prometheus registry accumulation between test runs
+- Tests that need to assert values opt in to `InMemoryMetricReader` explicitly
