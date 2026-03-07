@@ -92,7 +92,7 @@ class TriageReport(TypedDict):
 
 class BugTriageState(TypedDict):
     # Input
-    issue_url: str
+    issue_url: str  # validated at API boundary — see PRD-006; plain str here (post-validation)
     issue_title: str
     issue_body: str
     repository: str

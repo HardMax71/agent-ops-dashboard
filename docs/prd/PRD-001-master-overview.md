@@ -9,7 +9,7 @@
 | Status       | DRAFT                              |
 | Date         | March 2026                         |
 | Author       | Product & Engineering Team         |
-| Related Docs | [PRD-002](PRD-002-frontend-ux.md), [PRD-003](PRD-003-langgraph-orchestration.md), [PRD-004](PRD-004-agent-layer.md), [PRD-005](PRD-005-langsmith-observability.md) |
+| Related Docs | [PRD-002](PRD-002-frontend-ux.md), [PRD-003](PRD-003-langgraph-orchestration.md), [PRD-004](PRD-004-agent-layer.md), [PRD-005](PRD-005-langsmith-observability.md), [PRD-006](PRD-006-data-validation.md) |
 
 ---
 
@@ -227,6 +227,7 @@ GitHub Issue URL
 | Codebase vector index (semantic search)          | P1       | [PRD-004](PRD-004-agent-layer.md)                   |
 | Agent configuration UI (model, prompt, endpoint) | P2       | [PRD-004](PRD-004-agent-layer.md)                   |
 | Cost and latency analytics dashboard             | P2       | [PRD-005](PRD-005-langsmith-observability.md)        |
+| Input validation (issue_url, Pydantic v2)        | P0       | [PRD-006](PRD-006-data-validation.md)                |
 
 ---
 
