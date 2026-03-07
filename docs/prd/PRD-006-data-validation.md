@@ -4,7 +4,7 @@ title: Data Validation — GitHub Issue URL
 status: DRAFT
 domain: backend/api
 depends_on: [PRD-001, PRD-003]
-key_decisions: [pydantic-v2-annotated-type, github-issue-url-validation, ssrf-prevention, api-boundary-validation-only]
+key_decisions: [pydantic-v2-annotated-type, github-issue-url-validation, ssrf-prevention, api-boundary-validation-only, atomic-setnx-idempotency]
 ---
 
 # PRD-006 — Data Validation: GitHub Issue URL
@@ -103,13 +103,17 @@ async def create_job(
     response: Response = None,
 ) -> dict:
     idem_key = _idempotency_key(body.issue_url, current_user.id)
-    existing = await redis.get(f"idempotency:{idem_key}")
-    if existing:
+    job_id = str(uuid4())
+
+    # Atomic SET NX: only one concurrent request wins; others see the winner's job_id.
+    was_set = await redis.set(
+        f"idempotency:{idem_key}", job_id, ex=86400, nx=True
+    )
+    if not was_set:
+        existing = await redis.get(f"idempotency:{idem_key}")
         response.status_code = 200
         return {"job_id": existing.decode()}
 
-    job_id = str(uuid4())
-    await redis.set(f"idempotency:{idem_key}", job_id, ex=86400)  # 24-hour TTL
     initial_state = {
         "issue_url": body.issue_url,
         "job_id": job_id,

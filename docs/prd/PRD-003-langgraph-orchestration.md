@@ -56,13 +56,11 @@ persisted at every checkpoint.
 ```python
 from __future__ import annotations
 
-from typing import Annotated, ClassVar, NotRequired
+from typing import Annotated
 from pydantic import BaseModel, Field, model_validator
 
-from langgraph.graph.message import add_messages
 
-
-class AgentFinding(TypedDict):
+class AgentFinding(BaseModel):
     agent_name: str
     summary: str
     details: str
@@ -70,19 +68,22 @@ class AgentFinding(TypedDict):
     relevant_files: list[str]
 
 
-class HumanExchange(TypedDict):
+class HumanExchange(BaseModel):
     question: str
     context: str
-    answer: str | None
+    answer: str | None = None
 
 
-class TriageReport(TypedDict):
+class TriageReport(BaseModel):
     severity: str  # LOW / MEDIUM / HIGH / CRITICAL
     category: str
     root_cause: str
     relevant_files: list[str]
     similar_issues: list[str]
     confidence: float
+
+
+_CURRENT_SCHEMA_VERSION = 1
 
 
 class BugTriageState(BaseModel):
@@ -93,10 +94,8 @@ class BugTriageState(BaseModel):
     - Adding a field: add it with a Field(default=...) default. Pydantic fills missing keys
       from old checkpoints automatically at deserialization — no migration code required.
     - Renaming or changing the type of a field: add a branch inside migrate_from_checkpoint()
-      and bump CURRENT_SCHEMA_VERSION.
+      and bump _CURRENT_SCHEMA_VERSION.
     """
-
-    CURRENT_SCHEMA_VERSION: ClassVar[int] = 1
 
     # --- Issue metadata ---
     issue_url: str
@@ -149,7 +148,7 @@ class BugTriageState(BaseModel):
         Runs before Pydantic field validation on every deserialization.
         For additive schema changes this method does nothing — Pydantic fills Field
         defaults automatically. Add a branch here only when a field is renamed or its
-        type changes in a breaking way, then bump CURRENT_SCHEMA_VERSION.
+        type changes in a breaking way, then bump _CURRENT_SCHEMA_VERSION.
         """
         if not isinstance(data, dict):
             return data
@@ -160,7 +159,7 @@ class BugTriageState(BaseModel):
         #   if data.get("schema_version", 0) < 2 and "search_results" in data:
         #       data["web_results"] = data.pop("search_results")
         #
-        data["schema_version"] = cls.CURRENT_SCHEMA_VERSION
+        data["schema_version"] = _CURRENT_SCHEMA_VERSION
         return data
 
     model_config = {"arbitrary_types_allowed": True}
@@ -185,8 +184,8 @@ Pydantic uses `Field(default=0)`). `migrate_from_checkpoint()` always writes
 `CURRENT_SCHEMA_VERSION` into the dict before field validation, so after the first supervisor
 execution following a schema bump the checkpoint is updated automatically.
 
-**`CURRENT_SCHEMA_VERSION`** is a `ClassVar[int]` on `BugTriageState` — not a module-level
-global — so it is always co-located with the class it describes.
+**`_CURRENT_SCHEMA_VERSION`** is a module-level constant defined immediately above `BugTriageState`
+so it is always co-located with the class it describes.
 
 ---
 
@@ -334,7 +333,7 @@ class SupervisorDecision(BaseModel):
 ```
 
 > When `next_node == "human_input"`, the supervisor node returns
-> `{"pending_exchange": HumanExchange(question=..., context=..., answer=None),
+> `{"pending_exchange": HumanExchange(question=..., context=...),
 > "awaiting_human": True}`. It does **not** append to `human_exchanges` directly — that
 > field is written only by `human_input_node` via the append reducer.
 
@@ -394,7 +393,7 @@ def human_input_node(state: BugTriageState) -> dict:
     })
 
     return {
-        "human_exchanges": [{**exchange, "answer": answer}],  # reducer appends
+        "human_exchanges": [exchange.model_copy(update={"answer": answer})],  # reducer appends
         "pending_exchange": None,
         "awaiting_human": False,
     }

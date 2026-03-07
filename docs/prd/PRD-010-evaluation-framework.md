@@ -57,6 +57,7 @@ from langsmith.evaluation import evaluate, LangChainStringEvaluator
 
 class EvalSettings(BaseSettings):
     langchain_project: Literal["agentops-staging"]  # fails fast if pointed at production
+    langsmith_api_key: str                           # required to submit eval results to LangSmith
     langserve_base_url: str                          # must be a staging deployment URL
     openai_api_key: str                              # separate eval project key for billing isolation
 

@@ -308,7 +308,7 @@ after all three `output.section_done` events have been emitted.
 ### Concurrent connections (multiple tabs)
 
 Opening the same job in more than one browser tab is safe and fully supported. Each `GET
-/{job_id}/stream` request creates an **independent Redis Pub/Sub subscriber** on the
+/jobs/{job_id}/stream` request creates an **independent Redis Pub/Sub subscriber** on the
 `jobs:{job_id}:events` channel. The ARQ worker publishes each event once; Redis delivers a copy to
 every active subscriber. Consequences:
 
