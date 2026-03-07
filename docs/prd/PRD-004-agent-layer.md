@@ -133,23 +133,39 @@ Each service uses the same setup pattern:
 
 ```python
 # agent_service/server.py
+from functools import lru_cache
+from pydantic_settings import BaseSettings
 from fastapi import FastAPI
 from langserve import add_routes
-from .chain import chain  # the LCEL chain
+from .chain import chain
 
-app = FastAPI(title="AgentOps — Investigator Agent")
 
-add_routes(
-    app,
-    chain,
-    path="/agents/investigator",
-    enable_feedback_endpoint=True,  # lets LangSmith capture feedback
-)
+class Settings(BaseSettings):
+    enable_playground: bool = False  # ENABLE_PLAYGROUND=true to opt in (dev only)
 
-if __name__ == "__main__":
-    import uvicorn
 
-    uvicorn.run(app, host="0.0.0.0", port=8001)
+@lru_cache
+def get_settings() -> Settings:
+    return Settings()
+
+
+def create_app() -> FastAPI:
+    settings = get_settings()
+    app = FastAPI(title="AgentOps — Investigator Agent")
+
+    # playground_type=None removes /playground from the router at registration time.
+    # "default" re-enables it only when ENABLE_PLAYGROUND=true.
+    add_routes(
+        app,
+        chain,
+        path="/agents/investigator",
+        playground_type="default" if settings.enable_playground else None,
+        enable_feedback_endpoint=True,
+    )
+    return app
+
+
+app = create_app()
 ```
 
 LangServe automatically generates:
@@ -165,11 +181,14 @@ Each LangServe endpoint comes with a built-in `/playground` UI at no extra cost.
 manually test agent behavior with real GitHub issues before running full end-to-end jobs. This complements the LangFlow
 prototyping workflow.
 
-**Security requirement:** The `/playground` route must be disabled in staging and production. It is enabled only in
-local development environments. Implementers must control this via a deployment flag (e.g. `ENABLE_PLAYGROUND=true`,
-defaulting to `false`); when disabled, requests to `/agents/{name}/playground` must return 404 or be blocked at the
-network boundary. In staging, if access is required for debugging, it must be restricted to internal networks
-(VPN/localhost) or protected by authentication before being enabled.
+**Security requirement:** The `/playground` route must be disabled in staging and production. LangServe exposes the
+playground by default; it is disabled by passing `playground_type=None` to `add_routes()`, which removes the route
+from the FastAPI router at registration time — no middleware or network rule required. The `ENABLE_PLAYGROUND`
+environment variable (default: `false`) controls this via a `pydantic-settings` `BaseSettings` class; the value is
+read inside `create_app()` so no module-level globals are introduced. `ENABLE_PLAYGROUND=true` must only appear in
+local development environments. In staging, if playground access is required for debugging, the service must be
+redeployed with `ENABLE_PLAYGROUND=true` behind an internal network or VPN — it must never be reachable from the
+public internet.
 
 ---
 

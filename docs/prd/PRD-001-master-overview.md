@@ -292,3 +292,5 @@ GitHub Issue URL
 - Tavily API — web search tool for the Web Search agent
 - LangSmith API — observability and evaluation
 - LangChain, LangGraph, LangServe, LangFlow — open-source packages (MIT licensed)
+- **Redis** — job queue (ARQ), Pub/Sub event bus for SSE fanout, and job status storage
+- **ARQ** — async Redis queue for distributed LangGraph job execution across worker processes; provides `Job.abort()` for cross-process kill, built-in status tracking, and automatic requeue on worker crash

@@ -51,7 +51,9 @@ LangGraph is used here in its intended role: **low-level orchestration of long-r
 | `interrupt()`     | Pauses graph execution mid-node to await human input; resumes via `Command(resume=answer)`                                                |
 | Checkpointer      | `SqliteSaver` (dev) / `PostgresSaver` (prod) — persists full graph state so jobs survive restarts                                         |
 | Thread ID         | Each triage job maps to a LangGraph thread; jobs are fully isolated                                                                       |
-| Streaming         | `graph.astream_events()` emits fine-grained events consumed by FastAPI SSE endpoint                                                       |
+| Streaming         | `graph.astream_events()` runs inside the ARQ worker; the API server is a pure Redis Pub/Sub consumer                                      |
+| ARQ               | Async Redis Queue — distributed job execution, cross-worker `Job.abort()`, built-in status tracking (QUEUED / IN_PROGRESS / COMPLETE / FAILED) |
+| Redis Pub/Sub     | Event fanout channel (`jobs:{id}:events`) — worker publishes events, SSE endpoint subscribes; supports multiple simultaneous subscribers  |
 
 ---
 
@@ -332,28 +334,99 @@ def human_input_node(state: BugTriageState) -> dict:
 
 ### 7.2 Resuming from FastAPI
 
-When the user submits an answer via `POST /jobs/{id}/answer`:
+When the user submits an answer via `POST /jobs/{id}/answer`, the endpoint cancels the pending timeout ARQ job and
+resumes the graph. Full implementation is in §7.3.
+
+### 7.3 Interrupt Timeout Mechanism
+
+`interrupt()` blocks the graph indefinitely — LangGraph has no built-in timeout. The 30-minute timeout is implemented
+by scheduling a background task at the moment the interrupt fires, which calls `graph.ainvoke(Command(resume=...))` if
+the user has not answered.
+
+**Implementation:** The ARQ worker (where the graph runs) schedules a `asyncio.create_task` after calling
+`graph.astream_events`. Because the interrupt suspends execution and checkpoints state, the worker's task completes at
+that point. A separate lightweight ARQ job (`expire_human_input`) is enqueued with a 30-minute delay to handle the
+timeout. If the user answers first, the answer endpoint cancels the timeout job via `Job.abort()`.
+
+```python
+# worker.py
+
+TIMEOUT_ANSWER = "[no answer provided — proceeding with best-effort]"
+HUMAN_INPUT_TIMEOUT_SECONDS = 1800  # 30 minutes
+
+async def expire_human_input(ctx: dict, job_id: str):
+    """
+    Scheduled ARQ job: fires 30 min after a human_input interrupt if unanswered.
+    Resumes the graph with a best-effort signal so the supervisor can proceed.
+    """
+    redis: Redis = ctx["redis"]
+
+    # Check job status — if already resumed by user, do nothing
+    job = Job(job_id, redis)
+    info = await job.info()
+    if info is not None and info.status in (JobStatus.complete, JobStatus.not_found):
+        return  # user already answered; graph already running
+
+    config = {"configurable": {"thread_id": job_id}}
+    await graph.ainvoke(Command(resume=TIMEOUT_ANSWER), config=config)
+
+    # Notify frontend that the timeout fired
+    channel = f"jobs:{job_id}:events"
+    await redis.publish(channel, json.dumps({
+        "type": "human_input.timeout",
+        "message": "No answer received after 30 minutes. Proceeding with best-effort.",
+    }))
+```
+
+The timeout job is enqueued at the moment the ARQ worker detects the graph has paused at a `human_input` node (i.e.,
+`astream_events` yields an `on_chain_end` event whose metadata indicates an interrupt):
+
+```python
+# worker.py — inside run_triage(), after the astream_events loop
+async def run_triage(ctx: dict, job_id: str, initial_state: dict):
+    redis: Redis = ctx["redis"]
+    config = {"configurable": {"thread_id": job_id}}
+    channel = f"jobs:{job_id}:events"
+
+    async for event in graph.astream_events(initial_state, config=config, version="v2"):
+        sse_event = transform_langgraph_event(event)
+        if sse_event:
+            await redis.publish(channel, json.dumps(sse_event))
+
+        # Detect interrupt pause: schedule timeout job
+        if _is_human_input_interrupt(event):
+            await arq_queue.enqueue_job(
+                "expire_human_input",
+                job_id,
+                _defer_by=timedelta(seconds=HUMAN_INPUT_TIMEOUT_SECONDS),
+            )
+
+    await redis.publish(channel, json.dumps({"type": "job.done"}))
+```
+
+**Answer endpoint cancels the timeout** by aborting the scheduled ARQ job before resuming the graph:
 
 ```python
 @app.post("/jobs/{job_id}/answer")
-async def submit_answer(job_id: str, body: AnswerRequest):
+async def submit_answer(job_id: str, body: AnswerRequest, redis: Redis = Depends(get_redis)):
     config = {"configurable": {"thread_id": job_id}}
 
-    # Resume the graph with the user's answer
-    await graph.ainvoke(
-        Command(resume=body.answer),
-        config=config,
-    )
+    # Cancel the pending timeout job so it does not double-resume the graph
+    timeout_job_id = f"timeout:{job_id}"
+    timeout_job = Job(timeout_job_id, redis)
+    await timeout_job.abort(timeout=2)  # no-op if already fired or not found
+
+    await graph.ainvoke(Command(resume=body.answer), config=config)
 ```
 
-### 7.3 Question Constraints
+### 7.4 Question Constraints
 
-| Rule                  | Value                                                  | Rationale                                               |
-|-----------------------|--------------------------------------------------------|---------------------------------------------------------|
-| Max questions per job | 2                                                      | Prevent over-reliance on user; agents should be capable |
-| Timeout (no answer)   | 30 minutes                                             | After timeout, supervisor proceeds with best-effort     |
-| Question format       | Single question + 2–3 concrete options when applicable | Reduces cognitive load                                  |
-| Blocker scope         | Entire graph pauses, not just one agent                | Ensures answer is incorporated before any further work  |
+| Rule                  | Value                                                         | Rationale                                               |
+|-----------------------|---------------------------------------------------------------|---------------------------------------------------------|
+| Max questions per job | 2                                                             | Prevent over-reliance on user; agents should be capable |
+| Timeout (no answer)   | 30 minutes — enforced via deferred ARQ job (`expire_human_input`) | Prevents indefinite graph hang; graph resumes with best-effort signal |
+| Question format       | Single question + 2–3 concrete options when applicable        | Reduces cognitive load                                  |
+| Blocker scope         | Entire graph pauses, not just one agent                       | Ensures answer is incorporated before any further work  |
 
 ---
 
@@ -376,26 +449,73 @@ treats redirect instructions as high-priority context prepended to its system pr
 
 ### 8.3 Kill
 
-Sends `DELETE /jobs/{id}`. Immediately terminates the LangGraph thread. Final state is checkpointed with
-`status: "killed"`. Any partial outputs already in state are preserved and shown in the output panel.
+Sends `DELETE /jobs/{id}`. Immediately terminates the LangGraph thread via ARQ's cross-process abort mechanism.
+Final state is checkpointed with `status: "killed"`. Any partial outputs already in state are preserved and shown in
+the output panel.
 
-`running_tasks` is a module-level `dict[str, asyncio.Task]` populated by the
-`POST /jobs` handler when it spawns each graph execution as a background
-`asyncio.Task`. The kill handler looks up the task by job ID, persists the
-killed status via `graph.aupdate_state()` (the async counterpart to
-`update_state`), then cancels the task.
+**Architecture:** The API server never runs the graph. Jobs are enqueued to ARQ workers via Redis. `Job.abort()` sends
+an abort signal through Redis; the worker process holding that job cancels its asyncio task — this works across any
+number of workers and processes by design. No module-level `running_tasks` dict is needed.
+
+```
+┌──────────────────────┐     enqueue_job()      ┌──────────────────────┐
+│   FastAPI API server │ ──────────────────────► │   ARQ Worker(s)      │
+│   (REST + SSE)       │                         │   graph.ainvoke()    │
+│                      │ ◄────────────────────── │   publishes events   │
+│   SSE: subscribe to  │   Redis Pub/Sub events  │   to Redis channel   │
+│   jobs:{id}:events   │                         └──────────────────────┘
+└──────────────────────┘
+         │                                                  │
+         │  Job.abort()                                     │ PostgresSaver
+         ▼                                                  ▼
+      Redis ──────────────────────────────────────►  PostgreSQL
+   (ARQ queue + Pub/Sub + job status)               (LangGraph state)
+```
+
+**ARQ worker function** — runs on a worker process, not the API server:
+
+```python
+# worker.py
+async def run_triage(ctx: dict, job_id: str, initial_state: dict):
+    redis: Redis = ctx["redis"]
+    config = {"configurable": {"thread_id": job_id}}
+    channel = f"jobs:{job_id}:events"
+
+    async for event in graph.astream_events(initial_state, config=config, version="v2"):
+        sse_event = transform_langgraph_event(event)
+        if sse_event:
+            await redis.publish(channel, json.dumps(sse_event))
+
+    # Terminal event so SSE subscribers know to close
+    await redis.publish(channel, json.dumps({"type": "job.done"}))
+
+
+class WorkerSettings:
+    functions = [run_triage]
+    allow_abort_jobs = True   # enables Job.abort() cross-worker
+    max_jobs = 10             # concurrent job cap per worker
+    retry_jobs = False        # LangGraph jobs are not idempotent by default
+```
+
+**Kill endpoint** — no dict lookup, no task tracking:
 
 ```python
 @app.delete("/jobs/{job_id}")
-async def kill_job(job_id: str):
-    task = running_tasks.get(job_id)
-    if task is None:
-        raise HTTPException(status_code=404, detail="Job not found or already completed")
+async def kill_job(job_id: str, redis: Redis = Depends(get_redis)):
+    job = Job(job_id, redis)
+    info = await job.info()
+    if info is None:
+        raise HTTPException(status_code=404, detail="Job not found")
+
+    aborted = await job.abort(timeout=5)
+    if not aborted:
+        raise HTTPException(status_code=409, detail="Job could not be aborted (may already be complete)")
+
+    # Persist killed status in LangGraph state for checkpoint continuity
     config = {"configurable": {"thread_id": job_id}}
-    # Update state to killed before cancelling
     await graph.aupdate_state(config, {"status": "killed"})
-    # Cancel the background task running the graph
-    task.cancel()
+
+    return {"job_id": job_id, "status": "killed"}
 ```
 
 ---
@@ -427,24 +547,56 @@ the same ID used in SSE stream URLs, answer endpoints, and LangSmith trace group
 
 ## 10. Streaming to Frontend
 
-LangGraph's `astream_events()` emits fine-grained events. The FastAPI SSE handler subscribes to these and transforms
-them into the frontend event types defined in [PRD-002](PRD-002-frontend-ux.md).
+**Separation of concerns:** `graph.astream_events()` runs inside the ARQ worker (see §8.3). The worker publishes each
+transformed event to a Redis Pub/Sub channel (`jobs:{job_id}:events`). The FastAPI SSE endpoint is a pure subscriber
+— it never executes graph logic.
+
+This means multiple browser tabs can subscribe to the same job stream independently (each gets a separate Redis
+subscriber), and a client disconnect drops only that subscriber — the running job in the ARQ worker is unaffected.
+
+**Disconnect handling:** Starlette's `StreamingResponse` runs the generator inside an anyio cancel scope. When the
+client disconnects, Starlette cancels the scope, which raises `asyncio.CancelledError` at whichever `await` the
+generator is blocked on inside `pubsub.listen()`. The `finally` block fires unconditionally and cleans up the
+subscriber. No polling, no `request.is_disconnected()` checks, no extra tasks.
 
 ```python
 @app.get("/jobs/{job_id}/stream")
-async def stream_job(job_id: str):
+async def stream_job(job_id: str, redis: Redis = Depends(get_redis)):
+    channel = f"jobs:{job_id}:events"
+
     async def event_generator():
-        config = {"configurable": {"thread_id": job_id}}
-        async for event in graph.astream_events(None, config=config, version="v2"):
-            sse_event = transform_langgraph_event(event)
-            if sse_event:
-                yield f"data: {json.dumps(sse_event)}\n\n"
+        pubsub = redis.pubsub()
+        await pubsub.subscribe(channel)
+        try:
+            async for message in pubsub.listen():
+                if message["type"] != "message":
+                    continue
+                yield f"data: {message['data']}\n\n"
+                if json.loads(message["data"]).get("type") == "job.done":
+                    break
+        finally:
+            await pubsub.unsubscribe(channel)
+            await pubsub.close()
 
     return StreamingResponse(event_generator(), media_type="text/event-stream")
 ```
 
-The `transform_langgraph_event()` function maps LangGraph's internal event types (e.g., `on_chat_model_stream`,
-`on_tool_start`, `on_chain_end`) to the frontend event schema in [PRD-002](PRD-002-frontend-ux.md).
+The `transform_langgraph_event()` function (called in the ARQ worker) maps LangGraph's internal event types (e.g.,
+`on_chat_model_stream`, `on_tool_start`, `on_chain_end`) to the frontend event schema in
+[PRD-002](PRD-002-frontend-ux.md).
+
+**FastAPI lifespan** — no graph tasks to drain on shutdown; only the Redis pool needs cleanup:
+
+```python
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    app.state.redis = await create_redis_pool(RedisSettings())
+    app.state.arq_queue = ArqRedis(app.state.redis)
+    yield
+    await app.state.redis.close()
+
+app = FastAPI(lifespan=lifespan)
+```
 
 ---
 
