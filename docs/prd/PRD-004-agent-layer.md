@@ -65,7 +65,12 @@ prompt = ChatPromptTemplate.from_messages([
     ("human", AGENT_HUMAN_TEMPLATE),
 ])
 
-llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+llm = ChatOpenAI(
+    model="gpt-4o-mini",
+    temperature=0,
+    base_url=settings.model_gateway_url,  # e.g. http://litellm:4000
+    api_key=settings.service_token,        # internal token, not the OpenAI key
+)
 
 parser = PydanticOutputParser(pydantic_object=AgentFinding)
 
@@ -127,6 +132,8 @@ from .chain import chain
 
 class Settings(BaseSettings):
     enable_playground: bool = False  # ENABLE_PLAYGROUND=true to opt in (dev only)
+    model_gateway_url: str   # e.g. http://litellm:4000
+    service_token: str       # unique per service, validated by gateway
 
 
 @lru_cache
@@ -174,6 +181,49 @@ read inside `create_app()` so no module-level globals are introduced. `ENABLE_PL
 local development environments. In staging, if playground access is required for debugging, the service must be
 redeployed with `ENABLE_PLAYGROUND=true` behind an internal network or VPN — it must never be reachable from the
 public internet.
+
+### Model Gateway
+
+Each LangServe service does **not** hold an OpenAI API key. Instead, all five services authenticate
+to a shared model gateway (LiteLLM proxy). The gateway is the only component that holds the real
+`OPENAI_API_KEY`.
+
+**Why:**
+- **Single key surface** — rotate or revoke in one place; no per-service key management
+- **Unified rate limiting and spend cap** — LiteLLM enforces a single RPM/TPM budget across all agents
+- **Audit log** — every LLM call is logged centrally with the originating service token
+- **Key isolation** — a compromised agent service can only call the gateway with its own service token,
+  which can be revoked without cycling the OpenAI key
+
+**Authentication flow:**
+
+Each service is issued a unique `SERVICE_TOKEN` environment variable. The gateway validates this
+token and forwards the request to OpenAI using the real API key.
+
+| Service                    | Service Token Env Var                  |
+|----------------------------|----------------------------------------|
+| `agentops-investigator`    | `GATEWAY_TOKEN_INVESTIGATOR`           |
+| `agentops-codebase-search` | `GATEWAY_TOKEN_CODEBASE_SEARCH`        |
+| `agentops-web-search`      | `GATEWAY_TOKEN_WEB_SEARCH`             |
+| `agentops-critic`          | `GATEWAY_TOKEN_CRITIC`                 |
+| `agentops-writer`          | `GATEWAY_TOKEN_WRITER`                 |
+
+**Configuration in each service:**
+
+```python
+class Settings(BaseSettings):
+    enable_playground: bool = False
+    model_gateway_url: str   # e.g. http://litellm:4000
+    service_token: str       # unique per service, validated by gateway
+```
+
+The `ChatOpenAI` client in each LCEL chain is initialized with `base_url=settings.model_gateway_url`
+and `api_key=settings.service_token`. LiteLLM's OpenAI-compatible API surface means no other code
+changes are needed.
+
+**Gateway deployment:** The LiteLLM proxy runs as a sixth Docker service (`agentops-model-gateway`,
+port 4000). It is the only container with `OPENAI_API_KEY` in its environment. It is not exposed
+externally — only reachable within the Docker network.
 
 ---
 
@@ -487,6 +537,7 @@ Users can configure each agent via the Settings page (Zone 1 header → Settings
 | LLM Provider           | OpenAI, Anthropic                                        | OpenAI             |
 | Model (per agent)      | gpt-4o-mini, gpt-4o, claude-3-5-haiku, claude-3-5-sonnet | See per-agent spec |
 | LangServe Endpoint URL | Any valid URL                                            | localhost defaults |
+| Model Gateway URL      | Any valid internal URL                                   | `http://litellm:4000` |
 | System Prompt          | Free text (advanced)                                     | Built-in default   |
 | Max Tokens             | 500–4000                                                 | 1500               |
 | Temperature            | 0.0–0.5                                                  | 0.0                |

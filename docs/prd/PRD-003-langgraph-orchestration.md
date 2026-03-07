@@ -92,7 +92,7 @@ class BugTriageState(TypedDict):
     current_node: str
     next_node: str | None
     supervisor_reasoning: str
-    iterations: int
+    iterations: int  # total node executions across all resume cycles; persists via checkpointed state
     max_iterations: int
     paused: bool
 
@@ -190,6 +190,11 @@ def route_from_supervisor(state: BugTriageState) -> str:
 
     return state["next_node"]
 ```
+
+`iterations` counts total worker-node executions across the full job lifetime, including any
+cycles that occur after a human-interrupt resume. The value `max_iterations` is chosen to
+accommodate a typical flow (investigation → optional human interrupt → continued investigation
+→ write) without premature termination. It is **not** reset on resume.
 
 ---
 
@@ -312,6 +317,17 @@ def human_input_node(state: BugTriageState) -> dict:
 When the user submits an answer via `POST /jobs/{id}/answer`, the endpoint cancels the pending timeout ARQ job and
 resumes the graph. Full implementation is in the [Interrupt Timeout Mechanism](#interrupt-timeout-mechanism) section.
 
+`Command(resume=answer)` does not restart the graph from the beginning. LangGraph restores the
+full `BugTriageState` from the checkpoint saved at the interrupt and continues execution from
+the `human_input` node forward. The `iterations` counter therefore reflects work done both
+before and after the interrupt.
+
+Before resuming, the endpoint reads the checkpointed state via `graph.aget_state()` and
+checks `awaiting_human`. If the job is not currently paused at a `human_input` interrupt
+(e.g., the job is still running, has already completed, or the timeout already fired and
+auto-resumed), the endpoint returns **HTTP 409 Conflict** rather than calling
+`Command(resume=...)` on a non-interrupted thread.
+
 ### Interrupt Timeout Mechanism
 
 `interrupt()` blocks the graph indefinitely — LangGraph has no built-in timeout. The 30-minute timeout is implemented
@@ -379,6 +395,10 @@ async def run_triage(ctx: dict, job_id: str, initial_state: dict):
 @app.post("/jobs/{job_id}/answer")
 async def submit_answer(job_id: str, body: AnswerRequest, redis: Redis = Depends(get_redis)):
     config = {"configurable": {"thread_id": job_id}}
+
+    snapshot = await graph.aget_state(config)
+    if not snapshot.values.get("awaiting_human"):
+        raise HTTPException(status_code=409, detail="Job is not awaiting human input")
 
     timeout_job_id = f"timeout:{job_id}"
     timeout_job = Job(timeout_job_id, redis)
@@ -568,7 +588,9 @@ async def stream_job(
 
 The `transform_langgraph_event()` function (called in the ARQ worker) maps LangGraph's internal event types (e.g.,
 `on_chat_model_stream`, `on_tool_start`, `on_chain_end`) to the frontend event schema in
-[PRD-002](PRD-002-frontend-ux.md).
+[PRD-002](PRD-002-frontend-ux.md). When a Writer `RunnableParallel` branch completes,
+the corresponding `on_chain_end` event is translated to `output.section_done { section }` so the
+frontend can enable per-section controls without waiting for `job.done`.
 
 **FastAPI lifespan** — no graph tasks to drain on shutdown; only the Redis pool needs cleanup:
 
@@ -595,3 +617,4 @@ app = FastAPI(lifespan=lifespan)
 | `max_iterations` reached                | Graph routes directly to `writer` with whatever findings have been accumulated                                                |
 | Unhandled exception in any node         | Job status set to FAILED; full traceback captured in LangSmith; error event sent to frontend                                  |
 | Checkpointer DB unavailable             | Job continues in-memory; warning logged; user notified that job will not survive restart                                      |
+| `POST /jobs/{id}/answer` called while job is not awaiting input | Returns HTTP 409 Conflict; `awaiting_human` flag checked via `graph.aget_state()` before resuming |

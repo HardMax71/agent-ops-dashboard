@@ -289,9 +289,16 @@ reconnect flow.
 | `graph.interrupt`     | `{ question, context }`                   | Show question card, amber status    |
 | `graph.resumed`       | `{}`                                      | Remove question card, resume status |
 | `graph.node_complete` | `{ node_name }`                           | Update timeline                     |
-| `output.token`        | `{ section, token }`                      | Stream into output panel section    |
-| `job.done`            | `{ report, comment_draft, ticket_draft }` | Finalize output panel, green status |
+| `output.token`        | `{ section, token }`                      | Stream into output panel section              |
+| `output.section_done` | `{ section }`                              | Enable edit/copy controls for that section    |
+| `job.done`            | `{ report, comment_draft, ticket_draft }` | Finalize output panel, green status           |
 | `job.failed`          | `{ error, langsmith_url }`                | Red status, show error card         |
+
+**Concurrent section streaming:** The Writer agent uses `RunnableParallel`, so `output.token`
+events for `report`, `comment_draft`, and `ticket_draft` are interleaved — there is no ordering
+guarantee across sections. The frontend must buffer tokens per section and may not assume a section
+is complete until it receives `output.section_done` for that section. `job.done` is emitted only
+after all three `output.section_done` events have been emitted.
 
 ### Frontend State Management
 
@@ -308,6 +315,7 @@ interface JobState {
     commentDraft: string
     ticketDraft: TicketDraft | null
     langsmithUrl: string | null
+    completedSections: Set<string>   // populated by output.section_done events
 }
 ```
 
