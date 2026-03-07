@@ -22,6 +22,11 @@ key_decisions: [trace-hierarchy, cost-per-job-tracking, prompt-iteration-workflo
 
 ## Overview
 
+> **Detailed specs:** [LangSmith API & Integration Spec](PRD-005-1-langsmith-api-spec.md) —
+> fills 7 implementation gaps in this document (LangSmith read API, in-flight cost tracking,
+> user feedback SDK calls, Manual Review Queue, automation rules, deep-link URL construction,
+> and daily eval score storage).
+
 LangSmith is the observability and evaluation layer of AgentOps Dashboard. It wraps every layer of the stack
 automatically — LCEL chains inside each agent, LangGraph orchestration decisions, and full end-to-end job runs — and
 surfaces them in a unified tracing dashboard.
@@ -238,8 +243,14 @@ AgentOps UI:
 
 ### Cost Budget Alerts
 
-Users can set a per-job cost limit in Settings. If a job's running cost (tracked via LangSmith's API) exceeds the limit,
+Users can set a per-job cost limit in Settings. If a job's running cost exceeds the limit,
 the supervisor is notified and moves toward the `writer` node to wrap up, rather than spawning more agents.
+
+> **Correction:** In-flight cost cannot be tracked via LangSmith's API — the API only exposes
+> completed run data. The correct approach is to accumulate cost from `on_chat_model_end` events
+> in `astream_events()` using a model pricing table. See
+> [PRD-005-1 §5](PRD-005-1-langsmith-api-spec.md#5-in-flight-cost-tracking-gap-2) for the full
+> spec, token extraction code, and the three new `BugTriageState` fields required.
 
 ### Latency Dashboard
 
@@ -291,6 +302,12 @@ The workflow for safely improving agent quality using LangSmith:
 ## Alerting and Anomaly Detection
 
 ### Automated Alerts (v1.1)
+
+> **Implementation note:** Automation rules are configured in the LangSmith UI, not in Python
+> code. The backend provides a webhook receiver endpoint (`POST /internal/langsmith-alert`) that
+> LangSmith calls when a rule fires. See
+> [PRD-005-1 §8](PRD-005-1-langsmith-api-spec.md#8-online-evaluators--automation-rules-gap-5)
+> for rule conditions, LangSmith UI paths, and the webhook receiver implementation.
 
 LangSmith supports rule-based automations that trigger actions when conditions are met:
 

@@ -21,11 +21,14 @@ nav:
           - Full LCEL Chain Specs: prd/PRD-004-1-agent-chains.md
           - Codebase Vector Index: prd/PRD-004-2-codebase-index.md
       - LangSmith Observability: prd/PRD-005-langsmith-observability.md
+      - LangSmith Detail:
+          - API & Integration Spec: prd/PRD-005-1-langsmith-api-spec.md
       - Data Validation: prd/PRD-006-data-validation.md
       - Developer Tooling: prd/PRD-007-developer-tooling.md
       - Authentication: prd/PRD-008-authentication.md
       - Documentation Standards: prd/PRD-009-documentation-standards.md
       - Evaluation Framework: prd/PRD-010-evaluation-framework.md
+      - Metrics Collection: prd/PRD-011-metrics-collection.md
   - Plans:
       - Goals & Definition of Done: prd/PRD-001-1-goals-and-dod.md
       - Roadmap v1 (precise): plans/roadmap-v1.md
