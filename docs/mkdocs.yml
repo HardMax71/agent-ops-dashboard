@@ -1,4 +1,5 @@
 site_name: AgentOps Dashboard
+site_url: https://hardmax71.github.io/agent-ops-dashboard/
 docs_dir: .
 site_dir: ../site
 
@@ -10,6 +11,9 @@ nav:
       - LangGraph Orchestration: prd/PRD-003-langgraph-orchestration.md
       - Agent Layer: prd/PRD-004-agent-layer.md
       - LangSmith Observability: prd/PRD-005-langsmith-observability.md
+      - Data Validation: prd/PRD-006-data-validation.md
+      - Developer Tooling: prd/PRD-007-developer-tooling.md
+      - Authentication: prd/PRD-008-authentication.md
 
 theme:
   name: material
@@ -37,6 +41,15 @@ plugins:
 
 markdown_extensions:
   - tables
-  - fenced_code
+  - admonition
   - toc:
       permalink: true
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.details
