@@ -8,6 +8,10 @@ nav:
   - PRDs:
       - Master Overview: prd/PRD-001-master-overview.md
       - Frontend & UX: prd/PRD-002-frontend-ux.md
+      - Frontend Detail:
+          - Design System & Components: prd/PRD-002-1-design-system.md
+          - Pages & Wireframes: prd/PRD-002-2-pages-and-wireframes.md
+          - Interactions & Accessibility: prd/PRD-002-3-interactions-and-a11y.md
       - LangGraph Orchestration: prd/PRD-003-langgraph-orchestration.md
       - Agent Layer: prd/PRD-004-agent-layer.md
       - LangSmith Observability: prd/PRD-005-langsmith-observability.md
