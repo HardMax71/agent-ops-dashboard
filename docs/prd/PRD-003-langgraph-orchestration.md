@@ -504,7 +504,14 @@ async def kill_job(job_id: str, redis: Redis = Depends(get_redis)):
 
     aborted = await job.abort(timeout=5)
     if not aborted:
-        raise HTTPException(status_code=409, detail="Job could not be aborted (may already be complete)")
+        # run_triage exits normally when interrupt() suspends the graph, so ARQ
+        # marks the job complete while the LangGraph thread sits checkpointed.
+        # The pending timeout job is present exactly in that window.
+        timeout_job = Job(f"timeout:{job_id}", redis)
+        timeout_info = await timeout_job.info()
+        if timeout_info is None or timeout_info.status in (JobStatus.complete, JobStatus.not_found):
+            raise HTTPException(status_code=409, detail="Job could not be aborted (may already be complete)")
+        await timeout_job.abort(timeout=2)  # no-op if already fired
 
     config = {"configurable": {"thread_id": job_id}}
     await graph.aupdate_state(config, {"status": "killed"})
@@ -561,11 +568,13 @@ async def stream_job(job_id: str, redis: Redis = Depends(get_redis)):
     async def event_generator():
         pubsub = redis.pubsub()
         await pubsub.subscribe(channel)
+        seq = 0
         try:
             async for message in pubsub.listen():
                 if message["type"] != "message":
                     continue
-                yield f"data: {message['data']}\n\n"
+                yield f"id: {seq}\ndata: {message['data']}\n\n"
+                seq += 1
                 if json.loads(message["data"]).get("type") == "job.done":
                     break
         finally:

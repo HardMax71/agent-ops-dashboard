@@ -33,11 +33,12 @@ key_decisions: [github-oauth-flow, jwt-hs256-session, sse-auth-fetch-event-sourc
 6. [SSE Endpoint Authentication](#6-sse-endpoint-authentication)
 7. [Job Ownership & Per-Resource Authorization](#7-job-ownership--per-resource-authorization)
 8. [GitHub OAuth Token Management](#8-github-oauth-token-management)
-9. [Token Lifecycle](#9-token-lifecycle)
-10. [CORS & Security Headers](#10-cors--security-headers)
-11. [Dependencies & Libraries](#11-dependencies--libraries)
-12. [Implementation Patterns](#12-implementation-patterns)
-13. [Out of Scope (v1)](#13-out-of-scope-v1)
+9. [Inter-Service Authentication](#9-inter-service-authentication)
+10. [Token Lifecycle](#10-token-lifecycle)
+11. [CORS & Security Headers](#11-cors--security-headers)
+12. [Dependencies & Libraries](#12-dependencies--libraries)
+13. [Implementation Patterns](#13-implementation-patterns)
+14. [Out of Scope (v1)](#14-out-of-scope-v1)
 
 ---
 
@@ -67,6 +68,7 @@ This PRD specifies:
 - The authentication strategy for SSE streams (non-trivial; see §6)
 - Per-job authorization (ownership model)
 - Secure storage of GitHub OAuth tokens for repo operations
+- Inter-service authentication for ARQ worker → LangServe agent calls (see §9)
 - Token lifecycle and the v1/v2 simplification boundary
 
 ---
@@ -82,6 +84,7 @@ This PRD specifies:
 | Job lifecycle control (kill/pause) | Denial of service against a legitimate user |
 | GitHub OAuth token | Repo read/write access; stored server-side |
 | LLM API budget | Unlimited unauthenticated job creation burns operator credits |
+| LangServe agent endpoints (`/agents/*`) | Unauthenticated invocation burns LLM credits and bypasses all job ownership controls |
 
 ### 2.2 In-Scope Threats
 
@@ -94,6 +97,7 @@ This PRD specifies:
 | CSRF on state-mutating endpoints | Cross-origin form/fetch triggering `POST /jobs/{id}/answer` | `SameSite=Strict` on refresh cookie; Bearer token on all REST calls (CSRF requires stolen token, not just cookies) |
 | GitHub OAuth token exfiltration | Token in JWT payload (base64-readable) | Token stored encrypted in Redis; only referenced by user ID |
 | SSE stream hijack | Attacker opens EventSource to stream URL without auth | Auth required on SSE endpoint; see §6 |
+| Unauthenticated agent invocation | Direct `POST` to `/agents/*/invoke` ports (8001–8005) without going through the job pipeline | Network isolation (primary) + shared secret header (defense-in-depth); see §9 |
 
 ### 2.3 Out-of-Scope Threats (not in v1)
 
@@ -223,6 +227,7 @@ REFRESH_TOKEN_EXPIRE_SECONDS=604800    # 7 days
 GITHUB_CLIENT_ID=<from GitHub App settings>
 GITHUB_CLIENT_SECRET=<from GitHub App settings>
 GITHUB_TOKEN_ENCRYPTION_KEY=<Fernet.generate_key() — URL-safe base64, 32 bytes>
+INTERNAL_SERVICE_SECRET=<64-byte random hex>   # shared by ARQ worker + all agent services; see §9
 ```
 
 ---
@@ -579,9 +584,13 @@ runs in the FastAPI request context after the user explicitly clicks "Post Comme
 
 ```python
 @router.post("/jobs/{job_id}/post-comment")
-async def post_comment(job_id: str, body: PostCommentRequest, user: User = Depends(current_user), redis: Redis = Depends(get_redis)) -> PostCommentResponse:
-    await require_job_owner(job_id, user.id, redis)
-    github_token = await get_github_token(user.github_user_id, redis)
+async def post_comment(
+    job_id: Annotated[str, Depends(get_job_and_verify_owner)],
+    body: PostCommentRequest,
+    current_user: Annotated[AuthenticatedUser, Depends(get_current_user)],
+    redis: Annotated[Redis, Depends(get_redis)],
+) -> PostCommentResponse:
+    github_token = await get_github_token(current_user.github_id, redis)
     if github_token is None:
         raise HTTPException(status_code=401, detail="GitHub session expired — re-authenticate")
     # ... post comment via GitHub API ...
@@ -595,9 +604,92 @@ migration to GitHub Apps requires implementing the token refresh cycle.
 
 ---
 
-## 9. Token Lifecycle
+## 9. Inter-Service Authentication
 
-### 9.1 Access Token
+### 9.1 The Gap
+
+The ARQ worker calls LangServe agent endpoints with a plain `httpx.post` and no auth header:
+
+```python
+response = await client.post(
+    "http://localhost:8001/agents/investigator/invoke",
+    json={"input": {...}},
+)
+```
+
+The `/agents/*` services (ports 8001–8005, see [PRD-004](PRD-004-agent-layer.md) §3.2) have no auth
+guard. `get_current_user` does not protect them — it applies only to the public `/jobs/*` router.
+Anyone who can reach those ports can invoke agents directly, burning LLM API credits and bypassing
+all job ownership checks.
+
+### 9.2 Primary Control: Network Isolation
+
+Agent services **must not be reachable from the public internet**. This is non-negotiable:
+
+- Bind each agent service to `127.0.0.1` (loopback) or an internal-only network interface — never
+  `0.0.0.0` without a firewall rule blocking external access
+- The public-facing reverse proxy (nginx / Caddy) must not route any `/agents/*` paths
+- In production, deploy agent services in the same VPC / private subnet as the ARQ workers with no
+  public IP and no public security group ingress rule
+
+Network isolation alone prevents external abuse. Everything below is defense-in-depth.
+
+### 9.3 Defense-in-Depth: Shared Secret Header
+
+Network isolation can fail (misconfigured proxy, SSRF pivot from another internal service). A
+shared secret header provides a second independent layer.
+
+`INTERNAL_SERVICE_SECRET` is set in all ARQ worker and agent service environments (see §4.3 env
+vars). The worker sends it on every agent call:
+
+```python
+async with httpx.AsyncClient() as client:
+    response = await client.post(
+        "http://localhost:8001/agents/investigator/invoke",
+        json={"input": {...}},
+        headers={"X-Internal-Token": settings.INTERNAL_SERVICE_SECRET},
+    )
+```
+
+Each LangServe agent service validates it via a FastAPI dependency applied at the router level:
+
+```python
+async def verify_internal_token(
+    x_internal_token: Annotated[str, Header()],
+    settings: Annotated[Settings, Depends(get_settings)],
+) -> None:
+    """Reject requests that do not carry the correct internal service secret.
+
+    Raises:
+        HTTPException: 403 if the header is missing or does not match.
+    """
+    if not secrets.compare_digest(x_internal_token, settings.INTERNAL_SERVICE_SECRET):
+        raise HTTPException(status_code=403, detail="Forbidden")
+
+
+router = APIRouter(
+    prefix="/agents",
+    dependencies=[Depends(verify_internal_token)],
+)
+```
+
+`secrets.compare_digest` prevents timing attacks. The secret is rotated by updating the env var
+and redeploying all affected services — no token store or expiry mechanism required.
+
+### 9.4 What Is Not Used Here
+
+| Rejected option | Reason |
+|-----------------|--------|
+| `get_current_user` (user JWT) on `/agents/*` | Agent calls originate from the ARQ worker — no user session exists in that context |
+| Re-routing under `/jobs/{id}/agents/*` | Couples LangServe microservices to the job lifecycle; intentionally avoided (PRD-004 §3.1) |
+| mTLS | Correct for zero-trust infrastructure; operationally complex for v1 single-operator deployment |
+| Internal JWT signed by a service account | Appropriate for multi-team microservice meshes; shared secret is simpler and sufficient for v1 |
+
+---
+
+## 10. Token Lifecycle
+
+### 10.1 Access Token
 
 | Property | Value |
 |----------|-------|
@@ -607,7 +699,7 @@ migration to GitHub Apps requires implementing the token refresh cycle.
 | Lost on | Page refresh (triggers silent refresh via refresh cookie) |
 | Revocation | Not supported in v1 (15-min window is the effective revocation delay) |
 
-### 9.2 Refresh Token
+### 10.2 Refresh Token
 
 | Property | Value |
 |----------|-------|
@@ -618,7 +710,7 @@ migration to GitHub Apps requires implementing the token refresh cycle.
 | Revocation | Delete Redis key → immediate revocation |
 | Rotation | Not in v1; add on v1.1 (new refresh token issued on every `/auth/refresh` call) |
 
-### 9.3 Silent Token Refresh Flow
+### 10.3 Silent Token Refresh Flow
 
 On page load and on every `401` response from the API, React calls `POST /auth/refresh`. The
 browser automatically sends the HttpOnly refresh cookie; the backend validates it, issues a new
@@ -644,7 +736,7 @@ api.interceptors.response.use(
 );
 ```
 
-### 9.4 Logout
+### 10.4 Logout
 
 `POST /auth/logout`:
 1. Delete the refresh token from Redis (immediate revocation)
@@ -656,9 +748,9 @@ is an accepted tradeoff (no server-side access token revocation in v1).
 
 ---
 
-## 10. CORS & Security Headers
+## 11. CORS & Security Headers
 
-### 10.1 CORS Configuration
+### 11.1 CORS Configuration
 
 ```python
 from fastapi.middleware.cors import CORSMiddleware
@@ -675,7 +767,7 @@ app.add_middleware(
 `allow_origins` is a strict allowlist — never `["*"]` with `allow_credentials=True` (browsers
 reject this combination, and it would negate cookie security).
 
-### 10.2 Security Headers
+### 11.2 Security Headers
 
 ```python
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -695,7 +787,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
 `Strict-Transport-Security` is only meaningful in production (behind HTTPS). In development it
 is harmless.
 
-### 10.3 HTTPS
+### 11.3 HTTPS
 
 All production traffic terminates TLS at the reverse proxy (nginx / Caddy). The FastAPI app itself
 runs on HTTP internally. The `Secure` cookie flag and `SameSite=Strict` on the refresh token
@@ -703,9 +795,9 @@ cookie are meaningless without HTTPS, so production deployment must enforce it.
 
 ---
 
-## 11. Dependencies & Libraries
+## 12. Dependencies & Libraries
 
-### 11.1 Backend (add to `[project.dependencies]` in pyproject.toml)
+### 12.1 Backend (add to `[project.dependencies]` in pyproject.toml)
 
 ```toml
 "PyJWT>=2.8",           # JWT encode/decode (HS256/RS256)
@@ -715,7 +807,7 @@ cookie are meaningless without HTTPS, so production deployment must enforce it.
 
 No `python-jose` — it is effectively unmaintained. `PyJWT` is the actively maintained standard.
 
-### 11.2 Frontend (add to package.json)
+### 12.2 Frontend (add to package.json)
 
 ```json
 "@microsoft/fetch-event-source": "^2.0.1"
@@ -727,9 +819,9 @@ with a hook-based API compatible with React.
 
 ---
 
-## 12. Implementation Patterns
+## 13. Implementation Patterns
 
-### 12.1 Auth Router
+### 13.1 Auth Router
 
 ```python
 # src/auth/router.py
@@ -864,7 +956,7 @@ async def exchange_token(
     return AccessTokenResponse(access_token=access_token, token_type="bearer")
 ```
 
-### 12.2 Protecting a Job Endpoint (Full Example)
+### 13.2 Protecting a Job Endpoint (Full Example)
 
 ```python
 @router.get("/{job_id}/stream")
@@ -903,7 +995,7 @@ async def stream_job(
 
 ---
 
-## 13. Out of Scope (v1)
+## 14. Out of Scope (v1)
 
 | Feature | Rationale for Deferral |
 |---------|------------------------|

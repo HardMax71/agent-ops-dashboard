@@ -3,22 +3,22 @@ id: PRD-007
 title: Python Developer Tooling & Code Quality Standards
 status: DRAFT
 domain: tooling
-depends_on: [PRD-001, PRD-003, PRD-006]
-key_decisions: [uv-ruff-ty-astral-stack, pyproject-toml-single-source, typeddict-vs-basemodel, no-type-checking-guard, no-local-imports, comment-policy, future-annotations]
+depends_on: [ PRD-001, PRD-003, PRD-006 ]
+key_decisions: [ uv-ruff-ty-astral-stack, pyproject-toml-single-source, typeddict-vs-basemodel, no-type-checking-guard, no-local-imports, comment-policy, future-annotations ]
 ---
 
 # PRD-007 — Python Developer Tooling & Code Quality Standards
 
 ## Metadata
 
-| Field        | Value                                                                                                                                                                                              |
-|--------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Document ID  | PRD-007                                                                                                                                                                                            |
-| Version      | 1.0                                                                                                                                                                                                |
-| Status       | DRAFT                                                                                                                                                                                              |
-| Date         | March 2026                                                                                                                                                                                         |
-| Author       | Engineering Team                                                                                                                                                                                   |
-| Parent       | [PRD-001](PRD-001-master-overview.md)                                                                                                                                                              |
+| Field        | Value                                                                                                                                                   |
+|--------------|---------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Document ID  | PRD-007                                                                                                                                                 |
+| Version      | 1.0                                                                                                                                                     |
+| Status       | DRAFT                                                                                                                                                   |
+| Date         | March 2026                                                                                                                                              |
+| Author       | Engineering Team                                                                                                                                        |
+| Parent       | [PRD-001](PRD-001-master-overview.md)                                                                                                                   |
 | Related Docs | [PRD-003](PRD-003-langgraph-orchestration.md) (BugTriageState TypedDict question), [PRD-006](PRD-006-data-validation.md) (Pydantic validation patterns) |
 
 ---
@@ -57,6 +57,7 @@ The `pyproject.toml` is the single source of truth for packaging, tool config, a
 - `requires-python = ">=3.12"` declared in `pyproject.toml`
 
 Python 3.12 enables:
+
 - `type X = ...` type alias syntax (PEP 695)
 - Full PEP 695 generic syntax (`class Foo[T]: ...`)
 - `ExceptionGroup` for structured exception handling
@@ -122,23 +123,23 @@ dependencies = [
 [dependency-groups]
 dev = [
     "ruff>=0.6",
-    "ty>=0.0.1a1",      # Astral type checker — pinned to alpha while stabilising
+    "ty>=0.0.1a1", # Astral type checker — minimum version while stabilising; uv.lock pins the exact build
     "pre-commit>=3.8",
 ]
 test = [
     "pytest>=8.3",
     "pytest-asyncio>=0.24",
-    "httpx>=0.27",      # AsyncClient for FastAPI test client
+    "httpx>=0.27", # AsyncClient for FastAPI test client
     "pytest-cov>=5.0",
 ]
 ```
 
 ### Why three groups
 
-| Group          | Purpose                                               | Installed in      |
-|----------------|-------------------------------------------------------|-------------------|
-| `dependencies` | Ships in production — the running application         | prod + CI + dev   |
-| `dev`          | Linters, type checker, pre-commit — developer tooling | dev VMs only      |
+| Group          | Purpose                                               | Installed in          |
+|----------------|-------------------------------------------------------|-----------------------|
+| `dependencies` | Ships in production — the running application         | prod + CI + dev       |
+| `dev`          | Linters, type checker, pre-commit — developer tooling | dev VMs only          |
 | `test`         | Test runtime — pytest, coverage                       | CI test runners + dev |
 
 ---
@@ -155,19 +156,20 @@ line-length = 100
 
 [tool.ruff.lint]
 select = [
-    "E",    # pycodestyle errors
-    "W",    # pycodestyle warnings
-    "F",    # pyflakes
-    "I",    # isort
-    "UP",   # pyupgrade — enforces Python 3.12+ syntax
-    "D",    # pydocstyle — 100% docstring coverage on public API
-    "ANN",  # flake8-annotations — all functions must be typed
-    "RUF",  # ruff-specific rules
-    "S",    # flake8-bandit security lint (subset)
+    "E", # pycodestyle errors
+    "W", # pycodestyle warnings
+    "F", # pyflakes
+    "I", # isort
+    "UP", # pyupgrade — enforces Python 3.12+ syntax
+    "D", # pydocstyle — 100% docstring coverage on public API
+    "ANN", # flake8-annotations — all functions must be typed
+    "RUF", # ruff-specific rules
+    "S", # flake8-bandit security lint (subset)
+    "PLC0415", # import-outside-toplevel — no local imports inside functions
 ]
 ignore = [
-    "D100",   # missing module docstring — optional at module level
-    "D104",   # missing package docstring
+    "D100", # missing module docstring — optional at module level
+    "D104", # missing package docstring
     "ANN101", # self annotation — never required
     "ANN102", # cls annotation — never required
 ]
@@ -207,12 +209,12 @@ Run: `uv run ty check src/`
 
 ### Why `ty` over `mypy`/`pyright`
 
-| Criterion            | ty                                      | mypy / pyright                         |
-|----------------------|-----------------------------------------|----------------------------------------|
-| Toolchain alignment  | Same Astral ecosystem as ruff/uv        | Separate teams and config surfaces     |
-| Performance          | Rust core — significantly faster        | Python (mypy) / Node (pyright)         |
-| uv integration       | Native                                  | External install required              |
-| Maturity             | Alpha — may hit edge-case gaps          | Mature, broad plugin ecosystem         |
+| Criterion           | ty                               | mypy / pyright                     |
+|---------------------|----------------------------------|------------------------------------|
+| Toolchain alignment | Same Astral ecosystem as ruff/uv | Separate teams and config surfaces |
+| Performance         | Rust core — significantly faster | Python (mypy) / Node (pyright)     |
+| uv integration      | Native                           | External install required          |
+| Maturity            | Alpha — may hit edge-case gaps   | Mature, broad plugin ecosystem     |
 
 **Trade-off:** `ty` is alpha. If a blocking issue is encountered, fall back to `pyright` (already in the Astral
 orbit via Pylance). Document the blocker in this PRD when that decision is made.
@@ -221,19 +223,32 @@ orbit via Pylance). Document the blocker in this PRD when that decision is made.
 
 ## 7. Python 3.12+ Type System Standards
 
-### 7.1 Forbidden Patterns (enforced by `ruff UP` + `ANN`)
+### 7.1 Forbidden Patterns
 
-| Forbidden | Replacement | Rule |
-|-----------|-------------|------|
-| `from typing import List, Dict, Tuple, Set` | `list`, `dict`, `tuple`, `set` (builtins) | UP035 |
-| `Optional[X]` | `X \| None` | UP007 |
-| `Union[X, Y]` | `X \| Y` | UP007 |
-| `from typing import TypeAlias` + `X: TypeAlias = ...` | `type X = ...` (PEP 695) | UP040 |
-| `Any` | Specific type, `TypeVar`, or `Protocol` | ANN401 |
-| Untyped function parameter | Full annotation required | ANN001 |
-| Untyped function return | Full annotation required | ANN201 |
-| Local import (inside a function or method body) | Move to module-level | E402 |
-| `if TYPE_CHECKING:` / `TYPE_CHECKING` (any use) | Fix the underlying issue: extract shared types into a dedicated `models.py` or `types.py`; no import guard patterns | arch |
+#### Ruff-enforced
+
+Violations are caught automatically — no manual review required.
+
+| Forbidden                                             | Replacement                               | Rule    |
+|-------------------------------------------------------|-------------------------------------------|---------|
+| `from typing import List, Dict, Tuple, Set`           | `list`, `dict`, `tuple`, `set` (builtins) | UP035   |
+| `Optional[X]`                                         | `X \| None`                               | UP007   |
+| `Union[X, Y]`                                         | `X \| Y`                                  | UP007   |
+| `from typing import TypeAlias` + `X: TypeAlias = ...` | `type X = ...` (PEP 695)                  | UP040   |
+| `Any`                                                 | Specific type, `TypeVar`, or `Protocol`   | ANN401  |
+| Untyped function parameter                            | Full annotation required                  | ANN001  |
+| Untyped function return                               | Full annotation required                  | ANN201  |
+| Local import (inside a function or method body)       | Move to module-level                      | PLC0415 |
+
+#### Architecture policy (not a ruff rule — enforced in code review)
+
+| Forbidden                                       | Resolution                                                                                                                                                                                                                                 |
+|-------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `TYPE_CHECKING` / `if TYPE_CHECKING:` (any use) | Extract shared types to a dedicated `models.py` or `types.py` module that neither side of a dependency cycle imports. `TYPE_CHECKING` is a symptom of import cycles or over-eager imports — fix the architecture, do not guard the import. |
+
+Note: ruff's `TCH001`/`TCH002`/`TCH003` rules do the opposite — they push imports under `if TYPE_CHECKING:`.
+Those rules are disabled in this project's ruff config (`TCH` is absent from `select`) because they encourage
+the pattern we forbid.
 
 ### 7.2 Still-valid `typing` imports (not deprecated)
 
@@ -242,11 +257,11 @@ These have no builtin replacements and remain correct to import from `typing`:
 `Annotated`, `TypeVar`, `ParamSpec`, `TypeVarTuple`, `Protocol`, `overload`, `ClassVar`, `Final`, `Literal`,
 `TypeGuard`, `Never`, `Self`, `Unpack`
 
-`TYPE_CHECKING` is explicitly forbidden. It is a symptom of import cycles or over-eager imports —
-both of which are architecture problems. Circular imports must be resolved by restructuring (extract
-shared types to a dedicated module). Annotation-only imports must be moved to module level; `from __future__ import annotations`
-makes all annotations lazy at zero cost, eliminating any runtime import overhead. Disable the `TCH` ruff ruleset
-accordingly.
+`TYPE_CHECKING` is explicitly excluded. Annotation-only imports must be at module level unconditionally.
+`from __future__ import annotations` (PEP 563) makes annotation *evaluation* lazy (annotations are stored
+as strings, so forward references never raise `NameError`), but the `import` statements themselves still
+execute at module load time — it does not eliminate import overhead. If a module-level import is
+problematic, that is an architecture signal: fix the dependency, do not guard the import.
 
 ### 7.3 No `Any`
 
@@ -263,12 +278,12 @@ alone cannot convey.
 Narrating what the code does is never allowed. If a line needs a comment to explain what it does, rewrite
 the line so it is self-explanatory (better name, extracted function, etc.).
 
-| Allowed | Forbidden |
-|---------|-----------|
-| Docstrings at the top of a class or function | `# Validate state` before a validation call |
-| `# getdel: atomic fetch-and-delete guarantees single-use` | `# Issue access token` before `jwt.encode(...)` |
-| `# noqa: ANN401 — heterogeneous mapping, no bound type` | `# Step 1: fetch user` / `# Step 2: store token` |
-| `7 * 24 * 3600,  # 7-day TTL — matches refresh token lifetime` | `# Call the GitHub API` |
+| Allowed                                                        | Forbidden                                        |
+|----------------------------------------------------------------|--------------------------------------------------|
+| Docstrings at the top of a class or function                   | `# Validate state` before a validation call      |
+| `# getdel: atomic fetch-and-delete guarantees single-use`      | `# Issue access token` before `jwt.encode(...)`  |
+| `# noqa: ANN401 — heterogeneous mapping, no bound type`        | `# Step 1: fetch user` / `# Step 2: store token` |
+| `7 * 24 * 3600,  # 7-day TTL — matches refresh token lifetime` | `# Call the GitHub API`                          |
 
 This applies equally to TypeScript/JavaScript in the frontend: same rule, same exceptions.
 
@@ -315,13 +330,13 @@ without `NotRequired` boilerplate, no computed fields, no `frozen` immutability,
 
 ### Rule: use the right tool for the layer
 
-| Use case | Type to use | Reason |
-|----------|-------------|--------|
-| LangGraph state (`BugTriageState`) | `TypedDict` | **Recommended** — `StateGraph` also accepts `BaseModel`/dataclass, but `TypedDict` is the idiomatic choice: nodes return partial dicts (only changed keys), LangGraph merges them cleanly; `BaseModel` state requires full model reconstruction per node update |
-| API request / response bodies | Pydantic `BaseModel` | Runtime validation, automatic 422 response, `.model_dump()` |
-| Internal structured data (`AgentFinding`, `HumanExchange`, `TriageReport`) | Pydantic `BaseModel` | Serialization to/from Redis, validation, attribute access |
-| Supervisor LLM output (`SupervisorDecision`) | Pydantic `BaseModel` | `.with_structured_output()` accepts `TypedDict` / JSON schema too, but `BaseModel` is preferred: returns a validated object (not a raw dict), attribute access, validation errors surface cleanly (PRD-003 §5.2) |
-| Simple config / constants | `dataclass(frozen=True)` | No runtime dep, immutable, attribute access |
+| Use case                                                                   | Type to use              | Reason                                                                                                                                                                                                                                                          |
+|----------------------------------------------------------------------------|--------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| LangGraph state (`BugTriageState`)                                         | `TypedDict`              | **Recommended** — `StateGraph` also accepts `BaseModel`/dataclass, but `TypedDict` is the idiomatic choice: nodes return partial dicts (only changed keys), LangGraph merges them cleanly; `BaseModel` state requires full model reconstruction per node update |
+| API request / response bodies                                              | Pydantic `BaseModel`     | Runtime validation, automatic 422 response, `.model_dump()`                                                                                                                                                                                                     |
+| Internal structured data (`AgentFinding`, `HumanExchange`, `TriageReport`) | Pydantic `BaseModel`     | Serialization to/from Redis, validation, attribute access                                                                                                                                                                                                       |
+| Supervisor LLM output (`SupervisorDecision`)                               | Pydantic `BaseModel`     | `.with_structured_output()` accepts `TypedDict` / JSON schema too, but `BaseModel` is preferred: returns a validated object (not a raw dict), attribute access, validation errors surface cleanly (PRD-003 §5.2)                                                |
+| Simple config / constants                                                  | `dataclass(frozen=True)` | No runtime dep, immutable, attribute access                                                                                                                                                                                                                     |
 
 ### Implication for PRD-003
 
@@ -374,7 +389,7 @@ repos:
     rev: v0.6.0
     hooks:
       - id: ruff          # lint + autofix
-        args: [--fix]
+        args: [ --fix ]
       - id: ruff-format   # format
 ```
 
