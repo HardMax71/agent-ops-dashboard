@@ -16,6 +16,10 @@ nav:
       - Authentication: prd/PRD-008-authentication.md
       - Documentation Standards: prd/PRD-009-documentation-standards.md
       - Evaluation Framework: prd/PRD-010-evaluation-framework.md
+  - Plans:
+      - Goals & Definition of Done: prd/PRD-001-1-goals-and-dod.md
+      - Roadmap v1 (precise): plans/roadmap-v1.md
+      - Roadmap v2 (general): plans/roadmap-v2.md
 
 theme:
   name: material
