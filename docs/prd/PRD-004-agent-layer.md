@@ -71,19 +71,15 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import PydanticOutputParser
 from langchain_openai import ChatOpenAI
 
-# 1. Prompt template
 prompt = ChatPromptTemplate.from_messages([
     ("system", AGENT_SYSTEM_PROMPT),
     ("human", AGENT_HUMAN_TEMPLATE),
 ])
 
-# 2. LLM (swappable — see Agent Configuration section)
 llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
 
-# 3. Output parser — all agents return structured Pydantic models
 parser = PydanticOutputParser(pydantic_object=AgentFinding)
 
-# 4. Chain — the pipe operator is LCEL
 chain = prompt | llm | parser
 ```
 
@@ -254,18 +250,17 @@ nature, affected areas, and likely root cause.
 class InvestigatorInput(BaseModel):
     issue_title: str
     issue_body: str
-    prior_findings: list[dict] = []  # empty on first call
+    prior_findings: list[dict] = []
 ```
 
 **Output:**
 
 ```python
 class InvestigatorFinding(AgentFindingBase):
-    hypothesis: str  # plain English statement of likely root cause
-    affected_areas: list[str]  # e.g. ["authentication", "database"]
-    keywords_for_search: list[str]  # passed to codebase/web search agents
-    error_messages: list[str]  # extracted verbatim error strings
-    # confidence, reasoning, agent_name, summary, error — inherited from AgentFindingBase
+    hypothesis: str
+    affected_areas: list[str]
+    keywords_for_search: list[str]
+    error_messages: list[str]
 ```
 
 **LCEL Chain:**
@@ -292,9 +287,9 @@ search against a pre-built Chroma index of the repository.
 
 ```python
 class CodebaseSearchInput(BaseModel):
-    repository: str  # "org/repo"
-    keywords: list[str]  # from Investigator's keywords_for_search
-    hypothesis: str  # guides query formulation
+    repository: str
+    keywords: list[str]
+    hypothesis: str
     affected_areas: list[str]
 ```
 
@@ -302,15 +297,13 @@ class CodebaseSearchInput(BaseModel):
 
 ```python
 class CodebaseFinding(AgentFindingBase):
-    relevant_files: list[RelevantFile]  # filepath + relevant snippet + line numbers
-    root_cause_location: Optional[str]  # "auth/middleware.py:L142" if found
-    # confidence, reasoning, agent_name, summary, error — inherited from AgentFindingBase
+    relevant_files: list[RelevantFile]
+    root_cause_location: str | None
 ```
 
 **LCEL Chain (with RAG):**
 
 ```python
-# RunnableParallel fetches vector context and passes input simultaneously
 chain = (
         RunnableParallel({
             "context": codebase_retriever,  # Chroma vector store
@@ -346,9 +339,8 @@ class WebSearchInput(BaseModel):
 
 ```python
 class WebSearchFinding(AgentFindingBase):
-    relevant_results: list[WebResult]  # URL + title + relevant excerpt
-    external_root_cause: Optional[str]  # e.g. "Known bug in requests v2.31"
-    # confidence, reasoning, agent_name, summary, error — inherited from AgentFindingBase
+    relevant_results: list[WebResult]
+    external_root_cause: str | None
 ```
 
 **LCEL Chain (with tool):**
@@ -393,11 +385,10 @@ class CriticInput(BaseModel):
 ```python
 class CritiqueFinding(AgentFindingBase):
     verdict: Literal["CONFIRMED", "UNCERTAIN", "CHALLENGED"]
-    confidence_adjustment: float  # delta to apply to current confidence
-    gaps: list[str]  # what's still missing
-    revised_hypothesis: Optional[str]
-    ready_for_report: bool  # supervisor uses this to decide next step
-    # confidence (overall), reasoning, agent_name, summary, error — inherited from AgentFindingBase
+    confidence_adjustment: float
+    gaps: list[str]
+    revised_hypothesis: str | None
+    ready_for_report: bool
 ```
 
 **LCEL Chain:**
@@ -532,11 +523,11 @@ Every agent output must include these base fields regardless of agent-specific f
 
 ```python
 class AgentFindingBase(BaseModel):
-    agent_name: str  # matches node name in LangGraph
-    summary: str  # 1–2 sentence summary for UI agent card
-    confidence: float  # 0.0–1.0 — used by supervisor for routing decisions
-    reasoning: str  # full reasoning shown in UI (streamed token by token)
-    error: Optional[str]  # set if agent encountered an error internally
+    agent_name: str
+    summary: str
+    confidence: float  # 0.0–1.0
+    reasoning: str
+    error: str | None
 ```
 
 The supervisor reads `confidence` and `error` to decide whether to accept the finding, retry, or escalate to human

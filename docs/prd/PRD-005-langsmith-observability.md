@@ -231,7 +231,6 @@ The eval framework measures three things:
 ```python
 from langsmith.evaluation import evaluate, LangChainStringEvaluator
 
-# Helpfulness evaluator
 helpfulness_evaluator = LangChainStringEvaluator(
     "criteria",
     config={

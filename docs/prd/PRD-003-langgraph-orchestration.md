@@ -63,7 +63,9 @@ The `BugTriageState` TypedDict is the central data structure. Every node reads f
 persisted at every checkpoint.
 
 ```python
-from typing import TypedDict, Optional, Annotated
+from __future__ import annotations
+
+from typing import TypedDict, Annotated
 from langgraph.graph.message import add_messages
 
 
@@ -77,8 +79,8 @@ class AgentFinding(TypedDict):
 
 class HumanExchange(TypedDict):
     question: str
-    context: str  # why the agent is asking
-    answer: Optional[str]  # None until user responds
+    context: str
+    answer: str | None
 
 
 class TriageReport(TypedDict):
@@ -91,43 +93,35 @@ class TriageReport(TypedDict):
 
 
 class BugTriageState(TypedDict):
-    # Input
-    issue_url: str  # validated at API boundary — see PRD-006; plain str here (post-validation)
+    issue_url: str
     issue_title: str
     issue_body: str
     repository: str
 
-    # Orchestration control
     current_node: str
-    next_node: Optional[str]
-    supervisor_reasoning: str  # why supervisor chose next agent
-    iterations: int  # guard against infinite loops
-    max_iterations: int  # default: 12
-    paused: bool  # set by POST /jobs/{id}/pause; supervisor fires interrupt() when True
+    next_node: str | None
+    supervisor_reasoning: str
+    iterations: int
+    max_iterations: int
+    paused: bool
 
-    # Agent findings (accumulated)
-    findings: Annotated[list[AgentFinding], lambda a, b: a + b]  # reducer: append
+    findings: Annotated[list[AgentFinding], lambda a, b: a + b]
 
-    # Human-in-the-loop
-    human_exchanges: list[HumanExchange]  # full Q&A history
+    human_exchanges: list[HumanExchange]
     awaiting_human: bool
 
-    # Codebase context
-    codebase_chunks: list[str]  # retrieved from vector index
-    similar_past_issues: list[str]  # from issue search
+    codebase_chunks: list[str]
+    similar_past_issues: list[str]
 
-    # Web search context
     web_results: list[str]
 
-    # Final outputs
-    report: Optional[TriageReport]
-    github_comment_draft: Optional[str]
-    ticket_draft: Optional[dict]
+    report: TriageReport | None
+    github_comment_draft: str | None
+    ticket_draft: dict | None
 
-    # Metadata
     job_id: str
-    langsmith_run_id: Optional[str]
-    status: str  # matches frontend JobStatus enum
+    langsmith_run_id: str | None
+    status: str
 ```
 
 ---
@@ -156,7 +150,6 @@ from langgraph.checkpoint.sqlite import SqliteSaver
 
 builder = StateGraph(BugTriageState)
 
-# Add all nodes
 builder.add_node("supervisor", supervisor_node)
 builder.add_node("investigator", investigator_node)
 builder.add_node("codebase_search", codebase_search_node)
@@ -165,13 +158,11 @@ builder.add_node("critic", critic_node)
 builder.add_node("human_input", human_input_node)
 builder.add_node("writer", writer_node)
 
-# Entry: always start at supervisor
 builder.add_edge(START, "supervisor")
 
-# Supervisor routes conditionally
 builder.add_conditional_edges(
     "supervisor",
-    route_from_supervisor,  # returns the next node name
+    route_from_supervisor,
     {
         "investigator": "investigator",
         "codebase_search": "codebase_search",
@@ -183,17 +174,12 @@ builder.add_conditional_edges(
     }
 )
 
-# All worker agents return to supervisor after completing
 for node in ["investigator", "codebase_search", "web_search", "critic"]:
     builder.add_edge(node, "supervisor")
 
-# Human input returns to supervisor with enriched state
 builder.add_edge("human_input", "supervisor")
-
-# Writer goes straight to END (final node)
 builder.add_edge("writer", END)
 
-# Compile with checkpointer
 checkpointer = SqliteSaver.from_conn_string("jobs.db")
 graph = builder.compile(checkpointer=checkpointer)
 ```
@@ -210,7 +196,7 @@ def route_from_supervisor(state: BugTriageState) -> str:
     if state["iterations"] >= state["max_iterations"]:
         return "writer"  # force completion
 
-    return state["next_node"]  # set by supervisor node
+    return state["next_node"]
 ```
 
 ---
@@ -259,10 +245,10 @@ class SupervisorDecision(BaseModel):
         "investigator", "codebase_search", "web_search",
         "critic", "human_input", "writer", "end"
     ]
-    reasoning: str  # shown in UI as supervisor's thinking
-    question: Optional[str]  # only if next_node == "human_input"
-    question_context: Optional[str]
-    confidence: float  # 0.0–1.0; used for quality metrics
+    reasoning: str
+    question: str | None  # only populated when next_node == "human_input"
+    question_context: str | None
+    confidence: float  # 0.0–1.0
 ```
 
 ---
@@ -313,16 +299,13 @@ from langgraph.types import interrupt
 
 
 def human_input_node(state: BugTriageState) -> dict:
-    # Get the question set by supervisor in prior step
     last_exchange = state["human_exchanges"][-1]
 
-    # This pauses the graph and surfaces the question to the user
     answer = interrupt({
         "question": last_exchange["question"],
         "context": last_exchange["context"],
     })
 
-    # When resumed, `answer` contains the user's response
     updated_exchanges = state["human_exchanges"].copy()
     updated_exchanges[-1]["answer"] = answer
 
@@ -361,16 +344,14 @@ async def expire_human_input(ctx: dict, job_id: str):
     """
     redis: Redis = ctx["redis"]
 
-    # Check job status — if already resumed by user, do nothing
     job = Job(job_id, redis)
     info = await job.info()
     if info is not None and info.status in (JobStatus.complete, JobStatus.not_found):
-        return  # user already answered; graph already running
+        return
 
     config = {"configurable": {"thread_id": job_id}}
     await graph.ainvoke(Command(resume=TIMEOUT_ANSWER), config=config)
 
-    # Notify frontend that the timeout fired
     channel = f"jobs:{job_id}:events"
     await redis.publish(channel, json.dumps({
         "type": "human_input.timeout",
@@ -393,11 +374,11 @@ async def run_triage(ctx: dict, job_id: str, initial_state: dict):
         if sse_event:
             await redis.publish(channel, json.dumps(sse_event))
 
-        # Detect interrupt pause: schedule timeout job
         if _is_human_input_interrupt(event):
             await arq_queue.enqueue_job(
                 "expire_human_input",
                 job_id,
+                _job_id=f"timeout:{job_id}",
                 _defer_by=timedelta(seconds=HUMAN_INPUT_TIMEOUT_SECONDS),
             )
 
@@ -411,7 +392,6 @@ async def run_triage(ctx: dict, job_id: str, initial_state: dict):
 async def submit_answer(job_id: str, body: AnswerRequest, redis: Redis = Depends(get_redis)):
     config = {"configurable": {"thread_id": job_id}}
 
-    # Cancel the pending timeout job so it does not double-resume the graph
     timeout_job_id = f"timeout:{job_id}"
     timeout_job = Job(timeout_job_id, redis)
     await timeout_job.abort(timeout=2)  # no-op if already fired or not found
@@ -493,7 +473,6 @@ async def run_triage(ctx: dict, job_id: str, initial_state: dict):
         if sse_event:
             await redis.publish(channel, json.dumps(sse_event))
 
-    # Terminal event so SSE subscribers know to close
     await redis.publish(channel, json.dumps({"type": "job.done"}))
 
 
@@ -518,7 +497,6 @@ async def kill_job(job_id: str, redis: Redis = Depends(get_redis)):
     if not aborted:
         raise HTTPException(status_code=409, detail="Job could not be aborted (may already be complete)")
 
-    # Persist killed status in LangGraph state for checkpoint continuity
     config = {"configurable": {"thread_id": job_id}}
     await graph.aupdate_state(config, {"status": "killed"})
 

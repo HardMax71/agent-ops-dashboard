@@ -63,10 +63,11 @@ Python environments and dependencies on this project.
 ### Key Commands
 
 ```bash
-uv sync                          # install all dependency groups
-uv sync --group dev              # install dev tools only
-uv add fastapi                   # add a runtime dependency
-uv add --group dev ruff          # add a dev dependency
+uv sync                          # install project + dev dependencies (dev group is default)
+uv sync --all-groups             # install project + all dependency groups (dev + test)
+uv sync --only-dev               # install dev tooling only — no project or runtime deps (CI linting)
+uv add fastapi                   # add a runtime dependency to [project].dependencies
+uv add --group dev ruff          # add a dev dependency to [dependency-groups].dev
 uv run pytest                    # run pytest in the managed venv
 uv run ruff check .              # run ruff in the managed venv
 uv run ty check src/             # run ty in the managed venv
@@ -152,7 +153,6 @@ select = [
     "UP",   # pyupgrade — enforces Python 3.12+ syntax
     "D",    # pydocstyle — 100% docstring coverage on public API
     "ANN",  # flake8-annotations — all functions must be typed
-    "TCH",  # flake8-type-checking — guards TYPE_CHECKING imports
     "RUF",  # ruff-specific rules
     "S",    # flake8-bandit security lint (subset)
 ]
@@ -223,19 +223,45 @@ orbit via Pylance). Document the blocker in this PRD when that decision is made.
 | `Any` | Specific type, `TypeVar`, or `Protocol` | ANN401 |
 | Untyped function parameter | Full annotation required | ANN001 |
 | Untyped function return | Full annotation required | ANN201 |
+| Local import (inside a function or method body) | Move to module-level | E402 |
+| `if TYPE_CHECKING:` / `TYPE_CHECKING` (any use) | Fix the underlying issue: extract shared types into a dedicated `models.py` or `types.py`; no import guard patterns | arch |
 
 ### 7.2 Still-valid `typing` imports (not deprecated)
 
 These have no builtin replacements and remain correct to import from `typing`:
 
 `Annotated`, `TypeVar`, `ParamSpec`, `TypeVarTuple`, `Protocol`, `overload`, `ClassVar`, `Final`, `Literal`,
-`TypeGuard`, `Never`, `Self`, `Unpack`, `TYPE_CHECKING`
+`TypeGuard`, `Never`, `Self`, `Unpack`
+
+`TYPE_CHECKING` is explicitly forbidden. It is a symptom of import cycles or over-eager imports —
+both of which are architecture problems. Circular imports must be resolved by restructuring (extract
+shared types to a dedicated module). Annotation-only imports must be moved to module level; `from __future__ import annotations`
+makes all annotations lazy at zero cost, eliminating any runtime import overhead. Disable the `TCH` ruff ruleset
+accordingly.
 
 ### 7.3 No `Any`
 
 `ANN401` is enabled. The only valid escape hatch is `object` (the true top type) when a genuine heterogeneous
 container is needed. Annotate with a comment explaining why `Any` cannot be avoided if the linter is suppressed
 via `# noqa: ANN401`.
+
+### 7.4 Comment Policy
+
+Inline comments inside function bodies are forbidden except for one purpose: explaining **how** a
+non-obvious implementation works — a quirk, a subtle invariant, or a non-obvious contract that the code
+alone cannot convey.
+
+Narrating what the code does is never allowed. If a line needs a comment to explain what it does, rewrite
+the line so it is self-explanatory (better name, extracted function, etc.).
+
+| Allowed | Forbidden |
+|---------|-----------|
+| Docstrings at the top of a class or function | `# Validate state` before a validation call |
+| `# getdel: atomic fetch-and-delete guarantees single-use` | `# Issue access token` before `jwt.encode(...)` |
+| `# noqa: ANN401 — heterogeneous mapping, no bound type` | `# Step 1: fetch user` / `# Step 2: store token` |
+| `7 * 24 * 3600,  # 7-day TTL — matches refresh token lifetime` | `# Call the GitHub API` |
+
+This applies equally to TypeScript/JavaScript in the frontend: same rule, same exceptions.
 
 ---
 
@@ -282,33 +308,34 @@ without `NotRequired` boilerplate, no computed fields, no `frozen` immutability,
 
 | Use case | Type to use | Reason |
 |----------|-------------|--------|
-| LangGraph state (`BugTriageState`) | `TypedDict` | **Required** — `StateGraph` expects a TypedDict; no alternative |
+| LangGraph state (`BugTriageState`) | `TypedDict` | **Recommended** — `StateGraph` also accepts `BaseModel`/dataclass, but `TypedDict` is the idiomatic choice: nodes return partial dicts (only changed keys), LangGraph merges them cleanly; `BaseModel` state requires full model reconstruction per node update |
 | API request / response bodies | Pydantic `BaseModel` | Runtime validation, automatic 422 response, `.model_dump()` |
 | Internal structured data (`AgentFinding`, `HumanExchange`, `TriageReport`) | Pydantic `BaseModel` | Serialization to/from Redis, validation, attribute access |
-| Supervisor LLM output (`SupervisorDecision`) | Pydantic `BaseModel` | `.with_structured_output()` requires BaseModel (PRD-003 §5.2) |
+| Supervisor LLM output (`SupervisorDecision`) | Pydantic `BaseModel` | `.with_structured_output()` accepts `TypedDict` / JSON schema too, but `BaseModel` is preferred: returns a validated object (not a raw dict), attribute access, validation errors surface cleanly (PRD-003 §5.2) |
 | Simple config / constants | `dataclass(frozen=True)` | No runtime dep, immutable, attribute access |
 
 ### Implication for PRD-003
 
 `AgentFinding`, `HumanExchange`, and `TriageReport` should be refactored from `TypedDict` to Pydantic `BaseModel`.
-`BugTriageState` stays `TypedDict` — it is the LangGraph graph state and cannot be changed. PRD-003 references
-this section for rationale.
+`BugTriageState` stays `TypedDict` — LangGraph supports `BaseModel` state too, but `TypedDict` is the
+idiomatic choice: nodes return partial dicts with only the keys they update, which LangGraph merges
+cleanly without requiring full model reconstruction. PRD-003 references this section for rationale.
 
 ### Example: correct boundary
 
 ```python
+from __future__ import annotations
+
 from typing import TypedDict
 from pydantic import BaseModel
 
 
-# LangGraph state — must be TypedDict
 class BugTriageState(TypedDict):
     issue_url: str
-    findings: list[AgentFinding]   # AgentFinding is a BaseModel, serialised to dict in state
+    findings: list[AgentFinding]
     report: TriageReport | None
 
 
-# Internal structured data — use BaseModel
 class AgentFinding(BaseModel):
     agent_name: str
     summary: str
@@ -316,7 +343,6 @@ class AgentFinding(BaseModel):
     confidence: float
 
 
-# API response body — use BaseModel
 class TriageJobResponse(BaseModel):
     job_id: str
     status: str

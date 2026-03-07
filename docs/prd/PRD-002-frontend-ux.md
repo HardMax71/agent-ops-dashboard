@@ -277,8 +277,12 @@ A structured form (also pre-filled by Writer agent):
 The FastAPI backend emits the following event types over the SSE stream. Every
 message is emitted with an SSE `id:` field set to a per-job monotonically
 incrementing integer (e.g. `id: 42`). On reconnect the browser sends this value
-as the `Last-Event-ID` header automatically; the backend resumes the stream from
-that sequence number, satisfying the reconnect NFR in §11.
+as the `Last-Event-ID` header automatically. **v1 behavior:** the backend
+reconnects the stream but does not replay missed events — Redis Pub/Sub has no
+message history, so events emitted during the disconnect window are silently
+lost. Gapless resume (e.g., via Redis Streams or a DB event log) is a v2
+concern. See [PRD-008](PRD-008-authentication.md) §6.4 for the token-expiry
+reconnect flow.
 
 | Event                 | Payload                                   | Frontend Action                     |
 |-----------------------|-------------------------------------------|-------------------------------------|
@@ -381,7 +385,7 @@ graph TD
 | Requirement                         | Target                                                                         |
 |-------------------------------------|--------------------------------------------------------------------------------|
 | Time to first streaming token in UI | < 5 seconds from job submission                                                |
-| SSE reconnect on drop               | Automatic, within 2 seconds, resuming from last event                          |
+| SSE reconnect on drop               | Automatic, within 2 seconds; v1 may miss events emitted during disconnect window (no replay) |
 | Concurrent jobs in UI               | Support up to 10 simultaneously with no performance degradation                |
 | Browser support                     | Chrome 110+, Firefox 115+, Safari 16+                                          |
 | Accessibility                       | WCAG 2.1 AA for all static content; streaming regions use `aria-live="polite"` |

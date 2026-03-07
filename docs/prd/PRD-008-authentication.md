@@ -213,7 +213,7 @@ ACCESS_TOKEN_EXPIRE_SECONDS=900        # 15 minutes
 REFRESH_TOKEN_EXPIRE_SECONDS=604800    # 7 days
 GITHUB_CLIENT_ID=<from GitHub App settings>
 GITHUB_CLIENT_SECRET=<from GitHub App settings>
-GITHUB_TOKEN_ENCRYPTION_KEY=<32-byte random hex for AES-256>
+GITHUB_TOKEN_ENCRYPTION_KEY=<Fernet.generate_key() — URL-safe base64, 32 bytes>
 ```
 
 ---
@@ -233,9 +233,6 @@ from auth.dependencies import get_current_user
 from auth.models import AuthenticatedUser
 
 router = APIRouter(prefix="/jobs", dependencies=[Depends(get_current_user)])
-
-# All routes under this router automatically require authentication.
-# The resolved user is injected per-route where ownership checks are needed.
 
 @router.post("/")
 async def create_job(
@@ -266,9 +263,9 @@ bearer_scheme = HTTPBearer()
 class AuthenticatedUser(BaseModel):
     """Resolved identity from a validated JWT."""
 
-    github_id: str      # "sub" claim — GitHub user ID
-    github_login: str   # "login" claim — for display only
-    jti: str            # JWT ID — for revocation checks if needed
+    github_id: str
+    github_login: str
+    jti: str
 
 
 async def get_current_user(
@@ -301,7 +298,6 @@ async def get_current_user(
         github_id: str | None = payload.get("sub")
         github_login: str | None = payload.get("login")
         jti: str | None = payload.get("jti")
-
         if github_id is None or jti is None:
             raise credentials_exception
 
@@ -319,7 +315,7 @@ async def get_current_user(
 
 ### 5.3 Auth Endpoints (not under `/jobs/*`)
 
-```
+```text
 GET  /auth/login          → redirect to GitHub OAuth authorize URL
 GET  /auth/callback       → exchange GitHub code, issue auth_code, redirect to frontend
 POST /auth/token          → exchange auth_code for {access_token, token_type}
@@ -356,22 +352,37 @@ library implements the SSE protocol on top of the Fetch API, which supports arbi
 ```typescript
 import { fetchEventSource } from "@microsoft/fetch-event-source";
 
-async function streamJob(jobId: string, accessToken: string) {
+// Sentinel used to signal "token was refreshed, retry immediately".
+// Identity comparison in onerror avoids string matching.
+const TOKEN_REFRESHED = new Error("token_refreshed");
+
+async function streamJob(jobId: string, accessToken: string): Promise<void> {
+    // Mutable record — fetchEventSource passes this same reference to every
+    // fetch() attempt in its retry loop, so updating it in onopen takes effect
+    // on the next attempt automatically.
+    const headers: Record<string, string> = {
+        Authorization: `Bearer ${accessToken}`,
+    };
+
     await fetchEventSource(`/jobs/${jobId}/stream`, {
         method: "GET",
-        headers: {
-            Authorization: `Bearer ${accessToken}`,
+        headers,
+        // onopen receives the Response — the only place HTTP status is available.
+        async onopen(response) {
+            if (response.status === 401) {
+                headers.Authorization = `Bearer ${await refreshAccessToken()}`;
+                throw TOKEN_REFRESHED;
+            }
+            if (!response.ok) throw new Error(`Stream error: ${response.status}`);
         },
         onmessage(event) {
-            const data = JSON.parse(event.data);
-            dispatch(handleStreamEvent(data));
+            dispatch(handleStreamEvent(JSON.parse(event.data)));
         },
+        // onerror receives an Error (never a Response); it is synchronous.
+        // Returning 0 retries immediately; throwing stops the loop.
         onerror(err) {
-            if (err instanceof Response && err.status === 401) {
-                // Token expired mid-stream: refresh token and reconnect
-                await refreshAccessToken();
-                throw err;  // fetchEventSource retries on throw
-            }
+            if (err !== TOKEN_REFRESHED) throw err;
+            return 0; // retry immediately — headers already carry the refreshed token
         },
     });
 }
@@ -385,7 +396,7 @@ identically to all other endpoints. No special handling is needed on the server 
 If `@microsoft/fetch-event-source` introduces a compatibility issue (e.g., proxy that buffers Fetch
 responses but passes `EventSource` connections), the fallback is a stream ticket:
 
-```
+```text
 POST /jobs/{id}/stream-token        (requires Bearer auth)
 → {"stream_token": "<opaque>", "expires_in": 60}
 
@@ -401,11 +412,13 @@ it is authenticated by the open TCP socket — the token is only used for the ha
 ### 6.4 Token Expiry During an Active Stream
 
 Access tokens expire in 15 minutes. An ongoing stream may outlast the token. The frontend handles
-this by catching the 401 response in `onerror`, calling `POST /auth/refresh` to get a new access
-token, and re-opening the stream (SSE is reconnection-native). The `Last-Event-ID` header is sent
-automatically by `fetchEventSource` on reconnect, allowing the backend to resume from the last
-delivered event if Redis Pub/Sub history is maintained (v2 concern; v1 accepts potential event loss
-on token-expiry reconnect).
+this by detecting the 401 status in `onopen`, calling `POST /auth/refresh` to get a new access
+token, and re-opening the stream — see the `streamJob` pattern in §6.2. The `Last-Event-ID` header
+is sent automatically by `fetchEventSource` on reconnect, but the backend **does not guarantee
+resume from the last event in v1**: Redis Pub/Sub has no message history, so events emitted during
+the reconnect window are lost. v1 reconnects within 2 seconds; missed events are not replayed.
+Event history and gapless resume are a **v2 concern** (requires a persistent event log, e.g.,
+Redis Streams or a DB-backed event table).
 
 ---
 
@@ -476,7 +489,7 @@ Returning 404 reveals nothing about existence.
 ```python
 class BugTriageState(TypedDict):
     # ... existing fields ...
-    owner_id: str   # GitHub user ID; set at job creation; never modified
+    owner_id: str
 ```
 
 This field is checkpointed with all other state, providing an immutable ownership record in the
@@ -536,16 +549,33 @@ async def get_github_token(github_user_id: str, redis: Redis) -> str | None:
 
 ### 8.3 Token Availability in Worker Nodes
 
-The ARQ worker context does not carry the JWT. Worker nodes that need GitHub API access call
-`get_github_token(state["owner_id"], redis)` to retrieve the token at execution time:
+The ARQ worker context does not carry the JWT. **`writer_node` does not post to GitHub** — it only
+prepares the draft. Actual posting is user-initiated via `POST /jobs/{id}/post-comment` (see
+[PRD-002](PRD-002-frontend-ux.md) §8). The GitHub token is fetched at that point, not inside the
+graph node:
 
 ```python
 async def writer_node(state: BugTriageState, ctx: dict) -> dict:
-    github_token = await get_github_token(state["owner_id"], ctx["redis"])
+    github_comment_draft = _build_comment_draft(state)
+    ticket_draft = _build_ticket_draft(state)
+    return {
+        "github_comment_draft": github_comment_draft,
+        "ticket_draft": ticket_draft,
+        "status": "completed",
+    }
+```
+
+The `get_github_token` helper (§8.2) is called only from the write-back endpoint handler, which
+runs in the FastAPI request context after the user explicitly clicks "Post Comment":
+
+```python
+@router.post("/jobs/{job_id}/post-comment")
+async def post_comment(job_id: str, body: PostCommentRequest, user: User = Depends(current_user), redis: Redis = Depends(get_redis)) -> PostCommentResponse:
+    await require_job_owner(job_id, user.id, redis)
+    github_token = await get_github_token(user.github_user_id, redis)
     if github_token is None:
-        # User's session has expired — skip write-back, include warning in report
-        return {"github_comment_draft": None, "status": "completed_no_writeback"}
-    # ... post comment to GitHub ...
+        raise HTTPException(status_code=401, detail="GitHub session expired — re-authenticate")
+    # ... post comment via GitHub API ...
 ```
 
 ### 8.4 Token Expiry
@@ -596,7 +626,7 @@ api.interceptors.response.use(
     if (error.response?.status === 401 && !error.config._retry) {
       error.config._retry = true;
       const { data } = await axios.post("/auth/refresh", {}, { withCredentials: true });
-      setAccessToken(data.access_token);  // update React context
+      setAccessToken(data.access_token);
       error.config.headers.Authorization = `Bearer ${data.access_token}`;
       return api(error.config);
     }
@@ -670,7 +700,7 @@ cookie are meaningless without HTTPS, so production deployment must enforce it.
 
 ```toml
 "PyJWT>=2.8",           # JWT encode/decode (HS256/RS256)
-"cryptography>=42.0",   # Fernet AES-256-GCM for GitHub token encryption
+"cryptography>=42.0",   # Fernet (AES-128-CBC + HMAC-SHA256) for GitHub token encryption
 "httpx>=0.27",          # GitHub API calls in OAuth callback (already in deps)
 ```
 
@@ -694,13 +724,17 @@ with a hook-based API compatible with React.
 
 ```python
 # src/auth/router.py
+from __future__ import annotations
+
+from datetime import datetime, timedelta, timezone
+from urllib.parse import urlencode
+from uuid import uuid4
+
 from fastapi import APIRouter, Depends, HTTPException, Response, Request
 from fastapi.responses import RedirectResponse
 import secrets
 import httpx
 import jwt
-from datetime import datetime, timedelta, timezone
-from uuid import uuid4
 
 router = APIRouter(prefix="/auth")
 
@@ -710,7 +744,11 @@ GITHUB_USER_URL = "https://api.github.com/user"
 
 
 @router.get("/login")
-async def login(request: Request, redis: Annotated[Redis, Depends(get_redis)]) -> RedirectResponse:
+async def login(
+    request: Request,
+    redis: Annotated[Redis, Depends(get_redis)],
+    settings: Annotated[Settings, Depends(get_settings)],
+) -> RedirectResponse:
     """Initiate GitHub OAuth flow."""
     state = secrets.token_urlsafe(32)
     await redis.setex(f"oauth_state:{state}", 600, "valid")  # 10-minute window
@@ -721,7 +759,7 @@ async def login(request: Request, redis: Annotated[Redis, Depends(get_redis)]) -
         "scope": "read:user repo",
         "state": state,
     }
-    url = GITHUB_AUTHORIZE_URL + "?" + "&".join(f"{k}={v}" for k, v in params.items())
+    url = GITHUB_AUTHORIZE_URL + "?" + urlencode(params)
     return RedirectResponse(url)
 
 
@@ -733,13 +771,11 @@ async def callback(
     settings: Annotated[Settings, Depends(get_settings)],
 ) -> RedirectResponse:
     """Handle GitHub OAuth callback; issue one-time auth_code."""
-    # Validate state (CSRF protection)
     stored = await redis.get(f"oauth_state:{state}")
     if stored is None:
         raise HTTPException(status_code=400, detail="Invalid or expired OAuth state")
     await redis.delete(f"oauth_state:{state}")
 
-    # Exchange code for GitHub token
     async with httpx.AsyncClient() as client:
         token_resp = await client.post(
             GITHUB_TOKEN_URL,
@@ -754,7 +790,6 @@ async def callback(
     if not github_token:
         raise HTTPException(status_code=400, detail="GitHub token exchange failed")
 
-    # Fetch GitHub identity
     async with httpx.AsyncClient() as client:
         user_resp = await client.get(
             GITHUB_USER_URL,
@@ -762,10 +797,8 @@ async def callback(
         )
     github_user = user_resp.json()
 
-    # Store encrypted GitHub token
     await store_github_token(str(github_user["id"]), github_token, redis)
 
-    # Issue one-time auth_code for frontend to exchange
     auth_code = secrets.token_urlsafe(32)
     await redis.setex(
         f"auth_code:{auth_code}",
@@ -784,13 +817,12 @@ async def exchange_token(
     settings: Annotated[Settings, Depends(get_settings)],
 ) -> AccessTokenResponse:
     """Exchange one-time auth_code for access + refresh tokens."""
-    value = await redis.getdel(f"auth_code:{body.code}")  # single-use: fetch and delete atomically
+    value = await redis.getdel(f"auth_code:{body.code}")  # getdel: atomic fetch-and-delete guarantees single-use
     if value is None:
         raise HTTPException(status_code=400, detail="Invalid or expired auth code")
 
     github_id, github_login = value.split(":", 1)
 
-    # Issue access token
     jti = str(uuid4())
     access_token = jwt.encode(
         {
@@ -804,7 +836,6 @@ async def exchange_token(
         algorithm=settings.JWT_ALGORITHM,
     )
 
-    # Issue refresh token
     refresh_token = str(uuid4())
     await redis.setex(
         f"refresh_token:{refresh_token}",
