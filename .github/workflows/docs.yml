@@ -21,7 +21,7 @@ jobs:
           python-version: "3.12"
 
       - name: Install MkDocs
-        run: pip install mkdocs-material
+        run: pip install mkdocs-material mkdocs-macros-plugin
 
       - name: Deploy to GitHub Pages
         run: mkdocs gh-deploy --config-file docs/mkdocs.yml --force

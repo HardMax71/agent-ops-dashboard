@@ -3,7 +3,7 @@ docs_dir: .
 site_dir: ../site
 
 nav:
-  - Overview: initial.md
+  - Overview: index.md
   - PRDs:
       - Master Overview: prd/PRD-001-master-overview.md
       - Frontend & UX: prd/PRD-002-frontend-ux.md
@@ -14,13 +14,26 @@ nav:
 theme:
   name: material
   palette:
-    scheme: slate
-    primary: indigo
-    accent: indigo
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
   features:
     - navigation.sections
     - navigation.top
     - toc.integrate
+
+plugins:
+  - search
+  - macros
 
 markdown_extensions:
   - tables
