@@ -9,7 +9,7 @@
 | Status       | DRAFT                              |
 | Date         | March 2026                         |
 | Author       | Product & Engineering Team         |
-| Related Docs | [PRD-002](PRD-002-frontend-ux.md), [PRD-003](PRD-003-langgraph-orchestration.md), [PRD-004](PRD-004-agent-layer.md), [PRD-005](PRD-005-langsmith-observability.md), [PRD-006](PRD-006-data-validation.md), [PRD-007](PRD-007-developer-tooling.md) |
+| Related Docs | [PRD-002](PRD-002-frontend-ux.md), [PRD-003](PRD-003-langgraph-orchestration.md), [PRD-004](PRD-004-agent-layer.md), [PRD-005](PRD-005-langsmith-observability.md), [PRD-006](PRD-006-data-validation.md), [PRD-007](PRD-007-developer-tooling.md), [PRD-008](PRD-008-authentication.md) |
 
 ---
 
@@ -229,6 +229,7 @@ GitHub Issue URL
 | Cost and latency analytics dashboard             | P2       | [PRD-005](PRD-005-langsmith-observability.md)        |
 | Input validation (issue_url, Pydantic v2)        | P0       | [PRD-006](PRD-006-data-validation.md)                |
 | Python tooling (uv / ruff / ty / pyproject.toml) | P0       | [PRD-007](PRD-007-developer-tooling.md)              |
+| Authentication & authorization (GitHub OAuth, JWT) | P0     | [PRD-008](PRD-008-authentication.md)                 |
 
 ---
 
