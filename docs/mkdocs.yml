@@ -32,6 +32,7 @@ nav:
       - Documentation Standards: prd/PRD-009-documentation-standards.md
       - Evaluation Framework: prd/PRD-010-evaluation-framework.md
       - Metrics Collection: prd/PRD-011-metrics-collection.md
+      - Testing Strategy & CI: prd/PRD-013-testing-strategy.md
   - Plans:
       - Goals & Definition of Done: prd/PRD-001-1-goals-and-dod.md
       - Roadmap v1 (precise): plans/roadmap-v1.md
