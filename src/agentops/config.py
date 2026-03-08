@@ -1,4 +1,4 @@
-from pydantic import Field
+from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -45,6 +45,15 @@ class Settings(BaseSettings):
     # Job limits
     default_cost_budget_usd: float = 0.20
 
+    @model_validator(mode="after")
+    def _validate_production_secrets(self) -> "Settings":
+        if self.environment not in ("development", "test"):
+            if self.internal_service_secret == "dev-internal-secret":  # noqa: S105
+                raise ValueError(
+                    "internal_service_secret must be explicitly set in non-development environments"
+                )
+        return self
+
 
 _settings: Settings | None = None
 
@@ -54,3 +63,9 @@ def get_settings() -> Settings:
     if _settings is None:
         _settings = Settings()
     return _settings
+
+
+def clear_settings() -> None:
+    """Reset cached settings instance. Intended for test teardown only."""
+    global _settings  # noqa: PLW0603
+    _settings = None

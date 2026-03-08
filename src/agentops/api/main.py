@@ -3,17 +3,20 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from agentops.api.routers.jobs import router as jobs_router
 from agentops.auth.middleware import SecurityHeadersMiddleware
-from agentops.config import get_settings
+from agentops.config import Settings, get_settings
 from agentops.lifespan import lifespan
 
+_VERSION = "0.1.0"
 
-def create_app() -> FastAPI:
-    settings = get_settings()
+
+def create_app(settings: Settings | None = None, *, testing: bool = False) -> FastAPI:
+    if settings is None:
+        settings = get_settings()
 
     app = FastAPI(
         title="AgentOps Dashboard API",
-        version="0.1.0",
-        lifespan=lifespan,
+        version=_VERSION,
+        lifespan=None if testing else lifespan,
     )
 
     app.add_middleware(
@@ -29,7 +32,7 @@ def create_app() -> FastAPI:
 
     @app.get("/health")
     async def health() -> dict[str, str]:
-        return {"status": "ok", "version": "0.1.0"}
+        return {"status": "ok", "version": _VERSION}
 
     return app
 

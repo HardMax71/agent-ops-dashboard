@@ -4,18 +4,20 @@ from langchain_openai import ChatOpenAI
 
 from writer.models import WriterOutput
 
-_REPORT_PROMPT = ChatPromptTemplate.from_messages([
-    (
-        "system",
-        "You are a technical writer creating bug triage reports. "
-        "Based on agent findings, write a comprehensive triage report.",
-    ),
-    (
-        "human",
-        "Issue: {issue_title}\nFindings: {findings}\nCritic feedback: {critic_feedback}\n"
-        "Human exchanges: {human_exchanges}\n\nCreate a complete triage report.",
-    ),
-])
+_REPORT_PROMPT = ChatPromptTemplate.from_messages(
+    [
+        (
+            "system",
+            "You are a technical writer creating bug triage reports. "
+            "Based on agent findings, write a comprehensive triage report.",
+        ),
+        (
+            "human",
+            "Issue: {issue_title}\nFindings: {findings}\nCritic feedback: {critic_feedback}\n"
+            "Human exchanges: {human_exchanges}\n\nCreate a complete triage report.",
+        ),
+    ]
+)
 
 _llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
 _structured_llm = _llm.with_structured_output(WriterOutput)

@@ -2,7 +2,7 @@ version: "3.9"
 services:
   api:
     build: .
-    ports: ["8000:8000"]
+    ports: ["8000:8000", "8001:8001"]
     env_file: .env
     depends_on:
       db:
@@ -13,6 +13,7 @@ services:
 
   worker:
     build: .
+    ports: ["8002:8002"]
     env_file: .env
     depends_on:
       db:
@@ -75,6 +76,15 @@ services:
       context: agents/writer
     ports: ["8005:8005"]
     env_file: .env
+
+  prometheus:
+    image: prom/prometheus:v2.53.0
+    ports: ["127.0.0.1:9090:9090"]
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    depends_on:
+      - api
+      - worker
 
 volumes:
   pgdata:

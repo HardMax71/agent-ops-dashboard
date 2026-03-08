@@ -57,7 +57,7 @@ uv run ruff format .
 
 ## Architecture
 
-```
+```text
 src/agentops/
   api/          FastAPI app, routers, dependency injection
   auth/         JWT + GitHub OAuth, security middleware

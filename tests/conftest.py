@@ -47,7 +47,7 @@ def issue_003() -> dict:  # type: ignore[type-arg]
 
 @pytest_asyncio.fixture
 async def api_client(fake_redis: FakeAsyncRedis) -> AsyncClient:
-    app = create_app()
+    app = create_app(testing=True)
     app.state.redis = fake_redis
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
         yield client

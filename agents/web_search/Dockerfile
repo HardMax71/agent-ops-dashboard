@@ -3,4 +3,7 @@ WORKDIR /app
 COPY pyproject.toml .
 COPY src/ src/
 RUN pip install uv && uv pip install --system -e .
+RUN groupadd --system appuser && useradd --system --gid appuser appuser \
+    && chown -R appuser:appuser /app
+USER appuser
 CMD ["uvicorn", "web_search.app:app", "--host", "0.0.0.0", "--port", "8003"]

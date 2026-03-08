@@ -28,9 +28,6 @@ class AgentOpsMetricsCallback(BaseCallbackHandler):
         usage = getattr(response, "llm_output", {}) or {}
         token_usage = usage.get("token_usage", {})
         total = token_usage.get("total_tokens", 0)
-        _token_counter.add(
-            total,
-            {"job_id": self.job_id, "agent": self.agent_name},
-        )
+        _token_counter.add(total, {"agent": self.agent_name})
         cost_usd = total * 0.000001  # ~$0.001 per 1000 tokens (gpt-4o-mini rate)
-        _cost_counter.add(cost_usd, {"job_id": self.job_id, "agent": self.agent_name})
+        _cost_counter.add(cost_usd, {"agent": self.agent_name})

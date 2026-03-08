@@ -35,6 +35,5 @@ _fallback_chain = _INVESTIGATOR_PROMPT | ChatOpenAI(
 ).with_structured_output(InvestigatorFinding)
 
 investigator_chain: RunnableSerializable = (
-    _INVESTIGATOR_PROMPT
-    | _structured_llm.with_retry(stop_after_attempt=3).with_fallbacks([_fallback_chain])
-)
+    _INVESTIGATOR_PROMPT | _structured_llm.with_retry(stop_after_attempt=3)
+).with_fallbacks([_fallback_chain])

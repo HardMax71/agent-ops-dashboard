@@ -41,20 +41,20 @@ Based on the current state, decide which agent should run next:
 
 Choose the most appropriate next agent."""
 
-_SUPERVISOR_PROMPT = ChatPromptTemplate.from_messages([
-    ("system", "You are the supervisor of a bug triage system. Decide which agent runs next."),
-    ("human", _SUPERVISOR_PROMPT_TEMPLATE),
-])
+_SUPERVISOR_PROMPT = ChatPromptTemplate.from_messages(
+    [
+        ("system", "You are the supervisor of a bug triage system. Decide which agent runs next."),
+        ("human", _SUPERVISOR_PROMPT_TEMPLATE),
+    ]
+)
 
 
 def build_supervisor_context(state: BugTriageState) -> dict[str, object]:  # noqa: ANN401
     findings_block = "\n".join(
-        f"- [{f.agent_name}] {f.summary} (confidence: {f.confidence:.2f})"
-        for f in state.findings
+        f"- [{f.agent_name}] {f.summary} (confidence: {f.confidence:.2f})" for f in state.findings
     )
     human_exchanges_block = "\n".join(
-        f"Q: {e.question}\nA: {e.answer}"
-        for e in state.human_exchanges
+        f"Q: {e.question}\nA: {e.answer}" for e in state.human_exchanges
     )
     agent_names = list({f.agent_name for f in state.findings})
     critic_verdict = state.critic_feedback.verdict if state.critic_feedback else "none"
@@ -99,9 +99,7 @@ def route_from_supervisor(state: BugTriageState) -> str:
         return "writer"
 
     next_node = state.supervisor_next
-    valid_nodes = (
-        "investigator", "codebase_search", "web_search", "critic", "human_input", "writer"
-    )
+    valid_nodes = ("investigator", "codebase_search", "web_search", "critic", "writer")
     if next_node in valid_nodes:
         return next_node
     return "writer"
