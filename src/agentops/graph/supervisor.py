@@ -56,7 +56,7 @@ def build_supervisor_context(state: BugTriageState) -> dict[str, object]:  # noq
     human_exchanges_block = "\n".join(
         f"Q: {e.question}\nA: {e.answer}" for e in state.human_exchanges
     )
-    agent_names = list({f.agent_name for f in state.findings})
+    agent_names = sorted({f.agent_name for f in state.findings})
     critic_verdict = state.critic_feedback.verdict if state.critic_feedback else "none"
 
     return {
@@ -99,7 +99,14 @@ def route_from_supervisor(state: BugTriageState) -> str:
         return "writer"
 
     next_node = state.supervisor_next
-    valid_nodes = ("investigator", "codebase_search", "web_search", "critic", "writer")
+    valid_nodes = (
+        "investigator",
+        "codebase_search",
+        "web_search",
+        "critic",
+        "human_input",
+        "writer",
+    )
     if next_node in valid_nodes:
         return next_node
     return "writer"

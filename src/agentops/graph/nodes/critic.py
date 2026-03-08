@@ -5,7 +5,9 @@ from agentops.graph.state import AgentFinding, BugTriageState, CriticFeedback
 
 async def critic_node(state: BugTriageState) -> dict:  # noqa: ANN401
     """Call critic LangServe endpoint."""
-    inv_finding = next((f for f in state.findings if f.agent_name == "investigator"), None)
+    inv_finding = next(
+        (f for f in reversed(state.findings) if f.agent_name == "investigator"), None
+    )
     payload = {
         "input": {
             "findings": [f.model_dump() for f in state.findings],

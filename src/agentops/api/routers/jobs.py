@@ -7,7 +7,6 @@ from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel, Field
 
 from agentops.api.deps.redis import RedisDep
-from agentops.api.deps.settings import SettingsDep
 
 router = APIRouter(prefix="/jobs", tags=["jobs"])
 
@@ -37,7 +36,6 @@ class JobResponse(BaseModel):
 async def create_job(
     body: CreateJobRequest,
     redis: RedisDep,
-    settings: SettingsDep,
 ) -> CreateJobResponse:
     """Create a new triage job. Idempotent within 24h per issue URL."""
     # Idempotency key (owner_id placeholder until auth is implemented)

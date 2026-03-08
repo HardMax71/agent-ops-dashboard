@@ -9,12 +9,16 @@ _REPORT_PROMPT = ChatPromptTemplate.from_messages(
         (
             "system",
             "You are a technical writer creating bug triage reports. "
-            "Based on agent findings, write a comprehensive triage report.",
+            "Based on agent findings, write a comprehensive triage report. "
+            "Always populate ticket_title (concise title for the bug ticket), "
+            "ticket_labels (e.g. ['bug', 'priority:high']), "
+            "and ticket_assignee (suggested GitHub username or team name).",
         ),
         (
             "human",
             "Issue: {issue_title}\nFindings: {findings}\nCritic feedback: {critic_feedback}\n"
-            "Human exchanges: {human_exchanges}\n\nCreate a complete triage report.",
+            "Human exchanges: {human_exchanges}\n\nCreate a complete triage report. "
+            "Include ticket_title, ticket_labels, and ticket_assignee in your output.",
         ),
     ]
 )

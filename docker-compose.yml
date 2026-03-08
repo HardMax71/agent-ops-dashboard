@@ -50,31 +50,31 @@ services:
   investigator:
     build:
       context: agents/investigator
-    ports: ["8001:8001"]
+    expose: ["8001"]
     env_file: .env
 
   codebase-search:
     build:
       context: agents/codebase_search
-    ports: ["8002:8002"]
+    expose: ["8002"]
     env_file: .env
 
   web-search:
     build:
       context: agents/web_search
-    ports: ["8003:8003"]
+    expose: ["8003"]
     env_file: .env
 
   critic:
     build:
       context: agents/critic
-    ports: ["8004:8004"]
+    expose: ["8004"]
     env_file: .env
 
   writer:
     build:
       context: agents/writer
-    ports: ["8005:8005"]
+    expose: ["8005"]
     env_file: .env
 
   prometheus:

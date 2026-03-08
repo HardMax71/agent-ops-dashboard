@@ -43,7 +43,7 @@ async def codebase_search_node(state: BugTriageState) -> dict:  # noqa: ANN401
         raw = response.json()
 
     output = raw.get("output", {})
-    relevant_files = [f.get("path", "") for f in output.get("relevant_files", [])]
+    relevant_files = [f.get("path", "") for f in output.get("relevant_files", []) if f.get("path")]
     finding = AgentFinding(
         agent_name="codebase_search",
         summary=output.get("summary", "Codebase search complete"),

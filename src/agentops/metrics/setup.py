@@ -41,11 +41,19 @@ def configure_worker_metrics(port: int = 8002) -> MeterProvider:
 
 def shutdown_api_metrics() -> None:
     """Shut down the API metrics HTTP server."""
+    global _api_httpd, _api_provider  # noqa: PLW0603
     if _api_httpd is not None:
         _api_httpd.shutdown()
+        _api_httpd.server_close()
+        _api_httpd = None
+        _api_provider = None
 
 
 def shutdown_worker_metrics() -> None:
     """Shut down the worker metrics HTTP server."""
+    global _worker_httpd, _worker_provider  # noqa: PLW0603
     if _worker_httpd is not None:
         _worker_httpd.shutdown()
+        _worker_httpd.server_close()
+        _worker_httpd = None
+        _worker_provider = None
