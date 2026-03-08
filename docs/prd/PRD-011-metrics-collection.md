@@ -470,8 +470,24 @@ class EventBus:
                     type(event).__name__,
                 )
 
-# Module-level singleton
-event_bus = EventBus()
+```
+
+```python
+# agentops/deps/events.py
+from typing import Annotated
+from fastapi import Depends, Request
+from agentops.metrics.bus import EventBus
+
+async def get_event_bus(request: Request) -> EventBus:
+    """Return the EventBus from app.state."""
+    return request.app.state.event_bus
+
+EventBusDep = Annotated[EventBus, Depends(get_event_bus)]
+
+# In lifespan (agentops/lifespan.py):
+bus = EventBus()
+bus.subscribe(UserFeedbackSubmitted, handle_user_feedback_handler)
+app.state.event_bus = bus
 ```
 
 ### Domain Event (single event type uses the bus)
@@ -486,20 +502,6 @@ class UserFeedbackSubmitted:
     langsmith_run_id: str
     positive: bool
     comment: str | None
-```
-
-### App Startup Registration
-
-```python
-# agentops/main.py
-from agentops.metrics.bus import event_bus
-from agentops.metrics.handlers.langsmith_feedback_handler import on_user_feedback
-from agentops.metrics.handlers.db_cache_handler import on_job_completed, on_job_failed
-from agentops.events import UserFeedbackSubmitted
-
-@app.on_event("startup")
-async def register_metric_handlers() -> None:
-    event_bus.subscribe(UserFeedbackSubmitted, on_user_feedback)
 ```
 
 > **Why no JobCompleted/JobFailed bus events?** The `DbCacheHandler` still needs to run after
@@ -561,16 +563,26 @@ by `AgentOpsMetricsCallback`.
 ### ARQ Worker — Post-Graph (job lifecycle metrics)
 
 ```python
-# agentops/worker.py — after astream_events loop completes
-from opentelemetry import metrics as otel_metrics
+# agentops/worker.py — instruments created in on_startup, accessed via ctx
 
-_meter = otel_metrics.get_meter("agentops")
-_job_total          = _meter.create_counter("job_total", description="Total jobs processed")
-_job_duration       = _meter.create_histogram("job_duration_seconds", description="End-to-end job duration", unit="s")
-_jobs_active        = _meter.create_up_down_counter("jobs_active", description="Jobs currently running")
+async def on_startup(ctx: dict) -> None:
+    """Initialize all worker-scoped resources into ctx."""
+    settings = get_settings()
+    ctx["redis"] = await create_pool(RedisSettings.from_dsn(settings.redis_url))
+    ctx["db_engine"] = create_async_engine(settings.database_url)
+    ctx["langsmith"] = Client()
+    configure_worker_metrics(port=8002)
+    meter = otel_metrics.get_meter("agentops")
+    ctx["job_total"]      = meter.create_counter("job_total", description="Total jobs processed")
+    ctx["job_duration"]   = meter.create_histogram("job_duration_seconds", description="End-to-end job duration", unit="s")
+    ctx["jobs_active"]    = meter.create_up_down_counter("jobs_active", description="Jobs currently running")
+    ctx["index_duration"] = meter.create_histogram("index_build_duration_seconds", description="Codebase index build time", unit="s")
 
 async def run_triage(ctx: dict, job_id: str) -> None:
-    _jobs_active.add(1)
+    jobs_active: UpDownCounter = ctx["jobs_active"]
+    job_total: Counter = ctx["job_total"]
+    job_duration: Histogram = ctx["job_duration"]
+    jobs_active.add(1)
     start = time.perf_counter()
     try:
         async for event in graph.astream_events(initial_state, config=config, version="v2"):
@@ -580,15 +592,15 @@ async def run_triage(ctx: dict, job_id: str) -> None:
         elapsed = time.perf_counter() - start
 
         if final_state.values.get("error"):
-            _job_total.add(1, {"status": "failed"})
+            job_total.add(1, {"status": "failed"})
             # post-job hook: add_to_review_queue_if_needed(), etc.
         else:
-            _job_total.add(1, {"status": "completed"})
-            _job_duration.record(elapsed)
+            job_total.add(1, {"status": "completed"})
+            job_duration.record(elapsed)
             await fetch_and_cache_trace_summary(...)
             await add_to_review_queue_if_needed(...)
     finally:
-        _jobs_active.add(-1)
+        jobs_active.add(-1)
 ```
 
 ### POST /answer — Human Interrupt Answered
@@ -597,17 +609,15 @@ async def run_triage(ctx: dict, job_id: str) -> None:
 # agentops/routes/jobs.py
 from opentelemetry import metrics as otel_metrics
 
-_meter = otel_metrics.get_meter("agentops")
-_human_wait = _meter.create_histogram(
-    "human_wait_seconds", description="Human interrupt wait time", unit="s",
-)
-
 @router.post("/jobs/{job_id}/answer", status_code=204)
-async def submit_answer(job_id: str, body: AnswerRequest, db: AsyncSession = Depends(get_db)):
+async def submit_answer(job_id: str, body: AnswerRequest, db: DbSessionDep) -> None:
     job = await db.get(Job, job_id)
     # ... business logic: resume graph, update DB ...
     wait_seconds = (datetime.utcnow() - job.interrupted_at).total_seconds()
-    _human_wait.record(wait_seconds)   # 1 line; no event bus needed
+    # OTel get_meter / create_histogram are idempotent — SDK returns cached instrument.
+    otel_metrics.get_meter("agentops").create_histogram(
+        "human_wait_seconds", description="Human interrupt wait time", unit="s",
+    ).record(wait_seconds)
 ```
 
 ### POST /feedback — UserFeedbackSubmitted (bus event)
@@ -635,20 +645,15 @@ async def submit_feedback(job_id: str, body: FeedbackRequest, db: AsyncSession =
 
 ```python
 # agentops/worker.py or agentops/indexer.py
-from opentelemetry import metrics as otel_metrics
-
-_meter = otel_metrics.get_meter("agentops")
-_index_duration = _meter.create_histogram(
-    "index_build_duration_seconds", description="Codebase index build time", unit="s",
-)
 
 async def index_repository(ctx: dict, repo_url: str) -> None:
+    index_duration: Histogram = ctx["index_duration"]
     start = time.perf_counter()
     try:
         doc_count = await build_index(repo_url)
-        _index_duration.record(time.perf_counter() - start, {"status": "completed"})
+        index_duration.record(time.perf_counter() - start, {"status": "completed"})
     except Exception as exc:
-        _index_duration.record(time.perf_counter() - start, {"status": "failed"})
+        index_duration.record(time.perf_counter() - start, {"status": "failed"})
         raise
 ```
 

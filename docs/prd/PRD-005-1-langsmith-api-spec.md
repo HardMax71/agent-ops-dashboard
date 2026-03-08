@@ -50,18 +50,29 @@ LangSmith SDK calls are synchronous and must be wrapped in `asyncio.to_thread()`
 blocking the event loop.
 
 ```python
-# agentops/langsmith_client.py
+# In lifespan (agentops/lifespan.py):
 from langsmith import Client
 
-# Reads LANGSMITH_API_KEY from environment automatically
-langsmith_client = Client()
+app.state.langsmith = Client()   # no cleanup needed; omit from after-yield block
+
+# agentops/deps/langsmith.py
+from typing import Annotated
+from fastapi import Depends, Request
+from langsmith import Client
+
+async def get_langsmith_client(request: Request) -> Client:
+    """Return the LangSmith Client from app.state."""
+    return request.app.state.langsmith
+
+LangSmithClientDep = Annotated[Client, Depends(get_langsmith_client)]
+
+# In ARQ on_startup (agentops/worker.py):
+ctx["langsmith"] = Client()   # no cleanup needed; omit from on_shutdown
 ```
 
-This module-level singleton is imported by:
-
-- The ARQ worker (`run_triage`) — for post-job trace fetch and annotation queue
-- FastAPI route handler (`POST /jobs/{id}/feedback`) — for feedback submission
-- `scripts/run_evals.py` — for eval result retrieval
+The existing function signatures (`fetch_runs_for_job`, `fetch_and_cache_trace_summary`,
+`handle_user_feedback`, `add_to_review_queue_if_needed`) already accept `client: Client` as
+a parameter — no changes needed there. They are already correct.
 
 ### Required Environment Variables
 

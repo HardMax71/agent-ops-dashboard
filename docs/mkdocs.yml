@@ -25,6 +25,7 @@ nav:
           - API & Integration Spec: prd/PRD-005-1-langsmith-api-spec.md
       - Data Validation: prd/PRD-006-data-validation.md
       - Developer Tooling: prd/PRD-007-developer-tooling.md
+      - Backend & DI: prd/PRD-012-backend-di.md
       - Authentication: prd/PRD-008-authentication.md
       - Auth Detail:
           - Implementation Spec: prd/PRD-008-1-auth-impl-spec.md
