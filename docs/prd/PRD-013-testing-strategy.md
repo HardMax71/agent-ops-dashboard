@@ -145,8 +145,12 @@ Six fixtures live at `tests/conftest.py`:
 | `noop_metrics`             | `function` | —                                                   | `metrics.set_meter_provider(NoOpMeterProvider())`; opt-in per test |
 
 `noop_metrics` is function-scoped and **not** `autouse` — tests that need OTel silenced request it explicitly.
-`test_metrics_callback.py` opts out entirely and uses `InMemoryMetricReader` instead (it cannot share a
-session-locked provider). Tests that do not care about metrics neither request `noop_metrics` nor observe any OTel side effects.
+The Python OTel SDK (`opentelemetry-sdk`) allows `set_meter_provider()` to be called multiple times; each call
+replaces the global. However, global state is process-level, so tests in the same worker that do not request
+`noop_metrics` inherit whatever provider the previous test installed. With `-n auto` (xdist) each worker is a
+separate process so workers are fully isolated. `test_metrics_callback.py` does **not** use `noop_metrics` — it
+calls `set_meter_provider(MeterProvider(reader=InMemoryMetricReader()))` explicitly at the start of each test to
+install a fresh provider regardless of prior state, then reads metrics from that reader within the same test.
 
 ```python
 # tests/conftest.py (sketch)
@@ -244,13 +248,28 @@ def test_github_url_validation(url: str, expected_status: int) -> None: ...
 - **Web Search (`test_web_search_agent.py`):** mock `_tool_node.ainvoke` to return synthetic `ToolMessage`; assert
   `on_tool_start` fires via event capture on a real graph with `MemorySaver`
 - **Critic (`test_critic_chain.py`):** parametrize `verdict` over `["APPROVED", "REJECTED"]`; assert `required_evidence`
-  is empty when `APPROVED`
+  is empty when `APPROVED`. Additionally, test `map_critique_to_verdict` directly with all input combinations:
+
+  | `CritiqueFinding.verdict` | `ready_for_report` | Expected `CriticVerdict.verdict` |
+  |---|---|---|
+  | `"CONFIRMED"` | `True` | `"APPROVED"` |
+  | `"CONFIRMED"` | `False` | `"REJECTED"` |
+  | `"UNCERTAIN"` | `False` | `"REJECTED"` |
+  | `"CHALLENGED"` | `False` | `"REJECTED"` |
+
+  For each case: assert `result.verdict == expected`; when expected is `"APPROVED"` assert both `result.gaps`
+  and `result.required_evidence` are empty; when `"REJECTED"` assert `result.gaps` is non-empty.
 - **Writer (`test_writer_chain.py`):** assert `merge_writer_outputs` produces `WriterOutput` with all fields populated;
   test `ticket.get("effort", "M")` default value
 
 ### 6.3 Supervisor Node (`test_supervisor_node.py`)
 
-- Test all 4 routing guards in `route_from_supervisor()` as a pure function — no LLM needed
+- Test all 5 routing guards in `route_from_supervisor()` as a pure function — no LLM needed:
+  - Guard 1: `iterations == 0` forces `"investigator"` regardless of LLM decision
+  - Guard 2: `len(human_exchanges) >= 2` blocks `"human_input"`, redirects to `"codebase_search"`
+  - Guard 3: `iterations >= max_iterations` forces `"writer"` regardless of verdict
+  - Guard 4: `decision == "end"` with no report forces `"writer"`
+  - Guard 5: `critic_feedback.verdict == "REJECTED"` blocks `"writer"`, redirects to `"investigator"`
 - Test `_invoke_supervisor` retry: first call raises `ValidationError`, second succeeds → returns decision
 - Test `_invoke_supervisor` double failure → returns `_FORCED_FALLBACK`
 - Test `temperature=0` is set on `_supervisor_llm` (read attribute directly — verifies spec compliance without mocking)
@@ -272,7 +291,7 @@ def test_github_url_validation(url: str, expected_status: int) -> None: ...
 
 ### 6.6 Metrics Callback (`test_metrics_callback.py`)
 
-- Use `InMemoryMetricReader` (not `NoOpMeterProvider`) — this module opts out of the autouse `noop_metrics` fixture
+- Use `InMemoryMetricReader` (not `NoOpMeterProvider`) — this module does not use the function-scoped opt-in `noop_metrics` fixture (see §5); it installs its own `MeterProvider(reader=InMemoryMetricReader())` at each test start
 - Assert `on_chain_start` increments `agent_calls_total` counter by exactly 1
 - Assert `on_chain_end` records a positive value in `agent_duration_seconds` histogram
 - Assert `on_chain_error` increments `agent_errors_total`

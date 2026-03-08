@@ -339,7 +339,7 @@ async def web_search_agent_node(state: WebSearchState) -> dict:
     )
     finding = _to_agent_finding(
         raw,
-        details=raw.external_root_cause,
+        details=raw.external_root_cause or "No external root cause identified.",
         relevant_files=[r.url for r in raw.relevant_results],
     )
     return {"findings": [finding]}
@@ -599,6 +599,11 @@ def map_critique_to_verdict(raw: CritiqueFinding) -> CriticVerdict:
     return CriticVerdict(
         verdict="APPROVED" if approved else "REJECTED",
         gaps=[] if approved else raw.gaps,
+        # CritiqueFinding has no separate required_evidence field; raw.gaps is the only
+        # available signal for what evidence is still missing. Both fields are set to the
+        # same list intentionally — CriticVerdict.gaps names the problems,
+        # CriticVerdict.required_evidence names what would resolve them, which is
+        # the same information when the source model does not distinguish them.
         required_evidence=[] if approved else raw.gaps,
         confidence=max(0.0, min(1.0, 0.5 + raw.confidence_adjustment)),
     )
