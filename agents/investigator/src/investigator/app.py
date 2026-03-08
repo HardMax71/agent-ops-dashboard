@@ -1,12 +1,13 @@
 from fastapi import FastAPI
-from investigator.chain import investigator_chain
+from investigator.chain import create_investigator_chain
 from langserve import add_routes
 
 
 def create_app() -> FastAPI:
     app = FastAPI(title="Investigator Agent", version="0.1.0")
 
-    add_routes(app, investigator_chain, path="/agents/investigator")
+    chain = create_investigator_chain()
+    add_routes(app, chain, path="/agents/investigator")
 
     @app.get("/health")
     async def health() -> dict[str, str]:

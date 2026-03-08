@@ -19,9 +19,9 @@ _ANALYSIS_PROMPT = ChatPromptTemplate.from_messages(
     ]
 )
 
-_llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
-_structured_llm = _llm.with_structured_output(CodebaseFinding)
 
-codebase_search_chain: RunnableSerializable = _ANALYSIS_PROMPT | _structured_llm.with_retry(
-    stop_after_attempt=3
-)
+def create_codebase_search_chain() -> RunnableSerializable:
+    """Create the codebase search chain. Call during app startup, not at import."""
+    llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+    structured_llm = llm.with_structured_output(CodebaseFinding)
+    return _ANALYSIS_PROMPT | structured_llm.with_retry(stop_after_attempt=3)

@@ -4,7 +4,7 @@ from langchain_openai import ChatOpenAI
 
 from critic.models import CritiqueFinding, map_critique_to_verdict
 
-__all__ = ["critic_chain", "map_critique_to_verdict"]
+__all__ = ["create_critic_chain", "map_critique_to_verdict"]
 
 _CRITIC_PROMPT = ChatPromptTemplate.from_messages(
     [
@@ -26,10 +26,10 @@ _CRITIC_PROMPT = ChatPromptTemplate.from_messages(
     ]
 )
 
-_structured_llm = ChatOpenAI(model="gpt-4o-mini", temperature=0).with_structured_output(
-    CritiqueFinding
-)
 
-critic_chain: RunnableSerializable = _CRITIC_PROMPT | _structured_llm.with_retry(
-    stop_after_attempt=3
-)
+def create_critic_chain() -> RunnableSerializable:
+    """Create the critic chain. Call during app startup, not at import."""
+    structured_llm = ChatOpenAI(model="gpt-4o-mini", temperature=0).with_structured_output(
+        CritiqueFinding
+    )
+    return _CRITIC_PROMPT | structured_llm.with_retry(stop_after_attempt=3)

@@ -4,7 +4,7 @@ import logging
 import redis.asyncio as aioredis
 
 from agentops.config import get_settings
-from agentops.metrics.setup import configure_worker_metrics
+from agentops.metrics.setup import configure_metrics, shutdown_metrics
 
 _logger = logging.getLogger(__name__)
 
@@ -16,11 +16,14 @@ async def on_startup(ctx: dict) -> None:  # noqa: ANN401
         encoding="utf-8",
         decode_responses=True,
     )
-    configure_worker_metrics(port=8002)
+    httpd, provider = configure_metrics(port=8002)
+    ctx["metrics_httpd"] = httpd
+    ctx["meter_provider"] = provider
 
 
 async def on_shutdown(ctx: dict) -> None:  # noqa: ANN401
     await ctx["redis"].aclose()
+    shutdown_metrics(ctx["metrics_httpd"])
 
 
 async def run_triage(ctx: dict, job_id: str) -> None:  # noqa: ANN401

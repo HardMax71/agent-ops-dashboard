@@ -23,9 +23,9 @@ _REPORT_PROMPT = ChatPromptTemplate.from_messages(
     ]
 )
 
-_llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
-_structured_llm = _llm.with_structured_output(WriterOutput)
 
-writer_chain: RunnableSerializable = _REPORT_PROMPT | _structured_llm.with_retry(
-    stop_after_attempt=3
-)
+def create_writer_chain() -> RunnableSerializable:
+    """Create the writer chain. Call during app startup, not at import."""
+    llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+    structured_llm = llm.with_structured_output(WriterOutput)
+    return _REPORT_PROMPT | structured_llm.with_retry(stop_after_attempt=3)

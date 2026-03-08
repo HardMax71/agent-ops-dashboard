@@ -1,3 +1,5 @@
+from functools import lru_cache
+
 from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -55,17 +57,6 @@ class Settings(BaseSettings):
         return self
 
 
-_settings: Settings | None = None
-
-
+@lru_cache
 def get_settings() -> Settings:
-    global _settings  # noqa: PLW0603
-    if _settings is None:
-        _settings = Settings()
-    return _settings
-
-
-def clear_settings() -> None:
-    """Reset cached settings instance. Intended for test teardown only."""
-    global _settings  # noqa: PLW0603
-    _settings = None
+    return Settings()

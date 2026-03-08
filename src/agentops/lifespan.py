@@ -6,7 +6,7 @@ from fastapi import FastAPI
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from agentops.config import get_settings
-from agentops.metrics.setup import configure_api_metrics, shutdown_api_metrics
+from agentops.metrics.setup import configure_metrics, shutdown_metrics
 
 
 @asynccontextmanager
@@ -27,10 +27,12 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     )
 
     # OTel metrics (API process)
-    configure_api_metrics(port=8001)
+    httpd, provider = configure_metrics(port=8001)
+    app.state.metrics_httpd = httpd
+    app.state.meter_provider = provider
 
     yield
 
     await app.state.redis.aclose()
     await engine.dispose()
-    shutdown_api_metrics()
+    shutdown_metrics(app.state.metrics_httpd)

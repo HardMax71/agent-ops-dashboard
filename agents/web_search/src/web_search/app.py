@@ -1,12 +1,14 @@
 from fastapi import FastAPI
 from langserve import add_routes
 
-from web_search.chain import web_search_chain
+from web_search.chain import create_web_search_chain
 
 
 def create_app() -> FastAPI:
     app = FastAPI(title="Web Search Agent", version="0.1.0")
-    add_routes(app, web_search_chain, path="/agents/web_search")
+
+    chain = create_web_search_chain()
+    add_routes(app, chain, path="/agents/web_search")
 
     @app.get("/health")
     async def health() -> dict[str, str]:

@@ -20,10 +20,10 @@ _SEARCH_PROMPT = ChatPromptTemplate.from_messages(
     ]
 )
 
-_structured_llm = ChatOpenAI(model="gpt-4o-mini", temperature=0).with_structured_output(
-    WebSearchFinding
-)
 
-web_search_chain: RunnableSerializable = _SEARCH_PROMPT | _structured_llm.with_retry(
-    stop_after_attempt=3
-)
+def create_web_search_chain() -> RunnableSerializable:
+    """Create the web search chain. Call during app startup, not at import."""
+    structured_llm = ChatOpenAI(model="gpt-4o-mini", temperature=0).with_structured_output(
+        WebSearchFinding
+    )
+    return _SEARCH_PROMPT | structured_llm.with_retry(stop_after_attempt=3)
