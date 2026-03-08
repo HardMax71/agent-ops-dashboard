@@ -1,7 +1,6 @@
 import pytest
+from investigator.models import InvestigatorFinding
 from pydantic import ValidationError
-
-from agents.investigator.src.investigator.models import InvestigatorFinding
 
 
 def test_investigator_finding_schema() -> None:

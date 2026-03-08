@@ -1,8 +1,6 @@
-import pytest
 from httpx import AsyncClient
 
 
-@pytest.mark.asyncio
 async def test_create_job_returns_202(api_client: AsyncClient) -> None:
     response = await api_client.post(
         "/jobs", json={"issue_url": "https://github.com/acme/backend/issues/1"}
@@ -13,13 +11,11 @@ async def test_create_job_returns_202(api_client: AsyncClient) -> None:
     assert data["status"] == "queued"
 
 
-@pytest.mark.asyncio
 async def test_create_job_invalid_url_returns_422(api_client: AsyncClient) -> None:
     response = await api_client.post("/jobs", json={"issue_url": "https://not-github.com/x"})
     assert response.status_code == 422
 
 
-@pytest.mark.asyncio
 async def test_create_job_idempotency(api_client: AsyncClient) -> None:
     payload = {"issue_url": "https://github.com/acme/backend/issues/99"}
     r1 = await api_client.post("/jobs", json=payload)
@@ -29,13 +25,11 @@ async def test_create_job_idempotency(api_client: AsyncClient) -> None:
     assert r1.json()["job_id"] == r2.json()["job_id"]
 
 
-@pytest.mark.asyncio
 async def test_get_job_not_found(api_client: AsyncClient) -> None:
     response = await api_client.get("/jobs/nonexistent-id")
     assert response.status_code == 404
 
 
-@pytest.mark.asyncio
 async def test_get_job_found(api_client: AsyncClient) -> None:
     create_resp = await api_client.post(
         "/jobs", json={"issue_url": "https://github.com/acme/backend/issues/5"}
@@ -48,7 +42,6 @@ async def test_get_job_found(api_client: AsyncClient) -> None:
     assert data["issue_url"] == "https://github.com/acme/backend/issues/5"
 
 
-@pytest.mark.asyncio
 async def test_health_check(api_client: AsyncClient) -> None:
     response = await api_client.get("/health")
     assert response.status_code == 200

@@ -1,5 +1,6 @@
 import json
 import os
+from collections.abc import Callable
 from pathlib import Path
 
 os.environ.setdefault("JWT_SECRET", "test-placeholder-secret-32characters!!")
@@ -12,8 +13,7 @@ from httpx import ASGITransport, AsyncClient
 from agentops.api.deps.redis import get_redis
 from agentops.api.main import create_app
 from agentops.config import Settings
-
-FIXTURES_DIR = Path(__file__).parent / "fixtures" / "issues"
+from agentops.graph.state import AgentFinding, BugTriageState
 
 
 @pytest.fixture
@@ -31,19 +31,37 @@ def fake_redis() -> FakeAsyncRedis:
     return FakeAsyncRedis(decode_responses=True)
 
 
-@pytest.fixture
-def issue_001() -> dict:  # type: ignore[type-arg]
-    return json.loads((FIXTURES_DIR / "issue_001.json").read_text())
+@pytest.fixture(params=sorted((Path(__file__).parent / "fixtures" / "issues").glob("*.json")))
+def issue_fixture(request: pytest.FixtureRequest) -> dict[str, str]:
+    return json.loads(Path(request.param).read_text())
 
 
 @pytest.fixture
-def issue_002() -> dict:  # type: ignore[type-arg]
-    return json.loads((FIXTURES_DIR / "issue_002.json").read_text())
+def make_state() -> Callable[..., BugTriageState]:
+    def _factory(**kwargs: object) -> BugTriageState:
+        defaults: dict[str, object] = {
+            "job_id": "test-123",
+            "issue_url": "https://github.com/a/b/issues/1",
+        }
+        defaults.update(kwargs)
+        return BugTriageState(**defaults)
+
+    return _factory
 
 
 @pytest.fixture
-def issue_003() -> dict:  # type: ignore[type-arg]
-    return json.loads((FIXTURES_DIR / "issue_003.json").read_text())
+def make_finding() -> Callable[..., AgentFinding]:
+    def _factory(agent_name: str = "investigator") -> AgentFinding:
+        return AgentFinding(
+            agent_name=agent_name,
+            summary=f"{agent_name} finding",
+            confidence=0.7,
+            hypothesis="test hypothesis",
+            keywords_for_search=["bug", "null"],
+            affected_areas=["service"],
+        )
+
+    return _factory
 
 
 @pytest_asyncio.fixture

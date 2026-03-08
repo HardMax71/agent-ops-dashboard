@@ -1,16 +1,10 @@
-import os
-import sys
-
-# Add agent source paths for testing
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../agents/codebase_search/src"))
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../agents/web_search/src"))
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../agents/critic/src"))
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../agents/writer/src"))
+from codebase_search.models import CodebaseFinding, RelevantFile
+from critic.models import CritiqueFinding, map_critique_to_verdict
+from web_search.models import WebSearchFinding, WebSearchResult
+from writer.models import WriterOutput
 
 
 def test_codebase_finding_model() -> None:
-    from codebase_search.models import CodebaseFinding, RelevantFile
-
     finding = CodebaseFinding(
         summary="Found relevant files",
         confidence=0.8,
@@ -22,8 +16,6 @@ def test_codebase_finding_model() -> None:
 
 
 def test_web_search_finding_model() -> None:
-    from web_search.models import WebSearchFinding, WebSearchResult
-
     finding = WebSearchFinding(
         summary="Found relevant issues",
         confidence=0.7,
@@ -33,8 +25,6 @@ def test_web_search_finding_model() -> None:
 
 
 def test_critique_finding_model() -> None:
-    from critic.models import CritiqueFinding
-
     finding = CritiqueFinding(
         summary="Review complete",
         confidence=0.9,
@@ -46,8 +36,6 @@ def test_critique_finding_model() -> None:
 
 
 def test_writer_output_model() -> None:
-    from writer.models import WriterOutput
-
     output = WriterOutput(
         summary="Report written",
         confidence=0.85,
@@ -62,8 +50,6 @@ def test_writer_output_model() -> None:
 
 
 def test_critic_map_verdict() -> None:
-    from critic.models import CritiqueFinding, map_critique_to_verdict
-
     approved = CritiqueFinding(
         summary="Approved",
         confidence=0.9,
