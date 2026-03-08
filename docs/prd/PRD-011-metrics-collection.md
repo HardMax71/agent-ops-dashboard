@@ -371,15 +371,17 @@ from opentelemetry.exporter.prometheus import PrometheusMetricReader
 from prometheus_client import start_http_server  # only import in this file
 
 
-def configure_api_metrics() -> None:
+def configure_api_metrics(port: int = 8001) -> None:
     """Configure OTel metrics for the FastAPI process.
 
-    The /metrics ASGI endpoint is mounted separately in main.py via
-    prometheus_client.make_asgi_app(). Do not call start_http_server here.
+    Starts a prometheus_client HTTP server thread on *port* (default 8001),
+    separate from the uvicorn port (8000). This is symmetric with the worker
+    approach and avoids mixing Prometheus scrape traffic with API traffic.
     """
     reader = PrometheusMetricReader()
     provider = MeterProvider(metric_readers=[reader])
     metrics.set_meter_provider(provider)
+    start_http_server(port)
 
 
 def configure_worker_metrics(port: int = 8002) -> None:
@@ -397,13 +399,10 @@ def configure_worker_metrics(port: int = 8002) -> None:
 
 ```python
 # agentops/main.py
-import prometheus_client
 from agentops.metrics.setup import configure_api_metrics
 
-configure_api_metrics()
-
-# Mount /metrics endpoint (PrometheusMetricReader auto-registers the ASGI app)
-app.mount("/metrics", prometheus_client.make_asgi_app())
+configure_api_metrics(port=8001)
+# No app.mount("/metrics") needed — start_http_server() binds its own port.
 ```
 
 ```python
@@ -758,8 +757,8 @@ Two scrape targets — one per process:
 
 | Process | Port | How served |
 |---------|------|------------|
-| API (`main.py`) | 8001 | `prometheus_client.make_asgi_app()` mounted on FastAPI |
-| ARQ worker | 8002 | `prometheus_client.start_http_server(8002)` thread |
+| API (`main.py`) | 8001 | `prometheus_client.start_http_server(8001)` thread (via `configure_api_metrics`) |
+| ARQ worker | 8002 | `prometheus_client.start_http_server(8002)` thread (via `configure_worker_metrics`) |
 
 **Network access:** Neither port is exposed through the public nginx reverse proxy. Both are
 bound to `127.0.0.1` and accessible to the Prometheus scraper on the internal `monitoring`
