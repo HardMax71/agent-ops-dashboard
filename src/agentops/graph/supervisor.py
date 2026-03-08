@@ -1,4 +1,74 @@
+from typing import Literal
+
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_openai import ChatOpenAI
+from pydantic import BaseModel, Field
+
 from agentops.graph.state import BugTriageState
+
+
+class SupervisorDecision(BaseModel):
+    next_agent: Literal[
+        "investigator", "codebase_search", "web_search", "critic", "human_input", "writer", "end"
+    ]
+    reasoning: str
+    confidence: float = Field(ge=0.0, le=1.0)
+    question_for_human: str = ""
+
+
+_SUPERVISOR_PROMPT_TEMPLATE = """You are the supervisor orchestrating a bug triage investigation.
+
+Current state:
+- Iterations: {iterations}/{max_iterations}
+- Current findings: {findings_count} findings from agents: {agent_names}
+- Human exchanges: {human_exchanges_count}
+- Critic feedback: {critic_verdict}
+
+Agent findings summary:
+{findings_block}
+
+Human exchanges:
+{human_exchanges_block}
+
+Based on the current state, decide which agent should run next:
+- investigator: initial analysis, re-investigation after rejection
+- codebase_search: search codebase for relevant files
+- web_search: search web for related issues/solutions
+- critic: review findings for completeness
+- human_input: ask human for clarification (max 2 exchanges)
+- writer: write final report (when findings are sufficient)
+- end: investigation complete (only after writer)
+
+Choose the most appropriate next agent."""
+
+_SUPERVISOR_PROMPT = ChatPromptTemplate.from_messages([
+    ("system", "You are the supervisor of a bug triage system. Decide which agent runs next."),
+    ("human", _SUPERVISOR_PROMPT_TEMPLATE),
+])
+
+
+def build_supervisor_context(state: BugTriageState) -> dict[str, object]:  # noqa: ANN401
+    findings_block = "\n".join(
+        f"- [{f.agent_name}] {f.summary} (confidence: {f.confidence:.2f})"
+        for f in state.findings
+    )
+    human_exchanges_block = "\n".join(
+        f"Q: {e.question}\nA: {e.answer}"
+        for e in state.human_exchanges
+    )
+    agent_names = list({f.agent_name for f in state.findings})
+    critic_verdict = state.critic_feedback.verdict if state.critic_feedback else "none"
+
+    return {
+        "iterations": state.iterations,
+        "max_iterations": state.max_iterations,
+        "findings_count": len(state.findings),
+        "agent_names": ", ".join(agent_names) if agent_names else "none",
+        "human_exchanges_count": len(state.human_exchanges),
+        "critic_verdict": critic_verdict,
+        "findings_block": findings_block or "No findings yet",
+        "human_exchanges_block": human_exchanges_block or "No exchanges yet",
+    }
 
 
 def route_from_supervisor(state: BugTriageState) -> str:
@@ -37,18 +107,21 @@ def route_from_supervisor(state: BugTriageState) -> str:
     return "writer"
 
 
-async def supervisor_node(state: BugTriageState) -> dict:  # noqa: ANN401
-    """Stub supervisor — full implementation in Phase 2."""
-    # Phase 1: simple fixed routing
-    if state.iterations == 0:
-        next_node = "investigator"
-    elif state.findings:
-        next_node = "writer"
-    else:
-        next_node = "writer"
+async def _invoke_supervisor(state: BugTriageState) -> SupervisorDecision:
+    """Invoke LLM supervisor."""
+    llm = ChatOpenAI(model="gpt-4o", temperature=0)
+    structured_llm = llm.with_structured_output(SupervisorDecision)
+    chain = _SUPERVISOR_PROMPT | structured_llm
+    context = build_supervisor_context(state)
+    decision: SupervisorDecision = await chain.ainvoke(context)
+    return decision
 
+
+async def supervisor_node(state: BugTriageState) -> dict:  # noqa: ANN401
+    """Full supervisor node with LLM routing."""
+    decision = await _invoke_supervisor(state)
     return {
-        "supervisor_next": next_node,
-        "supervisor_confidence": 0.8,
-        "supervisor_reasoning": "Phase 1 stub routing",
+        "supervisor_next": decision.next_agent,
+        "supervisor_confidence": decision.confidence,
+        "supervisor_reasoning": decision.reasoning,
     }
