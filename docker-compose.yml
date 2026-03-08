@@ -1,0 +1,72 @@
+version: "3.9"
+services:
+  api:
+    build: .
+    ports: ["8000:8000"]
+    env_file: .env
+    depends_on: [db, redis]
+    command: uvicorn agentops.api.main:app --host 0.0.0.0 --port 8000
+
+  worker:
+    build: .
+    env_file: .env
+    depends_on: [db, redis]
+    command: python -m agentops.worker
+
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: agentops
+      POSTGRES_PASSWORD: agentops
+      POSTGRES_DB: agentops
+    ports: ["5432:5432"]
+    volumes: ["pgdata:/var/lib/postgresql/data"]
+
+  redis:
+    image: redis:7
+    ports: ["6379:6379"]
+    volumes: ["redisdata:/data"]
+
+  investigator:
+    build:
+      context: agents/investigator
+    ports: ["8001:8001"]
+    env_file: .env
+
+  codebase-search:
+    build:
+      context: agents/codebase_search
+    ports: ["8002:8002"]
+    env_file: .env
+
+  web-search:
+    build:
+      context: agents/web_search
+    ports: ["8003:8003"]
+    env_file: .env
+
+  critic:
+    build:
+      context: agents/critic
+    ports: ["8004:8004"]
+    env_file: .env
+
+  writer:
+    build:
+      context: agents/writer
+    ports: ["8005:8005"]
+    env_file: .env
+
+  langflow:
+    image: langflowai/langflow:latest
+    ports: ["7860:7860"]
+    environment:
+      LANGFLOW_DATABASE_URL: "sqlite:////data/langflow.db"
+    volumes:
+      - langflowdata:/data
+      - ./langflow/flows:/flows
+
+volumes:
+  pgdata:
+  redisdata:
+  langflowdata:
