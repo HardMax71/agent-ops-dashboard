@@ -75,7 +75,7 @@ async def endpoint(db: Annotated[AsyncSession | None, Depends(get_db)]) -> ...:
 
 ```python
 # CORRECT — dep provider raises if not ready; route signature is non-optional
-async def get_db(request: Request) -> AsyncSession:
+async def get_db(request: Request) -> AsyncGenerator[AsyncSession, None]:
     pool = request.app.state.db_pool   # AttributeError here, at the dep boundary
     async with AsyncSession(pool) as session:
         yield session
@@ -470,7 +470,7 @@ class WorkerSettings:
     on_startup = on_startup
     on_shutdown = on_shutdown
     functions = [run_triage, build_codebase_index, update_codebase_index]
-    redis_settings = RedisSettings(host="localhost", port=6379)
+    redis_settings = RedisSettings.from_dsn(get_settings().redis_url)
 ```
 
 Worker task functions receive all dependencies exclusively from `ctx`:
