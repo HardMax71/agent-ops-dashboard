@@ -1,0 +1,6 @@
+{
+    "url": "https://github.com/acme/backend/issues/1",
+    "title": "NullPointerException in getUserById",
+    "body": "Getting NPE when calling getUserById with a non-existent user ID.",
+    "repository": "acme/backend"
+}

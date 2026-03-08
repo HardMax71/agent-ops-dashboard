@@ -1,0 +1,6 @@
+{
+    "url": "https://github.com/acme/backend/issues/3",
+    "title": "Memory leak in WebSocket handler",
+    "body": "Connections are not cleaned up properly when clients disconnect unexpectedly.",
+    "repository": "acme/backend"
+}

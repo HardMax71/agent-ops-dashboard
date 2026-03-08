@@ -1,0 +1,6 @@
+{
+    "url": "https://github.com/acme/backend/issues/2",
+    "title": "Authentication fails for expired tokens",
+    "body": "When a JWT token expires, the server returns 500 instead of 401.",
+    "repository": "acme/backend"
+}
