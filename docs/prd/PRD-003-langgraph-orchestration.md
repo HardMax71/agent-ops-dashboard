@@ -62,6 +62,10 @@ from __future__ import annotations
 from typing import Annotated
 from pydantic import BaseModel, Field, model_validator
 
+# CriticVerdict is defined in PRD-004-1 §7 (agent-chains) and imported here.
+# It provides the binary APPROVED/REJECTED gate used by the supervisor for routing.
+from agentops.agents.critic import CriticVerdict
+
 
 class AgentFinding(BaseModel):
     agent_name: str
@@ -117,6 +121,9 @@ class BugTriageState(BaseModel):
 
     # --- Agent outputs ---
     findings: Annotated[list[AgentFinding], lambda a, b: a + b] = Field(default_factory=list)
+    critic_feedback: CriticVerdict | None = Field(default=None)
+    # Set by critic node. Supervisor reads .verdict to gate writer routing:
+    # APPROVED → route to writer; REJECTED → re-investigate per .gaps and .required_evidence.
 
     # --- Human-in-the-loop ---
     human_exchanges: Annotated[list[HumanExchange], lambda a, b: a + b] = Field(default_factory=list)

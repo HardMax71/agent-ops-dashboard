@@ -294,50 +294,78 @@ Without explicit tool execution, `tool_executor` is undefined — the chain brea
 chain = web_search_prompt | llm.bind_tools([tavily]) | tool_executor | web_result_prompt | ...
 ```
 
-### Correct Two-Step Pattern
+### ToolNode Pattern (Canonical)
 
-The fix is a `RunnableLambda` that executes the tool call(s) inside the chain:
+Replace the custom `RunnableLambda` executor with `ToolNode` from `langgraph.prebuilt`. This
+is required for `on_tool_start` / `on_tool_end` events to fire in `astream_events` v2, which
+the frontend's Live Workspace tool call display depends on (see PRD-003-1 §Event Pipeline).
 
 ```python
-from langchain_core.messages import AIMessage, ToolMessage, BaseMessage
-from langchain_core.runnables import RunnableLambda
+# agentops/agents/web_search.py
 from langchain_tavily import TavilySearch
+from langchain_openai import ChatOpenAI
+from langgraph.prebuilt import ToolNode
 
-tavily = TavilySearch(max_results=5)
+from agentops.models import AgentFinding, WebSearchState
+
+# Tool definition — official Tavily package (pip install langchain-tavily)
+_tavily = TavilySearch(max_results=5, search_depth="advanced")
+
+# LLM with tool bound — produces AIMessage with tool_calls when search is needed
+_llm_with_tools = ChatOpenAI(model="gpt-4o-mini", temperature=0).bind_tools([_tavily])
+
+# Tool executor node — dispatches tool_calls, emits on_tool_start/on_tool_end
+_tool_node = ToolNode(
+    tools=[_tavily],
+    handle_tool_errors=True,   # returns ToolMessage with error str instead of crashing
+)
+
+# Final structured output LLM — separate from tool-calling LLM (cannot chain reliably)
+_structured_llm = ChatOpenAI(model="gpt-4o-mini", temperature=0).with_structured_output(
+    AgentFinding
+)
 
 
-def execute_tavily_search(ai_msg: AIMessage) -> list[BaseMessage]:
-    """
-    Execute any tool calls present in the AIMessage and return the full
-    message list (AIMessage + ToolMessages) for the follow-up LLM call.
-
-    If the LLM chose not to call any tools, returns a synthetic ToolMessage
-    so the chain can continue to the result prompt without branching.
-    """
-    if not ai_msg.tool_calls:
-        return [
-            ai_msg,
-            ToolMessage(content="No search performed.", tool_call_id="none"),
-        ]
-
-    results: list[BaseMessage] = [ai_msg]
-    for tc in ai_msg.tool_calls:
-        output = tavily.invoke(tc["args"])
-        results.append(
-            ToolMessage(content=str(output), tool_call_id=tc["id"])
-        )
-    return results
+async def web_search_agent_node(state: WebSearchState) -> dict:
+    """Web Search agent: calls Tavily, then formats result as AgentFinding."""
+    # Step 1: LLM decides what to search for
+    ai_msg = await _llm_with_tools.ainvoke(state["messages"])
+    # Step 2: ToolNode executes the Tavily call(s) — emits on_tool_start/on_tool_end
+    tool_result = await _tool_node.ainvoke({"messages": state["messages"] + [ai_msg]})
+    # Step 3: Separate structured output LLM synthesizes findings
+    finding = await _structured_llm.ainvoke(
+        state["messages"] + [ai_msg] + tool_result["messages"]
+    )
+    return {"agent_findings": [finding]}
 ```
+
+> **`langchain_tavily` vs deprecated community import:**
+> `langchain_tavily` is the official Tavily package (`pip install langchain-tavily`).
+> `langchain_community.tools.tavily_search.TavilySearchResults` is deprecated and will be
+> removed in a future release. Constructor parameters are identical; `search_depth` accepts
+> `"basic"` | `"advanced"` | `"fast"`.
+
+> **Why separate LLMs for tool-calling and structured output?**
+> `llm.bind_tools([tool]).with_structured_output(Schema)` cannot be reliably chained — the
+> model sees multiple competing function schemas and conflates tool argument fields with output
+> schema fields. Use two separate LLM calls: one with `bind_tools` for the search decision,
+> one with `with_structured_output` for synthesis. The cost is one additional LLM call;
+> the benefit is deterministic structured output.
+
+> **Why `ToolNode` instead of `RunnableLambda`?**
+> `ToolNode` from `langgraph.prebuilt` is the only pattern that emits `on_tool_start` /
+> `on_tool_end` events through `astream_events` v2. A custom `RunnableLambda` emits only
+> `on_chain_start` / `on_chain_end`. The frontend's Live Workspace tool call display
+> (PRD-002) depends on `on_tool_start` events. `handle_tool_errors=True` returns a
+> `ToolMessage` with the error string instead of crashing the graph when Tavily fails.
 
 ### Prompt Templates
 
-The initial prompt asks the LLM to formulate search queries. The result prompt asks it to synthesize
-findings from the search results. The result prompt must accept `list[BaseMessage]` via
-`MessagesPlaceholder`:
+The system prompts below structure `state["messages"]` before the node is called. The
+tool-calling LLM sees `WEB_SEARCH_SYSTEM_PROMPT`; after tool results are appended the
+structured output LLM sees the full history including `WEB_RESULT_SYSTEM_PROMPT`:
 
 ```python
-from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-
 WEB_SEARCH_SYSTEM_PROMPT = """\
 You are a web research assistant specializing in software bugs. Given an issue report,
 formulate precise web search queries to find:
@@ -347,74 +375,12 @@ formulate precise web search queries to find:
 Use the tavily_search tool to execute your searches.
 """
 
-web_search_prompt = ChatPromptTemplate.from_messages([
-    ("system", WEB_SEARCH_SYSTEM_PROMPT),
-    ("human", (
-        "Error messages: {error_messages}\n"
-        "Issue title: {issue_title}\n"
-        "Affected areas: {affected_areas}"
-    )),
-])
-
 WEB_RESULT_SYSTEM_PROMPT = """\
 You are a software bug analyst. Review the web search results below and synthesize findings
 relevant to the bug described. Identify external root causes, known issues, or relevant
 documentation. Return structured output only.
 """
-
-web_result_prompt = ChatPromptTemplate.from_messages([
-    ("system", WEB_RESULT_SYSTEM_PROMPT),
-    MessagesPlaceholder(variable_name="messages"),  # receives list[BaseMessage]
-])
 ```
-
-### Complete Chain
-
-```python
-llm_with_tools = llm.bind_tools([tavily])
-
-primary = (
-    web_search_prompt
-    | llm_with_tools
-    | RunnableLambda(execute_tavily_search)
-    | (lambda msgs: {"messages": msgs})   # wrap into dict for MessagesPlaceholder
-    | web_result_prompt
-    | llm.with_structured_output(WebSearchFinding)
-)
-fallback = (
-    web_search_prompt
-    | fallback_llm_with_tools
-    | RunnableLambda(execute_tavily_search)
-    | (lambda msgs: {"messages": msgs})
-    | web_result_prompt
-    | fallback_llm.with_structured_output(WebSearchFinding)
-)
-
-chain = primary.with_retry(
-    stop_after_attempt=3,
-    retry_if_exception_type=(RateLimitError,),
-).with_fallbacks([fallback])
-```
-
-### Empty Tool Call Handling
-
-If `execute_tavily_search` receives an `AIMessage` with no tool calls (the LLM decided no search was
-needed), the synthetic `ToolMessage(content="No search performed.")` is passed to `web_result_prompt`.
-The result LLM sees no search results and produces a `WebSearchFinding` with:
-
-```python
-WebSearchFinding(
-    agent_name="web_search",
-    summary="No relevant web results found.",
-    confidence=0.0,
-    reasoning="LLM did not issue a search query.",
-    error=None,
-    relevant_results=[],
-    external_root_cause=None,
-)
-```
-
-The supervisor treats `confidence=0.0` as a non-finding and may route to another agent or continue.
 
 ### Node-Level Translation
 
@@ -577,6 +543,20 @@ class CriticInput(BaseModel):
     codebase_evidence: list[str]
 
 
+class CriticVerdict(BaseModel):
+    verdict: Literal["APPROVED", "REJECTED"]
+    """Binary gate: APPROVED means writer may proceed; REJECTED means re-investigation needed."""
+
+    gaps: list[str] = Field(default_factory=list)
+    """Specific gaps or unsupported claims. Empty list when verdict is APPROVED."""
+
+    required_evidence: list[str] = Field(default_factory=list)
+    """What additional evidence would change verdict to APPROVED. Empty when APPROVED."""
+
+    confidence: float = Field(ge=0.0, le=1.0)
+    """Critic's confidence in the verdict (0.0–1.0)."""
+
+
 class CritiqueFinding(AgentFindingBase):
     verdict: Literal["CONFIRMED", "UNCERTAIN", "CHALLENGED"]
     confidence_adjustment: float   # delta applied to overall confidence
@@ -584,6 +564,10 @@ class CritiqueFinding(AgentFindingBase):
     revised_hypothesis: str | None
     ready_for_report: bool         # True only if verdict == CONFIRMED
 ```
+
+`CriticVerdict` is the binary gate used by the supervisor for routing decisions. It is stored in
+`BugTriageState.critic_feedback`. `CritiqueFinding` (stored in `findings`) carries the full
+adversarial review detail for tracing and report purposes.
 
 ### LCEL Chain
 

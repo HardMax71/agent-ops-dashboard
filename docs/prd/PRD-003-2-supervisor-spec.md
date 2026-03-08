@@ -49,10 +49,25 @@ logic uses one try-except in a dedicated helper). `supervisor_node()` itself is 
 import logging
 from pydantic import ValidationError
 from langchain_core.messages import BaseMessage, HumanMessage, SystemMessage
+from langchain_openai import ChatOpenAI
 
 from .state import BugTriageState, HumanExchange, SupervisorDecision
 from .prompts import build_supervisor_system_prompt, build_supervisor_context
 
+_supervisor_llm = ChatOpenAI(
+    model="gpt-4o",
+    temperature=0,   # required: eliminates enum hallucination in with_structured_output()
+)
+```
+
+> The supervisor LLM must use `temperature=0`. At higher temperatures,
+> `with_structured_output()` over a `Literal` type occasionally produces a syntactically valid
+> but semantically wrong `next_node` value (e.g., routing to `"writer"` when `"critic"` was
+> correct). Temperature 0 makes the model deterministic for enum selection. This does not
+> affect the `reasoning` field quality — the chain-of-thought content remains coherent at
+> temperature 0.
+
+```python
 logger = logging.getLogger(__name__)
 
 _CORRECTION_PROMPT = (
@@ -108,7 +123,7 @@ async def supervisor_node(state: BugTriageState) -> dict:
     """
     system_prompt = build_supervisor_system_prompt()
     context_message = build_supervisor_context(state)
-    structured_llm = llm.with_structured_output(SupervisorDecision)
+    structured_llm = _supervisor_llm.with_structured_output(SupervisorDecision)
 
     decision = await _invoke_supervisor(
         structured_llm,
@@ -424,6 +439,21 @@ def route_from_supervisor(state: BugTriageState) -> str:
 | `len(state.human_exchanges) >= 2` and `decision.next_node == "human_input"` | Force `"codebase_search"` | Max 2 questions enforced in code, not just prompt |
 | `state.iterations >= state.max_iterations` | Force `"writer"` | Prevents infinite loops |
 | `decision.next_node == "end"` and `state.report is None` | Force `"writer"` | Supervisor should not end without a report |
+
+### Critic Verdict Gate
+
+When the critic node has run, `state.critic_feedback` (a `CriticVerdict`) is available. The
+supervisor prompt and routing logic must honour the binary verdict:
+
+> When reading `critic_feedback`, check `critic_feedback.verdict`:
+> - `"APPROVED"` → route to `writer`
+> - `"REJECTED"` → examine `critic_feedback.gaps` and `critic_feedback.required_evidence`
+>   to determine whether `investigator`, `codebase_search`, or `web_search` is needed next.
+>   Never route to `writer` when `verdict == "REJECTED"`.
+
+This is enforced via the supervisor system prompt (§3). The routing guard does not check
+`critic_feedback.verdict` directly — the guard's role is invariant enforcement (iteration
+limits, investigator-first), not semantic routing decisions.
 
 ---
 
