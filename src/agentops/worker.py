@@ -9,7 +9,7 @@ from agentops.metrics.setup import configure_metrics, shutdown_metrics
 _logger = logging.getLogger(__name__)
 
 
-async def on_startup(ctx: dict) -> None:  # noqa: ANN401
+async def on_startup(ctx: dict) -> None:  # noqa: ANN401 — ARQ ctx is untyped dict
     settings = get_settings()
     ctx["redis"] = aioredis.from_url(
         settings.redis_url,
@@ -21,12 +21,12 @@ async def on_startup(ctx: dict) -> None:  # noqa: ANN401
     ctx["meter_provider"] = provider
 
 
-async def on_shutdown(ctx: dict) -> None:  # noqa: ANN401
+async def on_shutdown(ctx: dict) -> None:  # noqa: ANN401 — ARQ ctx is untyped dict
     await ctx["redis"].aclose()
     shutdown_metrics(ctx["metrics_httpd"])
 
 
-async def run_triage(ctx: dict, job_id: str) -> None:  # noqa: ANN401
+async def run_triage(ctx: dict, job_id: str) -> None:  # noqa: ANN401 — ARQ ctx is untyped dict
     """Stub triage task — full implementation in Phase 3."""
     redis = ctx["redis"]
     raw = await redis.get(f"job:{job_id}")

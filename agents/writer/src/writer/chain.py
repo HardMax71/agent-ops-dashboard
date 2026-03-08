@@ -1,6 +1,7 @@
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnableSerializable
 from langchain_openai import ChatOpenAI
+from openai import RateLimitError
 
 from writer.models import WriterOutput
 
@@ -27,5 +28,11 @@ _REPORT_PROMPT = ChatPromptTemplate.from_messages(
 def create_writer_chain() -> RunnableSerializable:
     """Create the writer chain. Call during app startup, not at import."""
     llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
-    structured_llm = llm.with_structured_output(WriterOutput)
-    return _REPORT_PROMPT | structured_llm.with_retry(stop_after_attempt=3)
+    primary = _REPORT_PROMPT | llm.with_structured_output(WriterOutput)
+    fallback = _REPORT_PROMPT | ChatOpenAI(
+        model="gpt-3.5-turbo", temperature=0
+    ).with_structured_output(WriterOutput)
+    return primary.with_retry(
+        stop_after_attempt=3,
+        retry_if_exception_type=(RateLimitError,),
+    ).with_fallbacks([fallback])

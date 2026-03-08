@@ -3,7 +3,7 @@ import httpx
 from agentops.graph.state import AgentFinding, BugTriageState, CriticFeedback
 
 
-async def critic_node(state: BugTriageState) -> dict:  # noqa: ANN401
+async def critic_node(state: BugTriageState) -> dict:  # noqa: ANN401 — LangGraph node returns partial state dict
     """Call critic LangServe endpoint."""
     inv_finding = next(
         (f for f in reversed(state.findings) if f.agent_name == "investigator"), None

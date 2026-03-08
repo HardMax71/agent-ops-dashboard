@@ -8,7 +8,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         super().__init__(app)
         self.frontend_origin = frontend_origin
 
-    async def dispatch(self, request: Request, call_next: object) -> Response:  # noqa: ANN401
+    async def dispatch(self, request: Request, call_next: object) -> Response:  # noqa: ANN401 — Starlette dispatch protocol uses untyped callable
         response = await call_next(request)  # type: ignore[operator]
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["X-Frame-Options"] = "DENY"

@@ -3,7 +3,7 @@ import httpx
 from agentops.graph.state import BugTriageState, TriageReport
 
 
-async def writer_node(state: BugTriageState) -> dict:  # noqa: ANN401
+async def writer_node(state: BugTriageState) -> dict:  # noqa: ANN401 — LangGraph node returns partial state dict
     """Call writer LangServe endpoint."""
     payload = {
         "input": {

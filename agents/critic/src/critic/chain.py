@@ -1,6 +1,7 @@
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnableSerializable
 from langchain_openai import ChatOpenAI
+from openai import RateLimitError
 
 from critic.models import CritiqueFinding, map_critique_to_verdict
 
@@ -29,7 +30,12 @@ _CRITIC_PROMPT = ChatPromptTemplate.from_messages(
 
 def create_critic_chain() -> RunnableSerializable:
     """Create the critic chain. Call during app startup, not at import."""
-    structured_llm = ChatOpenAI(model="gpt-4o-mini", temperature=0).with_structured_output(
-        CritiqueFinding
-    )
-    return _CRITIC_PROMPT | structured_llm.with_retry(stop_after_attempt=3)
+    llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+    primary = _CRITIC_PROMPT | llm.with_structured_output(CritiqueFinding)
+    fallback = _CRITIC_PROMPT | ChatOpenAI(
+        model="gpt-3.5-turbo", temperature=0
+    ).with_structured_output(CritiqueFinding)
+    return primary.with_retry(
+        stop_after_attempt=3,
+        retry_if_exception_type=(RateLimitError,),
+    ).with_fallbacks([fallback])

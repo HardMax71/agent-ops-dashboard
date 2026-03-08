@@ -3,7 +3,7 @@ import httpx
 from agentops.graph.state import AgentFinding, BugTriageState
 
 
-async def web_search_node(state: BugTriageState) -> dict:  # noqa: ANN401
+async def web_search_node(state: BugTriageState) -> dict:  # noqa: ANN401 — LangGraph node returns partial state dict
     """Call web search LangServe endpoint."""
     inv_finding = next(
         (f for f in reversed(state.findings) if f.agent_name == "investigator"), None

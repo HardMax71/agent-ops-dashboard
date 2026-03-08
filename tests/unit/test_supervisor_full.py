@@ -57,7 +57,7 @@ def test_g2_too_many_human_exchanges() -> None:
         HumanExchange(question="Q2?", answer="A2"),
     ]
     state = make_state(iterations=3, supervisor_next="human_input", human_exchanges=exchanges)
-    assert route_from_supervisor(state) == "writer"
+    assert route_from_supervisor(state) == "codebase_search"
 
 
 def test_normal_routing_codebase() -> None:

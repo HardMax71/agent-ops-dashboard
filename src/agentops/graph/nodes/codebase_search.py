@@ -24,7 +24,7 @@ def _get_affected_areas(state: BugTriageState) -> list[str]:
     return []
 
 
-async def codebase_search_node(state: BugTriageState) -> dict:  # noqa: ANN401
+async def codebase_search_node(state: BugTriageState) -> dict:  # noqa: ANN401 — LangGraph node returns partial state dict
     """Call codebase search LangServe endpoint."""
     payload = {
         "input": {

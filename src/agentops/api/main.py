@@ -9,10 +9,7 @@ from agentops.lifespan import lifespan
 _VERSION = "0.1.0"
 
 
-def create_app(settings: Settings | None = None, *, testing: bool = False) -> FastAPI:
-    if settings is None:
-        settings = get_settings()
-
+def create_app(settings: Settings, *, testing: bool = False) -> FastAPI:
     app = FastAPI(
         title="AgentOps Dashboard API",
         version=_VERSION,
@@ -37,4 +34,4 @@ def create_app(settings: Settings | None = None, *, testing: bool = False) -> Fa
     return app
 
 
-app = create_app()
+app = create_app(get_settings())

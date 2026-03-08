@@ -1,6 +1,7 @@
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnableSerializable
 from langchain_openai import ChatOpenAI
+from openai import RateLimitError
 
 from codebase_search.models import CodebaseFinding
 
@@ -23,5 +24,11 @@ _ANALYSIS_PROMPT = ChatPromptTemplate.from_messages(
 def create_codebase_search_chain() -> RunnableSerializable:
     """Create the codebase search chain. Call during app startup, not at import."""
     llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
-    structured_llm = llm.with_structured_output(CodebaseFinding)
-    return _ANALYSIS_PROMPT | structured_llm.with_retry(stop_after_attempt=3)
+    primary = _ANALYSIS_PROMPT | llm.with_structured_output(CodebaseFinding)
+    fallback = _ANALYSIS_PROMPT | ChatOpenAI(
+        model="gpt-3.5-turbo", temperature=0
+    ).with_structured_output(CodebaseFinding)
+    return primary.with_retry(
+        stop_after_attempt=3,
+        retry_if_exception_type=(RateLimitError,),
+    ).with_fallbacks([fallback])

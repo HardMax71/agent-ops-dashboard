@@ -1,6 +1,7 @@
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnableSerializable
 from langchain_openai import ChatOpenAI
+from openai import RateLimitError
 
 from web_search.models import WebSearchFinding
 
@@ -23,7 +24,12 @@ _SEARCH_PROMPT = ChatPromptTemplate.from_messages(
 
 def create_web_search_chain() -> RunnableSerializable:
     """Create the web search chain. Call during app startup, not at import."""
-    structured_llm = ChatOpenAI(model="gpt-4o-mini", temperature=0).with_structured_output(
-        WebSearchFinding
-    )
-    return _SEARCH_PROMPT | structured_llm.with_retry(stop_after_attempt=3)
+    llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+    primary = _SEARCH_PROMPT | llm.with_structured_output(WebSearchFinding)
+    fallback = _SEARCH_PROMPT | ChatOpenAI(
+        model="gpt-3.5-turbo", temperature=0
+    ).with_structured_output(WebSearchFinding)
+    return primary.with_retry(
+        stop_after_attempt=3,
+        retry_if_exception_type=(RateLimitError,),
+    ).with_fallbacks([fallback])

@@ -11,7 +11,7 @@ from agentops.graph.state import BugTriageState
 from agentops.graph.supervisor import route_from_supervisor, supervisor_node
 
 
-def build_graph(checkpointer: object = None) -> object:  # noqa: ANN401
+def build_graph(checkpointer: object = None) -> object:  # noqa: ANN401 — LangGraph CompiledGraph has no public type export
     """Build and compile the full bug triage graph."""
     builder: StateGraph = StateGraph(BugTriageState)
 
@@ -46,7 +46,7 @@ def build_graph(checkpointer: object = None) -> object:  # noqa: ANN401
     return builder.compile(checkpointer=checkpointer)
 
 
-def create_graph_in_memory() -> object:  # noqa: ANN401
+def create_graph_in_memory() -> object:  # noqa: ANN401 — LangGraph CompiledGraph has no public type export
     """Create graph with in-memory checkpointer for development.
 
     For production, use build_graph(checkpointer=AsyncPostgresSaver(...)) managed
