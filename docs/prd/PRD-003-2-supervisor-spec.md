@@ -49,10 +49,25 @@ logic uses one try-except in a dedicated helper). `supervisor_node()` itself is 
 import logging
 from pydantic import ValidationError
 from langchain_core.messages import BaseMessage, HumanMessage, SystemMessage
+from langchain_openai import ChatOpenAI
 
 from .state import BugTriageState, HumanExchange, SupervisorDecision
 from .prompts import build_supervisor_system_prompt, build_supervisor_context
 
+_supervisor_llm = ChatOpenAI(
+    model="gpt-4o",
+    temperature=0,   # required: eliminates enum hallucination in with_structured_output()
+)
+```
+
+> The supervisor LLM must use `temperature=0`. At higher temperatures,
+> `with_structured_output()` over a `Literal` type occasionally produces a syntactically valid
+> but semantically wrong `next_node` value (e.g., routing to `"writer"` when `"critic"` was
+> correct). Temperature 0 makes the model deterministic for enum selection. This does not
+> affect the `reasoning` field quality — the chain-of-thought content remains coherent at
+> temperature 0.
+
+```python
 logger = logging.getLogger(__name__)
 
 _CORRECTION_PROMPT = (
@@ -108,7 +123,7 @@ async def supervisor_node(state: BugTriageState) -> dict:
     """
     system_prompt = build_supervisor_system_prompt()
     context_message = build_supervisor_context(state)
-    structured_llm = llm.with_structured_output(SupervisorDecision)
+    structured_llm = _supervisor_llm.with_structured_output(SupervisorDecision)
 
     decision = await _invoke_supervisor(
         structured_llm,
@@ -395,23 +410,28 @@ confidence or reasoning quality.
 
 ```python
 def route_from_supervisor(state: BugTriageState) -> str:
-    decision_node = state.get("next_node")
+    decision_node = state.next_node
 
     # Guard 1: investigator-first invariant
-    if state["iterations"] == 0 and decision_node != "investigator":
+    if state.iterations == 0 and decision_node != "investigator":
         return "investigator"
 
     # Guard 2: max human questions enforced in code, not just prompt
-    if len(state["human_exchanges"]) >= 2 and decision_node == "human_input":
+    if len(state.human_exchanges) >= 2 and decision_node == "human_input":
         return "codebase_search"
 
-    # Guard 3: iteration limit
-    if state["iterations"] >= state["max_iterations"]:
+    # Guard 3: iteration limit — overrides Guard 5; routes to writer regardless of verdict
+    if state.iterations >= state.max_iterations:
         return "writer"
 
     # Guard 4: supervisor must not end without a report
-    if decision_node == "end" and state["report"] is None:
+    if decision_node == "end" and state.report is None:
         return "writer"
+
+    # Guard 5: critic verdict gate — REJECTED blocks routing to writer
+    if state.critic_feedback is not None and state.critic_feedback.verdict == "REJECTED":
+        if decision_node == "writer":
+            return "investigator"
 
     return decision_node
 ```
@@ -422,8 +442,43 @@ def route_from_supervisor(state: BugTriageState) -> str:
 |---|---|---|
 | `state.iterations == 0` and `decision.next_node != "investigator"` | Force `"investigator"` | LLM compliance not guaranteed; investigator-first is a hard invariant |
 | `len(state.human_exchanges) >= 2` and `decision.next_node == "human_input"` | Force `"codebase_search"` | Max 2 questions enforced in code, not just prompt |
-| `state.iterations >= state.max_iterations` | Force `"writer"` | Prevents infinite loops |
+| `state.iterations >= state.max_iterations` | Force `"writer"` | Prevents infinite loops; overrides Guard 5 |
 | `decision.next_node == "end"` and `state.report is None` | Force `"writer"` | Supervisor should not end without a report |
+| `state.critic_feedback.verdict == "REJECTED"` and `decision.next_node == "writer"` | Force `"investigator"` | Binary critic gate enforced in code; bypassed only by Guard 3 |
+
+### Critic Verdict Gate
+
+When the critic node has run, `state.critic_feedback` (a `CriticVerdict`) is available. The
+supervisor prompt and routing logic must honour the binary verdict:
+
+> When reading `critic_feedback`, check `critic_feedback.verdict`:
+> - `"APPROVED"` → route to `writer`
+> - `"REJECTED"` → examine `critic_feedback.gaps` and `critic_feedback.required_evidence`
+>   to determine whether `investigator`, `codebase_search`, or `web_search` is needed next.
+>   Do not route to `writer` when `verdict == "REJECTED"` unless the `max_iterations` guard
+>   (§6, Guard 3) forces it — that guard overrides all semantic routing to prevent infinite loops.
+
+This is enforced both in the supervisor system prompt (§3) and in code via Guard 5 in
+`route_from_supervisor()`. Guard 5 reads `state.critic_feedback.verdict` directly: if
+`"REJECTED"`, it overrides any LLM decision to route to `"writer"`, redirecting to
+`"investigator"` instead. Guard 3 (iteration limit) runs before Guard 5 and takes priority —
+when `max_iterations` is reached the graph routes to writer regardless of verdict.
+
+### `human_input` Node Implementation Note
+
+`supervisor_node()` sets `state.pending_exchange` (a `HumanExchange`) before routing to
+`human_input`. The `human_input` node must call `interrupt(state.pending_exchange)` — passing
+the already-constructed `HumanExchange` object directly. No dict construction is needed:
+
+```python
+async def human_input_node(state: BugTriageState) -> dict:
+    interrupt(state.pending_exchange)   # typed end-to-end — no {"question": ..., "context": ...} dict
+    return {}
+```
+
+The interrupt value is `state.pending_exchange` itself, typed as `HumanExchange`. The
+`_check_for_interrupt()` function in PRD-003-1 reads it back as `state.tasks[0].interrupts[0].value`
+and returns it typed as `HumanExchange | None` — dot field access throughout, no dict keys.
 
 ---
 

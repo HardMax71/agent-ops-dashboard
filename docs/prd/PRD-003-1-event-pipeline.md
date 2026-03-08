@@ -71,10 +71,10 @@ The `.content` field varies by provider:
 - **OpenAI / most providers:** `chunk.content` is a `str` — the raw token text.
 - **Anthropic:** `chunk.content` may be a `list[dict]`, where each dict has `{"type": "text", "text": "..."}`.
 
-The transformer must handle both forms (see §5).
+The transformer uses `chunk.text` (a `TextAccessor` str subclass) which handles both forms internally — no branching needed in application code (see §6).
 
 > **Note:** `on_llm_stream` is the older pre-v2 event name. Some non-OpenAI providers and older
-> LangChain integrations still emit it. The transformer handles both (see §10).
+> LangChain integrations still emit it. The transformer handles both (see §11).
 
 ---
 
@@ -87,15 +87,15 @@ PRD-002. Every SSE event type in PRD-002's event table has a row here.
 |---|---|---|---|---|
 | `on_chain_start` | `metadata["langgraph_node"] in WORKER_NODES` | `agent.spawned` | `agent_id`: new UUID stored in `spawned_agents`; `agent_name`: `langgraph_node`; `node`: `langgraph_node` | Every `on_chain_start` generates a new agent card — including re-entries (node called twice); each gets its own UUID |
 | `on_chat_model_stream` | `metadata["langgraph_node"] in WORKER_NODES` AND token non-empty | `agent.token` | `agent_id`: from `spawned_agents[langgraph_node]`; `token`: extracted string token | Drop events where extracted token is `""` |
-| `on_tool_start` | `metadata["langgraph_node"] in WORKER_NODES` | `agent.tool_call` | `agent_id`: from `spawned_agents`; `tool_name`: `event["name"]`; `input_preview`: truncated JSON of `data["input"]` at 60 chars | Preview truncation: see §5 |
-| `on_tool_end` | `metadata["langgraph_node"] in WORKER_NODES` | `agent.tool_result` | `agent_id`: from `spawned_agents`; `tool_name`: `event["name"]`; `result_summary`: `str(data["output"])[:120]` | — |
+| `on_tool_start` | `metadata["langgraph_node"] in WORKER_NODES` | `agent.tool_call` | `agent_id`: from `spawned_agents`; `tool_name`: `event["name"]`; `input_preview`: truncated JSON of `data["input"]` at 60 chars | **Requires `ToolNode`** for Tavily and any other tool — `on_tool_start` is not emitted by `RunnableLambda`; see PRD-004-1 §5 |
+| `on_tool_end` | `metadata["langgraph_node"] in WORKER_NODES` | `agent.tool_result` | `agent_id`: from `spawned_agents`; `tool_name`: `event["name"]`; `result_summary`: `str(data["output"])[:120]` | Same `ToolNode` requirement as `on_tool_start` |
 | `on_chain_end` | `metadata["langgraph_node"] in WORKER_NODES` | `agent.done` | `agent_id`: from `spawned_agents`; `node`: `langgraph_node`; `elapsed_ms`: not directly available — omit or compute from wall time | — |
-| Post-loop `aget_state()` | `bool(state.tasks)` is True after loop exits | `graph.interrupt` | `question`: from `state.tasks[0].interrupts[0].value["question"]`; `context`: from `state.tasks[0].interrupts[0].value["context"]` | See §6 for interrupt detection details |
+| Post-loop `aget_state()` | `bool(state.tasks)` is True after loop exits | `graph.interrupt` | `question`: from `interrupt_payload.question`; `context`: from `interrupt_payload.context` (`HumanExchange` dot fields) | See §7 for interrupt detection details |
 | Answer endpoint | After `Command(resume=...)` succeeds | `graph.resumed` | `job_id` | Emitted by the answer endpoint, not the worker |
 | `on_chain_end` | `metadata["langgraph_node"] in ALL_NODES` (any node) | `graph.node_complete` | `node`: `langgraph_node`; `step`: `langgraph_step` | Includes supervisor; useful for ExecutionTimeline |
 | Pause endpoint | After interrupt fires for manual pause | `graph.paused` | `job_id` | Emitted by the pause endpoint, not the worker |
 | `on_chat_model_stream` | `metadata["langgraph_node"] == "writer"` AND token non-empty | `output.token` | `token`: extracted string; `section`: derived from `langgraph_checkpoint_ns` | Uses checkpoint namespace to identify which RunnableParallel branch |
-| `on_chain_end` | `metadata["langgraph_node"] == "writer"` AND `event["name"] in {"report", "comment_draft", "ticket_draft"}` | `output.section_done` | `section`: `event["name"]` | See §8 for RunnableParallel details |
+| `on_chain_end` | `metadata["langgraph_node"] == "writer"` AND `event["name"] in {"report", "comment_draft", "ticket_draft"}` | `output.section_done` | `section`: `event["name"]` | See §9 for RunnableParallel details |
 | After `astream_events` loop completes without interrupt | — | `job.done` | — | Emitted by worker after loop exits clean |
 | Exception in `astream_events` loop | — | `job.failed` | `error`: exception message | Emitted by worker's except block |
 
@@ -124,172 +124,183 @@ This constant is used in `transform_langgraph_event()` to gate which events prod
 
 ---
 
-## 5. `transform_langgraph_event()` Specification
+## 5. SSE Event Type Definitions
 
-### Signature
+All SSE event types are declared as `TypedDict`s so every payload is statically typed
+end-to-end. No `dict` literals, no `cast()`, no `isinstance()`.
 
 ```python
-def transform_langgraph_event(
-    event: dict,
-    spawned_agents: dict[str, str],  # mutated in place: langgraph_node -> agent_id UUID
-) -> list[dict]:
-    """
-    Translate a single LangGraph v2 event dict into zero or more frontend SSE event dicts.
+from typing import Literal, TypeAlias, TypedDict
+from langchain_core.runnables.schema import StandardStreamEvent
 
-    Returns an empty list if the event should be dropped (not published to Redis).
-    Returns a list with two elements when a worker on_chain_end produces both
-    agent.done (or output.section_done) and graph.node_complete.
 
-    `spawned_agents` is maintained by the caller (run_triage) across the full
-    astream_events loop. It maps graph node names to stable UUID agent_ids.
-    """
+class LangGraphEventMetadata(TypedDict, total=False):
+    langgraph_node: str
+    langgraph_step: int
+    langgraph_checkpoint_ns: str
+    langgraph_triggers: list[str]
+
+
+class AgentSpawnedEvent(TypedDict):
+    type: Literal["agent.spawned"]
+    agent_id: str
+    agent_name: str
+    node: str
+
+class AgentTokenEvent(TypedDict):
+    type: Literal["agent.token"]
+    agent_id: str
+    token: str
+
+class OutputTokenEvent(TypedDict):
+    type: Literal["output.token"]
+    token: str
+    section: str | None
+
+class AgentToolCallEvent(TypedDict):
+    type: Literal["agent.tool_call"]
+    agent_id: str
+    tool_name: str
+    input_preview: str
+
+class AgentToolResultEvent(TypedDict):
+    type: Literal["agent.tool_result"]
+    agent_id: str
+    tool_name: str
+    result_summary: str
+
+class AgentDoneEvent(TypedDict):
+    type: Literal["agent.done"]
+    agent_id: str
+    node: str
+
+class OutputSectionDoneEvent(TypedDict):
+    type: Literal["output.section_done"]
+    section: str
+
+class GraphNodeCompleteEvent(TypedDict):
+    type: Literal["graph.node_complete"]
+    node: str
+    step: int | None
+
+SseEvent: TypeAlias = (
+    AgentSpawnedEvent | AgentTokenEvent | OutputTokenEvent |
+    AgentToolCallEvent | AgentToolResultEvent | AgentDoneEvent |
+    OutputSectionDoneEvent | GraphNodeCompleteEvent
+)
 ```
 
-### Input Structure
+---
+
+## 6. `LangGraphEventTransformer` Specification
+
+The transformer replaces an if/elif chain with a dispatch table injected via DI.
+Each handler is a plain typed function; the transformer class is stateless beyond its
+`_handlers` dict.
+
+### Handler Type
 
 ```python
-{
-    "event": str,           # e.g. "on_chat_model_stream"
-    "name": str,            # runnable name (e.g. tool name, branch name)
-    "data": dict,           # event-specific payload
-    "metadata": dict,       # langgraph_node, langgraph_step, etc.
-    "tags": list[str],
-    "run_id": str,          # UUID of this specific run
-    "parent_ids": list[str],
-}
+from collections.abc import Callable
+from langchain_core.messages import AIMessageChunk
+
+_EventHandler: TypeAlias = Callable[[StandardStreamEvent, dict[str, str]], list[SseEvent]]
 ```
 
-### Decision Tree Pseudocode
+### Metadata Helper
 
 ```python
-def transform_langgraph_event(event, spawned_agents):
-    ev = event["event"]
-    meta = event.get("metadata", {})
-    node = meta.get("langgraph_node")
+def _meta(event: StandardStreamEvent) -> LangGraphEventMetadata:
+    return event.get("metadata", {})  # type: ignore[return-value]
+```
 
-    # Drop events without a langgraph_node (inner chain events — see §10)
-    if not node:
+### Individual Handlers
+
+```python
+def _handle_stream(event: StandardStreamEvent, spawned_agents: dict[str, str]) -> list[SseEvent]:
+    meta = _meta(event)
+    node = meta.get("langgraph_node", "")
+    agent_id = spawned_agents.get(node, "")
+    chunk: AIMessageChunk = event["data"]["chunk"]   # Any → typed (valid Pyright)
+    token = chunk.text                                # TextAccessor — str subclass
+    if not token:
         return []
+    if agent_id:
+        return [AgentTokenEvent(type="agent.token", agent_id=agent_id, token=token)]
+    return [OutputTokenEvent(type="output.token", token=token, section=node or None)]
 
-    # --- agent.spawned ---
-    # Emitted on every on_chain_start, including re-entries (node called twice in one run).
-    # Each execution gets a fresh UUID so the UI shows a separate agent card per run.
-    if ev == "on_chain_start" and node in WORKER_NODES:
-        agent_id = str(uuid4())
-        spawned_agents[node] = agent_id
-        return [{
-            "type": "agent.spawned",
-            "agent_id": agent_id,
-            "agent_name": node,
-            "node": node,
-        }]
 
-    # --- agent.token / output.token ---
-    if ev in {"on_chat_model_stream", "on_llm_stream"}:
-        token = _extract_token(event["data"].get("chunk"))
-        if not token:
-            return []  # drop empty chunks
-
-        if node == "writer":
-            return [{
-                "type": "output.token",
-                "token": token,
-                "section": _section_from_ns(meta.get("langgraph_checkpoint_ns", "")),
-            }]
-        elif node in WORKER_NODES:
-            agent_id = spawned_agents.get(node)
-            if not agent_id:
-                return []
-            return [{
-                "type": "agent.token",
-                "agent_id": agent_id,
-                "token": token,
-            }]
+def _handle_tool_start(event: StandardStreamEvent, spawned_agents: dict[str, str]) -> list[SseEvent]:
+    meta = _meta(event)
+    node = meta.get("langgraph_node", "")
+    agent_id = spawned_agents.get(node, "")
+    if not agent_id:
         return []
+    tool_name: str = event["name"]
+    input_preview = str(event["data"].get("input", ""))[:120]
+    return [AgentToolCallEvent(
+        type="agent.tool_call", agent_id=agent_id,
+        tool_name=tool_name, input_preview=input_preview,
+    )]
 
-    # --- agent.tool_call ---
-    if ev == "on_tool_start" and node in WORKER_NODES:
-        agent_id = spawned_agents.get(node)
-        if not agent_id:
-            return []
-        raw_input = event["data"].get("input", {})
-        preview = json.dumps(raw_input, default=str)
-        if len(preview) > 60:
-            preview = preview[:60] + "..."
-        return [{
-            "type": "agent.tool_call",
-            "agent_id": agent_id,
-            "tool_name": event.get("name", "unknown"),
-            "input_preview": preview,
-        }]
 
-    # --- agent.tool_result ---
-    if ev == "on_tool_end" and node in WORKER_NODES:
-        agent_id = spawned_agents.get(node)
-        if not agent_id:
-            return []
-        output = event["data"].get("output", "")
-        return [{
-            "type": "agent.tool_result",
-            "agent_id": agent_id,
-            "tool_name": event.get("name", "unknown"),
-            "result_summary": str(output)[:120],
-        }]
+def _handle_tool_end(event: StandardStreamEvent, spawned_agents: dict[str, str]) -> list[SseEvent]:
+    meta = _meta(event)
+    node = meta.get("langgraph_node", "")
+    agent_id = spawned_agents.get(node, "")
+    if not agent_id:
+        return []
+    tool_name: str = event["name"]
+    result_summary = str(event["data"].get("output", ""))[:120]
+    return [AgentToolResultEvent(
+        type="agent.tool_result", agent_id=agent_id,
+        tool_name=tool_name, result_summary=result_summary,
+    )]
 
-    # --- agent.done + graph.node_complete (worker nodes) ---
-    if ev == "on_chain_end" and node in WORKER_NODES:
-        node_complete = {
-            "type": "graph.node_complete",
-            "node": node,
-            "step": meta.get("langgraph_step"),
-        }
-        # Check for writer RunnableParallel branch first (output.section_done)
-        branch_name = event.get("name", "")
-        if node == "writer" and branch_name in {"report", "comment_draft", "ticket_draft"}:
-            return [
-                {"type": "output.section_done", "section": branch_name},
-                node_complete,
-            ]
-        agent_id = spawned_agents.get(node)
-        if not agent_id:
-            return [node_complete]
-        return [
-            {"type": "agent.done", "agent_id": agent_id, "node": node},
-            node_complete,
-        ]
 
-    # --- graph.node_complete (supervisor and human_input — non-worker nodes) ---
-    if ev == "on_chain_end" and node in ALL_NODES:
-        return [{
-            "type": "graph.node_complete",
-            "node": node,
-            "step": meta.get("langgraph_step"),
-        }]
-
-    return []
+def _handle_chain_end(event: StandardStreamEvent, spawned_agents: dict[str, str]) -> list[SseEvent]:
+    meta = _meta(event)
+    node = meta.get("langgraph_node", "")
+    step = meta.get("langgraph_step")
+    return [GraphNodeCompleteEvent(type="graph.node_complete", node=node, step=step)]
 ```
 
-### Token Extraction Helper
+### Transformer Class
 
 ```python
-def _extract_token(chunk) -> str:
-    """
-    Extract a plain string token from an AIMessageChunk.
-    Handles both str content (OpenAI) and list[dict] content (Anthropic).
-    """
-    if chunk is None:
-        return ""
-    content = getattr(chunk, "content", chunk)
-    if isinstance(content, str):
-        return content
-    if isinstance(content, list):
-        parts = []
-        for item in content:
-            if isinstance(item, dict) and item.get("type") == "text":
-                parts.append(item.get("text", ""))
-        return "".join(parts)
-    return ""
+class LangGraphEventTransformer:
+    """Injected via DI container (see PRD-012). Wire up in the dependency factory."""
+
+    def __init__(self, handlers: dict[str, _EventHandler]) -> None:
+        self._handlers = handlers
+
+    def transform(
+        self,
+        event: StandardStreamEvent,
+        spawned_agents: dict[str, str],
+    ) -> list[SseEvent]:
+        handler = self._handlers.get(event["event"])
+        return handler(event, spawned_agents) if handler is not None else []
 ```
+
+DI wire-up (in the container / factory, not in module scope):
+
+```python
+LangGraphEventTransformer(handlers={
+    "on_chat_model_stream": _handle_stream,
+    "on_llm_stream": _handle_stream,    # legacy provider compat — same handler
+    "on_tool_start": _handle_tool_start,
+    "on_tool_end": _handle_tool_end,
+    "on_chain_end": _handle_chain_end,
+})
+```
+
+Zero if/elif. Zero isinstance. Zero reflection. Adding a new event type = add one handler
+function + one entry in the DI wire-up.
+
+> **`BaseMessage.text`:** `AIMessageChunk.text` is a `TextAccessor` (`str` subclass) that
+> handles both `str` content (OpenAI) and `list[dict]` content (Anthropic) internally.
+> Call `.text` directly — never inspect `.content` or `.content_blocks`.
 
 ### Section Helper for Writer Tokens
 
@@ -310,7 +321,7 @@ def _section_from_ns(checkpoint_ns: str) -> str | None:
 
 ---
 
-## 6. Interrupt Detection: `_is_human_input_interrupt()`
+## 7. Interrupt Detection: `_check_for_interrupt()`
 
 ### Primary Method (Recommended)
 
@@ -319,24 +330,18 @@ After the `astream_events` loop exits, call `graph.aget_state(config)` and check
 `interrupt()` call — it did not run to completion.
 
 ```python
-async def _check_for_interrupt(graph, config) -> dict | bool:
+async def _check_for_interrupt(graph, config) -> HumanExchange | None:
     """
-    Returns the interrupt payload dict if the graph is suspended at a human_input
-    interrupt, or False if the graph completed normally.
+    Returns the HumanExchange if the graph is suspended at a human_input interrupt,
+    or None if the graph completed normally.
 
     Call this AFTER the astream_events loop exits.
+    human_input_node calls interrupt(state.pending_exchange) — the value is a HumanExchange.
     """
     state = await graph.aget_state(config)
     if not state.tasks:
-        return False
-    # Graph is suspended — extract interrupt payload
-    try:
-        payload = state.tasks[0].interrupts[0].value
-        # payload is the dict passed to interrupt(): {"question": ..., "context": ...}
-        return payload
-    except (IndexError, AttributeError):
-        # Tasks present but no interrupt value — unexpected; treat as completed
-        return False
+        return None
+    return state.tasks[0].interrupts[0].value
 ```
 
 ### Alternative Method (Stream-Mode Updates)
@@ -352,9 +357,9 @@ async for event in graph.astream_events(
     version="v2",
     stream_mode=["updates"],
 ):
-    if isinstance(event, dict) and "__interrupt__" in event:
+    if "__interrupt__" in event:
         # Graph is about to suspend
-        interrupt_payload = event["__interrupt__"][0].value
+        interrupt_payload: HumanExchange = event["__interrupt__"][0].value
 ```
 
 For the ARQ worker pattern in PRD-003, the primary method (post-loop `aget_state()`) is
@@ -364,15 +369,15 @@ preferred because it is simpler and the `astream_events` loop terminates natural
 ### Interrupt Payload Structure
 
 ```python
-# What interrupt() receives from the graph:
-state.tasks[0].interrupts[0].value
-# -> {"question": "...", "context": "..."}
-# These are the keys passed to interrupt({...}) in human_input_node.
+# human_input_node calls: interrupt(state.pending_exchange)
+# state.pending_exchange is a HumanExchange — dot fields throughout:
+state.tasks[0].interrupts[0].value   # -> HumanExchange
+# Access: interrupt_payload.question, interrupt_payload.context
 ```
 
 ---
 
-## 7. Agent Identity Tracking
+## 8. Agent Identity Tracking
 
 ### Problem
 
@@ -406,7 +411,7 @@ investigator cards for two separate investigator runs.
 
 ---
 
-## 8. Writer RunnableParallel → `output.section_done`
+## 9. Writer RunnableParallel → `output.section_done`
 
 The writer node uses `RunnableParallel` to produce three output sections concurrently:
 
@@ -432,7 +437,7 @@ This maps to `output.section_done { section: event["name"] }`.
 ### Token Attribution
 
 During writer execution, `on_chat_model_stream` events include `langgraph_checkpoint_ns`
-identifying which parallel branch is running. The `_section_from_ns()` helper (§5) parses this
+identifying which parallel branch is running. The `_section_from_ns()` helper (§6) parses this
 to set the `section` field on `output.token` events, so the frontend can route tokens to the
 correct section panel.
 
@@ -445,7 +450,7 @@ name prefix, and matches against the known section names.
 
 ---
 
-## 9. Full Annotated `run_triage()` Function
+## 10. Full Annotated `run_triage()` Function
 
 ### Service-Wide Worker Error Handler
 
@@ -537,8 +542,8 @@ async def run_triage(ctx: dict, job_id: str, initial_state: dict) -> None:
     if interrupt_payload:
         await redis.publish(channel, json.dumps({
             "type": "graph.interrupt",
-            "question": interrupt_payload.get("question", ""),
-            "context": interrupt_payload.get("context", ""),
+            "question": interrupt_payload.question,
+            "context": interrupt_payload.context,
         }))
         await arq_queue.enqueue_job(
             "expire_human_input",
@@ -559,7 +564,7 @@ class WorkerSettings:
 
 ---
 
-## 10. Known Issues & Gotchas
+## 11. Known Issues & Gotchas
 
 ### `on_llm_stream` vs `on_chat_model_stream`
 
@@ -597,9 +602,10 @@ Models emit `on_chat_model_stream` events with empty-string content at the start
 generation (role-only chunks). Drop these:
 
 ```python
-token = _extract_token(chunk)
+chunk: AIMessageChunk = event["data"]["chunk"]
+token = chunk.text   # TextAccessor (str subclass) — empty string for role-only chunks
 if not token:
-    return None
+    return []
 ```
 
 ### Multiple `on_chain_start` for the Same Node
