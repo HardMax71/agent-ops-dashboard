@@ -24,12 +24,7 @@ async def web_search_node(state: BugTriageState) -> dict:  # noqa: ANN401 — La
         response.raise_for_status()
         raw = response.json()
 
-    output = raw.get("output") or {}
-    finding = AgentFinding(
-        agent_name="web_search",
-        summary=output.get("summary", "Web search complete"),
-        confidence=output.get("confidence", 0.5),
-    )
+    finding = AgentFinding.model_validate(raw["output"])
     return {
         "findings": state.findings + [finding],
         "current_node": "web_search",

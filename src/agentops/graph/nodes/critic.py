@@ -23,23 +23,9 @@ async def critic_node(state: BugTriageState) -> dict:  # noqa: ANN401 — LangGr
         response.raise_for_status()
         raw = response.json()
 
-    output = raw.get("output", {})
-    feedback = CriticFeedback(
-        verdict=output.get("verdict", "REJECTED"),
-        gaps=output.get("gaps", []),
-        required_evidence=output.get("required_evidence", []),
-        confidence=output.get("confidence", 0.5),
-    )
-    finding = AgentFinding(
-        agent_name="critic",
-        summary=output.get("summary", "Critique complete"),
-        confidence=output.get("confidence", 0.5),
-        verdict=output.get("verdict", "REJECTED"),
-        gaps=output.get("gaps", []),
-    )
     return {
-        "findings": state.findings + [finding],
-        "critic_feedback": feedback,
+        "findings": state.findings + [AgentFinding.model_validate(raw["output"])],
+        "critic_feedback": CriticFeedback.model_validate(raw["output"]),
         "current_node": "critic",
         "iterations": state.iterations + 1,
     }

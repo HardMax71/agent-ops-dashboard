@@ -21,16 +21,7 @@ async def investigator_node(state: BugTriageState) -> dict:  # noqa: ANN401 — 
         response.raise_for_status()
         raw = response.json()
 
-    output = raw.get("output", {})
-    finding = AgentFinding(
-        agent_name="investigator",
-        summary=output.get("summary", "Investigation complete"),
-        confidence=output.get("confidence", 0.5),
-        hypothesis=output.get("hypothesis", ""),
-        affected_areas=output.get("affected_areas", []),
-        keywords_for_search=output.get("keywords_for_search", []),
-        error_messages=output.get("error_messages", []),
-    )
+    finding = AgentFinding.model_validate(raw["output"])
     return {
         "findings": state.findings + [finding],
         "current_node": "investigator",

@@ -4,6 +4,7 @@ import uuid
 from langchain_core.callbacks import BaseCallbackHandler
 from langchain_core.outputs import LLMResult
 from opentelemetry.sdk.metrics import MeterProvider
+from pydantic import BaseModel
 
 MODEL_PRICING: dict[str, dict[str, float]] = {
     "gpt-4o": {"input": 2.50 / 1_000_000, "output": 10.00 / 1_000_000},
@@ -12,6 +13,28 @@ MODEL_PRICING: dict[str, dict[str, float]] = {
 }
 
 AGENT_NAMES = {"investigator", "codebase_search", "web_search", "critic", "writer", "supervisor"}
+
+
+class CallbackMetadata(BaseModel):
+    """Typed subset of LangChain callback metadata."""
+
+    langgraph_node: str = ""
+    ls_model_name: str = ""
+
+
+class TokenUsage(BaseModel):
+    """Typed token usage from LLM providers."""
+
+    prompt_tokens: int = 0
+    completion_tokens: int = 0
+    total_tokens: int = 0
+
+
+class LLMOutputInfo(BaseModel):
+    """Typed structure of LLMResult.llm_output from ChatOpenAI."""
+
+    token_usage: TokenUsage = TokenUsage()
+    model_name: str = ""
 
 
 class AgentOpsMetricsCallback(BaseCallbackHandler):
@@ -47,13 +70,9 @@ class AgentOpsMetricsCallback(BaseCallbackHandler):
         )
         self._runs: dict[str, tuple[float, str]] = {}
 
-    def _agent_name(self, serialized: dict[str, object], kwargs: dict[str, object]) -> str | None:
+    def _agent_name(self, serialized: dict[str, object], metadata: CallbackMetadata) -> str | None:
         """Extract the LangGraph node name if this is a tracked agent."""
-        metadata = kwargs.get("metadata") or {}
-        name = (
-            metadata.get("langgraph_node")  # type: ignore[union-attr]
-            or serialized.get("name", "")
-        )
+        name = metadata.langgraph_node or serialized.get("name", "")
         return str(name) if name in AGENT_NAMES else None
 
     def on_chain_start(
@@ -62,9 +81,11 @@ class AgentOpsMetricsCallback(BaseCallbackHandler):
         inputs: dict[str, object],
         *,
         run_id: uuid.UUID,
+        metadata: dict[str, object] | None = None,
         **kwargs: object,  # noqa: ANN401 — LangChain callback protocol has untyped kwargs
     ) -> None:
-        agent = self._agent_name(serialized, kwargs)
+        meta = CallbackMetadata.model_validate(metadata or {})
+        agent = self._agent_name(serialized, meta)
         if agent:
             self._runs[str(run_id)] = (time.perf_counter(), agent)
             self._agent_calls.add(1, {"agent": agent})
@@ -111,21 +132,14 @@ class AgentOpsMetricsCallback(BaseCallbackHandler):
         run_id: uuid.UUID,
         **kwargs: object,  # noqa: ANN401 — LangChain callback protocol has untyped kwargs
     ) -> None:
-        metadata = kwargs.get("metadata") or {}
-        model = str(metadata.get("ls_model_name") or "gpt-4o-mini")  # type: ignore[union-attr]
-        agent = str(metadata.get("langgraph_node") or "unknown")  # type: ignore[union-attr]
+        meta = CallbackMetadata.model_validate(kwargs.get("metadata") or {})
+        model = meta.ls_model_name or "gpt-4o-mini"
+        agent = meta.langgraph_node or "unknown"
         pricing = MODEL_PRICING.get(model, MODEL_PRICING["gpt-4o-mini"])
 
-        usage = response.llm_output or {}
-        # Try usage_metadata first (newer format), fall back to token_usage (legacy)
-        usage_metadata = usage.get("usage_metadata") or {}
-        token_usage = usage.get("token_usage") or {}
-        input_tokens: int = (
-            usage_metadata.get("input_tokens") or token_usage.get("prompt_tokens") or 0
-        )
-        output_tokens: int = (
-            usage_metadata.get("output_tokens") or token_usage.get("completion_tokens") or 0
-        )
+        llm_info = LLMOutputInfo.model_validate(response.llm_output or {})
+        input_tokens = llm_info.token_usage.prompt_tokens
+        output_tokens = llm_info.token_usage.completion_tokens
         cost = input_tokens * pricing["input"] + output_tokens * pricing["output"]
 
         if input_tokens or output_tokens:

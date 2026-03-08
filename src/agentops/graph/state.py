@@ -39,7 +39,9 @@ class TriageReport(BaseModel):
     recommended_fix: str = ""
     confidence: float = Field(ge=0.0, le=1.0, default=0.0)
     github_comment: str = ""
-    ticket_draft: dict[str, str] = Field(default_factory=dict)
+    ticket_title: str = ""
+    ticket_labels: list[str] = Field(default_factory=list)
+    ticket_assignee: str = ""
 
 
 class CriticFeedback(BaseModel):

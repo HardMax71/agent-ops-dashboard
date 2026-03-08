@@ -21,20 +21,8 @@ async def writer_node(state: BugTriageState) -> dict:  # noqa: ANN401 — LangGr
         response.raise_for_status()
         raw = response.json()
 
-    output = raw.get("output", {})
-    report = TriageReport(
-        severity=output.get("severity", "medium"),
-        root_cause=output.get("root_cause", ""),
-        relevant_files=output.get("relevant_files", []),
-        recommended_fix=output.get("recommended_fix", ""),
-        confidence=output.get("confidence", 0.5),
-        github_comment=output.get("github_comment", ""),
-        ticket_draft={
-            "title": output.get("ticket_title", state.issue_title),
-            "labels": ",".join(output.get("ticket_labels", [])),
-            "assignee": output.get("ticket_assignee", ""),
-        },
-    )
+    report = TriageReport.model_validate(raw["output"])
+    report.ticket_title = report.ticket_title or state.issue_title
     return {
         "report": report,
         "current_node": "writer",

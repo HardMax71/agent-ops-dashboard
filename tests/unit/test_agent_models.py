@@ -1,5 +1,5 @@
-from codebase_search.models import CodebaseFinding, RelevantFile
-from critic.models import CritiqueFinding, map_critique_to_verdict
+from codebase_search.models import CodebaseFinding
+from critic.models import CritiqueFinding
 from web_search.models import WebSearchFinding, WebSearchResult
 from writer.models import WriterOutput
 
@@ -8,7 +8,7 @@ def test_codebase_finding_model() -> None:
     finding = CodebaseFinding(
         summary="Found relevant files",
         confidence=0.8,
-        relevant_files=[RelevantFile(path="src/UserService.java", relevance_score=0.9)],
+        relevant_files=["src/UserService.java"],
         root_cause_location="src/UserService.java:45",
     )
     assert finding.agent_name == "codebase_search"
@@ -29,10 +29,8 @@ def test_critique_finding_model() -> None:
         summary="Review complete",
         confidence=0.9,
         verdict="APPROVED",
-        ready_for_report=True,
     )
     assert finding.verdict == "APPROVED"
-    assert finding.ready_for_report is True
 
 
 def test_writer_output_model() -> None:
@@ -47,21 +45,3 @@ def test_writer_output_model() -> None:
     )
     assert output.severity == "high"
     assert output.agent_name == "writer"
-
-
-def test_critic_map_verdict() -> None:
-    approved = CritiqueFinding(
-        summary="Approved",
-        confidence=0.9,
-        verdict="APPROVED",
-        ready_for_report=True,
-    )
-    assert map_critique_to_verdict(approved) == "APPROVED"
-
-    not_ready = CritiqueFinding(
-        summary="Not ready",
-        confidence=0.5,
-        verdict="APPROVED",
-        ready_for_report=False,
-    )
-    assert map_critique_to_verdict(not_ready) == "REJECTED"

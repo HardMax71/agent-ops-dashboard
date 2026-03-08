@@ -3,9 +3,9 @@ from langchain_core.runnables import RunnableSerializable
 from langchain_openai import ChatOpenAI
 from openai import RateLimitError
 
-from critic.models import CritiqueFinding, map_critique_to_verdict
+from critic.models import CritiqueFinding
 
-__all__ = ["create_critic_chain", "map_critique_to_verdict"]
+__all__ = ["create_critic_chain"]
 
 _CRITIC_PROMPT = ChatPromptTemplate.from_messages(
     [
@@ -16,8 +16,7 @@ _CRITIC_PROMPT = ChatPromptTemplate.from_messages(
             " report.\n"
             "Be rigorous: require specific file locations, error reproducibility details, and"
             " clear root cause identification.\n"
-            "Output verdict APPROVED only when all evidence is strong and ready_for_report is"
-            " true.",
+            "Output verdict APPROVED only when all evidence is strong.",
         ),
         (
             "human",

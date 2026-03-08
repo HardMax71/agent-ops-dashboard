@@ -59,3 +59,18 @@ def test_critic_feedback() -> None:
         confidence=0.95,
     )
     assert feedback.verdict == "APPROVED"
+
+
+def test_critic_feedback_from_dict() -> None:
+    feedback = CriticFeedback.model_validate(
+        {
+            "agent_name": "critic",
+            "summary": "Review done",
+            "verdict": "REJECTED",
+            "gaps": ["missing tests"],
+            "confidence": 0.6,
+            "critique": "needs work",
+        }
+    )
+    assert feedback.verdict == "REJECTED"
+    assert feedback.gaps == ["missing tests"]
