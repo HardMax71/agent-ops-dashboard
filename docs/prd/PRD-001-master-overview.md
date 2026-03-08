@@ -62,26 +62,25 @@ excel at — but only if a human can trust and steer the process.
 
 ## Goals and Non-Goals
 
-### Goals
+> Full goal definitions, Definition of Done criteria, and verification steps are in
+> **[PRD-001-1 — Goals & Definition of Done](PRD-001-1-goals-and-dod.md)**.
 
-1. Deliver a working multi-agent **bug triage system** for GitHub repositories using the full LangChain ecosystem
-2. Provide a **Jira-inspired real-time dashboard** where each job is a "ticket" that agents fill in live via streaming
-3. Implement **bidirectional human-in-the-loop**: agents can ask the user clarifying questions mid-execution, blocking
-   the graph until the user responds
-4. Allow the user to **pause, redirect, or kill** any agent at any point during execution
-5. Instrument the full system with **LangSmith** for tracing, evaluation, and cost monitoring
-6. Use **LangFlow** as the visual prototyping and agent configuration layer before chains graduate to LangServe
-7. Deploy each agent chain as an independent **LangServe** microservice endpoint
-8. Serve as a strong portfolio project demonstrating production-grade LangX ecosystem usage
+### Goals (summary)
 
-### Non-Goals (v1.0)
+1. Working multi-agent **bug triage system** (full LangX stack)
+2. **Jira-inspired real-time dashboard** (streaming tickets)
+3. **Bidirectional human-in-the-loop** (agent questions block graph)
+4. **Pause / redirect / kill** any agent mid-execution
+5. **LangSmith** instrumentation (tracing, eval, cost)
+6. **LangFlow** as visual prototyping layer
+7. **LangServe** microservice deployment per agent chain
+8. Portfolio-grade **production quality**
 
-- Support for non-GitHub trackers (Jira, Linear, GitLab) — v2 roadmap
-- Fully autonomous operation with zero human oversight
-- Support for non-software-dev domains — v2 roadmap
-- Real-time multi-user collaborative sessions
-- Mobile interface
-- Self-hosted LLM support (Ollama etc.) — v2 roadmap
+### Non-Goals (v1.0, summary)
+
+See [PRD-001-1 Non-Goals](PRD-001-1-goals-and-dod.md#non-goals-v10) for the full list.
+Items deferred to v2 include: non-GitHub trackers, non-software domains, self-hosted LLMs,
+multi-user sessions, and a mobile interface.
 
 ---
 
@@ -230,6 +229,15 @@ flowchart TD
 ---
 
 ## Release Roadmap
+
+Detailed roadmaps are maintained in the **Plans** section:
+
+- **[Roadmap v1 (precise)](../plans/roadmap-v1.md)** — Week-by-week delivery plan with per-phase deliverables,
+  acceptance criteria, and exit gates for all 6 phases (Weeks 1–13).
+- **[Roadmap v2 (general)](../plans/roadmap-v2.md)** — High-level backlog of post-v1 themes: multi-tracker support,
+  non-software domains, self-hosted LLMs, multi-user sessions, mobile, expanded evals, and a plugin system.
+
+### v1 Phase Summary
 
 | Phase                           | Scope                                                                         | Target      |
 |---------------------------------|-------------------------------------------------------------------------------|-------------|

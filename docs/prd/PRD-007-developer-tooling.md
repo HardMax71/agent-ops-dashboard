@@ -227,6 +227,14 @@ Violations are caught automatically — no manual review required.
 | Forbidden                                       | Resolution                                                                                                                                                                                                                                 |
 |-------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `TYPE_CHECKING` / `if TYPE_CHECKING:` (any use) | Extract shared types to a dedicated `models.py` or `types.py` module that neither side of a dependency cycle imports. `TYPE_CHECKING` is a symptom of import cycles or over-eager imports — fix the architecture, do not guard the import. |
+| Try-catch spam — `try/except` blocks scattered across service functions for cross-cutting concerns (logging, failure events, observability) | Cross-cutting concerns belong in **one** service-wide handler: a `@worker_error_handler` decorator applied in `WorkerSettings`, a FastAPI `@app.exception_handler`, or a Starlette middleware class. Individual business-logic functions must not handle exceptions they cannot recover from. |
+| Try-catch-reraise — catching an exception only to log/publish it then `raise` again | Never catch-and-reraise inside a business function. Let the exception propagate to the service-wide handler. One try-except per cross-cutting concern, declared once. |
+| Multiple nested `try/except` blocks in a single function | If retry logic genuinely requires catching exceptions, extract it into a dedicated helper with a single `try/except` inside a loop (max attempts). The caller remains exception-free. |
+| `isinstance()`, `cast()`, `type()`, `getattr()`/`setattr()` for runtime type dispatch, or any reflection (`__class__`, `__dict__`, `vars()`, `dir()`) | **Completely forbidden.** Write well-typed code: declare precise types at function boundaries so the type is always known statically. If you feel the need to check a type at runtime, the function signature is wrong — tighten it. Use `typing.overload` or a `Protocol` if you need to express a union of calling conventions. The only permitted introspection is structured pattern matching (`match`/`case`) on `Literal` or `Enum` values. |
+
+> **Dependency injection standards:** [PRD-012 — Backend Architecture & DI](PRD-012-backend-di.md)
+> covers the full rules for FastAPI `Depends()` usage, async resource lifecycle, ARQ worker DI,
+> dependency module organization, and test override patterns.
 
 Note: ruff's `TCH001`/`TCH002`/`TCH003` rules do the opposite — they push imports under `if TYPE_CHECKING:`.
 Those rules are disabled in this project's ruff config (`TCH` is absent from `select`) because they encourage

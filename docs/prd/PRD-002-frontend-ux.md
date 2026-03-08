@@ -32,6 +32,10 @@ visible, interactive, and controllable in real time. The UI is intentionally mod
 The frontend connects to the FastAPI backend via **Server-Sent Events (SSE)** for live streaming and standard REST calls
 for user actions (submit job, answer agent question, pause/kill agent).
 
+> **Detailed specs:** [Design System](PRD-002-1-design-system.md) ·
+> [Pages & Wireframes](PRD-002-2-pages-and-wireframes.md) ·
+> [Interactions & A11y](PRD-002-3-interactions-and-a11y.md)
+
 ---
 
 ## Design Principles

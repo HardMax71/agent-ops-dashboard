@@ -21,6 +21,8 @@ key_decisions: [github-oauth-flow, jwt-hs256-session, sse-auth-fetch-event-sourc
 
 ---
 
+> **Detailed specs:** [Auth Implementation Spec](PRD-008-1-auth-impl-spec.md) — fills 10 implementation gaps including the missing `POST /auth/refresh` handler, Pydantic model definitions, complete env var reference, GitHub token lifecycle, Content-Security-Policy, conditional cookie Secure flag, OAuth scope guidance, library maintenance status, and JWT clock-skew leeway.
+
 ## Overview
 
 ### Why This PRD Exists
@@ -529,7 +531,7 @@ async def store_github_token(github_user_id: str, github_token: str, redis: Redi
     encrypted = fernet.encrypt(github_token.encode())
     await redis.setex(
         f"github_token:{github_user_id}",
-        7 * 24 * 3600,          # 7-day TTL, matches refresh token lifetime
+        365 * 24 * 3600,        # 365-day TTL — re-stored on every OAuth login; see PRD-008-1 §5
         encrypted,
     )
 
@@ -579,9 +581,16 @@ async def post_comment(
 
 ### Token Expiry
 
-GitHub OAuth tokens for OAuth Apps do not expire by default. However, GitHub App user tokens
-expire after 8 hours (with refresh tokens). v1 uses an OAuth App (non-expiring tokens). v2
-migration to GitHub Apps requires implementing the token refresh cycle.
+GitHub OAuth tokens for OAuth Apps do not expire by default. However, GitHub automatically
+revokes any OAuth token unused for **1 year of inactivity**. Additionally, if a user revokes
+the app's authorization via GitHub Settings → Authorized OAuth Apps, the stored token is
+immediately invalidated. See [PRD-008-1 §5](PRD-008-1-auth-impl-spec.md#5-github-token-lifecycle--1-year-inactivity-revocation-gap-4)
+for the full lifecycle spec, recommended TTL (365 days), and the GitHub API 401 error path in
+`POST /jobs/{id}/post-comment`.
+
+GitHub App user tokens expire after 8 hours (with refresh tokens). v1 uses an OAuth App
+(non-expiring tokens subject to 1-year inactivity policy). v2 migration to GitHub Apps requires
+implementing the token refresh cycle.
 
 ### Token Revocation
 
@@ -711,7 +720,7 @@ and redeploying all affected services — no token store or expiry mechanism req
 | Type | Opaque UUID v4 |
 | Expiry | 7 days |
 | Storage | `HttpOnly; Secure; SameSite=Strict` cookie |
-| Redis key | `refresh_token:{uuid}` → `{"github_id": "...", "issued_at": "..."}` |
+| Redis key | `refresh_token:{uuid}` → plain `github_id` string (e.g. `"1234567"`) |
 | Revocation | Delete Redis key → immediate revocation |
 | Rotation | Not in v1; add on v1.1 (new refresh token issued on every `/auth/refresh` call) |
 
@@ -791,6 +800,10 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
 
 `Strict-Transport-Security` is only meaningful in production (behind HTTPS). In development it
 is harmless.
+
+> **Gap:** `Content-Security-Policy` is absent from this middleware. CSP is the primary XSS
+> mitigation for in-memory JWT storage. See [PRD-008-1 §6](PRD-008-1-auth-impl-spec.md#6-content-security-policy-gap-5)
+> for the complete middleware including CSP and the Swagger UI carve-out strategy.
 
 ### HTTPS
 

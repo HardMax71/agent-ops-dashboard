@@ -26,6 +26,9 @@ This document specifies the LangGraph orchestration layer of AgentOps Dashboard 
 supervisor coordinates worker agents, how shared state flows through the graph, how human interrupts are handled, and
 how job state is persisted across sessions.
 
+> **Detailed specs:** [Event Pipeline & Worker](PRD-003-1-event-pipeline.md) ·
+> [Supervisor Prompt & Routing](PRD-003-2-supervisor-spec.md)
+
 LangGraph is used here in its intended role: **low-level orchestration of long-running, stateful, multi-agent workflows
 **. It is deliberately not used for simple linear chains (those live in LangChain/LCEL at the LangServe layer — see
 [PRD-004](PRD-004-agent-layer.md)).
@@ -511,6 +514,24 @@ async def submit_answer(job_id: str, body: AnswerRequest, redis: Redis = Depends
 | Question format       | Single question + 2–3 concrete options when applicable        | Reduces cognitive load                                  |
 | Blocker scope         | Entire graph pauses, not just one agent                       | Ensures answer is incorporated before any further work  |
 
+### Implementation Gotchas
+
+**Node re-execution on resume:** When `Command(resume=...)` is called, LangGraph re-runs the
+entire `human_input_node` function from the top. The current implementation is safe because no
+side effects occur before `interrupt()`. Any future code added before the `interrupt()` call
+must be idempotent — it will execute twice (once when the interrupt fires, once when the graph
+resumes).
+
+**Bare except trap:** `interrupt()` works by raising a special internal exception
+(`GraphInterrupt`). Any bare `except Exception:` or `except:` block inside `human_input_node`
+will silently swallow it, preventing the graph from pausing. Always catch specific exception
+types in this node.
+
+**Multiple interrupt ordering:** If multiple `interrupt()` calls exist in a node, LangGraph
+matches resume values by index. Since `human_input_node` has exactly one interrupt call, this
+constraint is satisfied automatically. Future multi-interrupt nodes must maintain deterministic
+`interrupt()` call order to ensure correct resume value matching.
+
 ---
 
 ## Pause, Redirect, and Kill
@@ -666,6 +687,30 @@ LangGraph's checkpointer saves the full `BugTriageState` to a database after eve
 
 Each job is identified by a UUID that maps 1:1 to a LangGraph thread ID. This UUID is generated at `POST /jobs` and is
 the same ID used in SSE stream URLs, answer endpoints, and LangSmith trace grouping.
+
+### Checkpointing Deployment Notes
+
+**`setup()` call:** Must be called exactly once before first use to create the checkpoint
+tables in PostgreSQL. Run it as a database migration step in CI/CD (e.g. via `alembic` or a
+standalone management command), not during `lifespan()` startup. Repeated calls on an existing
+schema are safe but noisy; insufficient-permission errors at startup are harder to recover from
+than migration-step failures.
+
+**`AsyncPostgresSaver` connection requirements:** The `psycopg` connection must be created with:
+- `autocommit=True` — required for `setup()` to commit the table creation DDL
+- `row_factory=dict_row` — required because the saver accesses rows as `row["column"]`; the
+  default tuple-based row factory causes `TypeError` at runtime
+
+**Connection pool sizing:** The `AsyncConnectionPool` `max_size` should equal or exceed the
+ARQ worker's `max_jobs` setting (currently 10). Each concurrent job holds one connection during
+checkpoint reads and writes. Undersizing the pool causes jobs to queue on connection acquisition
+and increases perceived latency.
+
+**Known PoolClosed race condition:** When the PostgreSQL connection pool is recycled (e.g.
+after a cloud database failover or idle timeout), agent instances holding stale pool references
+receive `PoolClosed` errors. Pattern to avoid this: acquire a fresh connection per checkpoint
+operation via the `pool.connection()` async context manager rather than holding a long-lived
+connection reference across multiple node executions.
 
 ---
 

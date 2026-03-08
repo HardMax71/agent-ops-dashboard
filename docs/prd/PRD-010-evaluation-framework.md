@@ -61,26 +61,34 @@ class EvalSettings(BaseSettings):
     langserve_base_url: str                          # must be a staging deployment URL
     openai_api_key: str                              # separate eval project key for billing isolation
 
-settings = EvalSettings()  # raises ValidationError if env vars are missing or wrong
 
-helpfulness_evaluator = LangChainStringEvaluator(
-    "criteria",
-    config={
-        "criteria": {
-            "helpfulness": "Is this triage report specific, actionable, and correct?",
-            "completeness": "Does the report cover severity, root cause, relevant files, and a fix suggestion?",
-            "accuracy": "Does the root cause match the reference answer?"
-        },
-        "llm": ChatAnthropic(model="claude-sonnet-4-6", temperature=0)
-    }
-)
 
-results = evaluate(
-    lambda inputs: run_triage_job(inputs["issue_url"]),
-    data="agentops-golden-dataset-v1",
-    evaluators=[helpfulness_evaluator],
-    experiment_prefix="prompt-change-2026-03",
-)
+def main() -> None:
+    """Run the LangSmith evaluation suite against the golden dataset."""
+    settings = EvalSettings()  # raises ValidationError if env vars are missing or wrong
+
+    helpfulness_evaluator = LangChainStringEvaluator(
+        "criteria",
+        config={
+            "criteria": {
+                "helpfulness": "Is this triage report specific, actionable, and correct?",
+                "completeness": "Does the report cover severity, root cause, relevant files, and a fix suggestion?",
+                "accuracy": "Does the root cause match the reference answer?"
+            },
+            "llm": ChatAnthropic(model="claude-sonnet-4-6", temperature=0)
+        }
+    )
+
+    evaluate(
+        lambda inputs: run_triage_job(inputs["issue_url"]),
+        data="agentops-golden-dataset-v1",
+        evaluators=[helpfulness_evaluator],
+        experiment_prefix="prompt-change-2026-03",
+    )
+
+
+if __name__ == "__main__":
+    main()
 ```
 
 The judge uses a different model family (Anthropic) than the production agents (OpenAI GPT-4o) to
