@@ -306,7 +306,8 @@ from langchain_tavily import TavilySearch
 from langchain_openai import ChatOpenAI
 from langgraph.prebuilt import ToolNode
 
-from agentops.models import AgentFinding, WebSearchState
+from agentops.models import WebSearchFinding, WebSearchState
+from agentops.translation import _to_agent_finding
 
 # Tool definition — official Tavily package (pip install langchain-tavily)
 _tavily = TavilySearch(max_results=5, search_depth="advanced")
@@ -322,21 +323,26 @@ _tool_node = ToolNode(
 
 # Final structured output LLM — separate from tool-calling LLM (cannot chain reliably)
 _structured_llm = ChatOpenAI(model="gpt-4o-mini", temperature=0).with_structured_output(
-    AgentFinding
+    WebSearchFinding
 )
 
 
 async def web_search_agent_node(state: WebSearchState) -> dict:
-    """Web Search agent: calls Tavily, then formats result as AgentFinding."""
+    """Web Search agent: calls Tavily, then formats result as WebSearchFinding."""
     # Step 1: LLM decides what to search for
     ai_msg = await _llm_with_tools.ainvoke(state["messages"])
     # Step 2: ToolNode executes the Tavily call(s) — emits on_tool_start/on_tool_end
     tool_result = await _tool_node.ainvoke({"messages": state["messages"] + [ai_msg]})
     # Step 3: Separate structured output LLM synthesizes findings
-    finding = await _structured_llm.ainvoke(
+    raw: WebSearchFinding = await _structured_llm.ainvoke(
         state["messages"] + [ai_msg] + tool_result["messages"]
     )
-    return {"agent_findings": [finding]}
+    finding = _to_agent_finding(
+        raw,
+        details=raw.external_root_cause,
+        relevant_files=[r.url for r in raw.relevant_results],
+    )
+    return {"findings": [finding]}
 ```
 
 > **`langchain_tavily` vs deprecated community import:**
@@ -583,9 +589,30 @@ chain = primary.with_retry(
 
 ### Node-Level Translation
 
+The critic node must write two state fields: `findings` (for tracing) and `critic_feedback` (for
+routing). A deterministic mapper converts `CritiqueFinding` → `CriticVerdict` without an LLM call:
+
 ```python
+def map_critique_to_verdict(raw: CritiqueFinding) -> CriticVerdict:
+    """Deterministic mapper: derives the binary CriticVerdict from CritiqueFinding."""
+    approved = raw.verdict == "CONFIRMED" and raw.ready_for_report
+    return CriticVerdict(
+        verdict="APPROVED" if approved else "REJECTED",
+        gaps=[] if approved else raw.gaps,
+        required_evidence=[] if approved else raw.gaps,
+        confidence=max(0.0, min(1.0, 0.5 + raw.confidence_adjustment)),
+    )
+
+
+# Inside the critic LangGraph node:
 details = raw.revised_hypothesis or f"Verdict: {raw.verdict}. Gaps: {'; '.join(raw.gaps)}"
 relevant_files = raw.gaps  # gaps used as "relevant files" — they are next investigation targets
+finding = _to_agent_finding(raw, details=details, relevant_files=relevant_files)
+critic_verdict = map_critique_to_verdict(raw)
+return {
+    "findings": [finding],
+    "critic_feedback": critic_verdict,
+}
 ```
 
 ---

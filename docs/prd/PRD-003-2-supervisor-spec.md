@@ -420,13 +420,19 @@ def route_from_supervisor(state: BugTriageState) -> str:
     if len(state["human_exchanges"]) >= 2 and decision_node == "human_input":
         return "codebase_search"
 
-    # Guard 3: iteration limit
+    # Guard 3: iteration limit — overrides Guard 5; routes to writer regardless of verdict
     if state["iterations"] >= state["max_iterations"]:
         return "writer"
 
     # Guard 4: supervisor must not end without a report
     if decision_node == "end" and state["report"] is None:
         return "writer"
+
+    # Guard 5: critic verdict gate — REJECTED blocks routing to writer
+    critic_feedback = state.get("critic_feedback")
+    if critic_feedback is not None and critic_feedback.verdict == "REJECTED":
+        if decision_node == "writer":
+            return "investigator"
 
     return decision_node
 ```
@@ -437,8 +443,9 @@ def route_from_supervisor(state: BugTriageState) -> str:
 |---|---|---|
 | `state.iterations == 0` and `decision.next_node != "investigator"` | Force `"investigator"` | LLM compliance not guaranteed; investigator-first is a hard invariant |
 | `len(state.human_exchanges) >= 2` and `decision.next_node == "human_input"` | Force `"codebase_search"` | Max 2 questions enforced in code, not just prompt |
-| `state.iterations >= state.max_iterations` | Force `"writer"` | Prevents infinite loops |
+| `state.iterations >= state.max_iterations` | Force `"writer"` | Prevents infinite loops; overrides Guard 5 |
 | `decision.next_node == "end"` and `state.report is None` | Force `"writer"` | Supervisor should not end without a report |
+| `state.critic_feedback.verdict == "REJECTED"` and `decision.next_node == "writer"` | Force `"investigator"` | Binary critic gate enforced in code; bypassed only by Guard 3 |
 
 ### Critic Verdict Gate
 
@@ -449,11 +456,14 @@ supervisor prompt and routing logic must honour the binary verdict:
 > - `"APPROVED"` → route to `writer`
 > - `"REJECTED"` → examine `critic_feedback.gaps` and `critic_feedback.required_evidence`
 >   to determine whether `investigator`, `codebase_search`, or `web_search` is needed next.
->   Never route to `writer` when `verdict == "REJECTED"`.
+>   Do not route to `writer` when `verdict == "REJECTED"` unless the `max_iterations` guard
+>   (§6, Guard 3) forces it — that guard overrides all semantic routing to prevent infinite loops.
 
-This is enforced via the supervisor system prompt (§3). The routing guard does not check
-`critic_feedback.verdict` directly — the guard's role is invariant enforcement (iteration
-limits, investigator-first), not semantic routing decisions.
+This is enforced both in the supervisor system prompt (§3) and in code via Guard 5 in
+`route_from_supervisor()`. Guard 5 reads `state.critic_feedback.verdict` directly: if
+`"REJECTED"`, it overrides any LLM decision to route to `"writer"`, redirecting to
+`"investigator"` instead. Guard 3 (iteration limit) runs before Guard 5 and takes priority —
+when `max_iterations` is reached the graph routes to writer regardless of verdict.
 
 ---
 

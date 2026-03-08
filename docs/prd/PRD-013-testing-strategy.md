@@ -78,6 +78,7 @@ test = [
     "asgi-lifespan>=2.1",
     "langchain-tests>=0.3",
     "playwright>=1.44",
+    "pytest-timeout>=2.1",
 ]
 ```
 
@@ -91,7 +92,7 @@ test = [
 ```toml
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
-asyncio_default_fixture_scope = "function"
+asyncio_default_fixture_loop_scope = "function"
 testpaths = ["tests"]
 addopts = [
     "-ra",
@@ -101,8 +102,6 @@ addopts = [
     "--cov-report=term-missing:skip-covered",
     "--cov-report=xml:coverage.xml",
     "--cov-fail-under=80",
-    "-n", "auto",
-    "--dist", "worksteal",
 ]
 markers = [
     "integration: requires live Redis and Postgres containers",
@@ -125,8 +124,9 @@ exclude_lines = [
 precision = 2
 ```
 
-Unit tests run with `-n auto --dist worksteal` by default.
-Integration tests are gated by `pytest -m integration` in a separate CI job with no `-n` flag — containers are
+xdist flags (`-n auto --dist worksteal`) are **not** in `addopts` — a bare `pytest` invocation is single-process,
+which is correct for integration and E2E runs. Parallelism is opt-in: the CI unit job passes `-n auto --dist worksteal`
+explicitly on the command line (see §8). Integration tests are gated by `pytest -m integration`; containers are
 session-scoped and cannot be shared across workers.
 
 ---
@@ -142,10 +142,11 @@ Six fixtures live at `tests/conftest.py`:
 | `memory_checkpointer`      | `function` | `MemorySaver()`                                     | `langgraph.checkpoint.memory`                          |
 | `async_client`             | `function` | `AsyncClient` + `ASGITransport` + `LifespanManager` | `httpx` + `asgi_lifespan`                              |
 | `override_auth`            | `function` | sets `app.dependency_overrides[get_current_user]`   | cleared in teardown                                    |
-| `noop_metrics` *(autouse)* | `session`  | —                                                   | `metrics.set_meter_provider(NoOpMeterProvider())` once |
+| `noop_metrics`             | `function` | —                                                   | `metrics.set_meter_provider(NoOpMeterProvider())`; opt-in per test |
 
-`noop_metrics` is `autouse=True, scope="session"` — silences all OTel calls project-wide so no metric registry bleeds
-between tests.
+`noop_metrics` is function-scoped and **not** `autouse` — tests that need OTel silenced request it explicitly.
+`test_metrics_callback.py` opts out entirely and uses `InMemoryMetricReader` instead (it cannot share a
+session-locked provider). Tests that do not care about metrics neither request `noop_metrics` nor observe any OTel side effects.
 
 ```python
 # tests/conftest.py (sketch)
@@ -193,7 +194,7 @@ def override_auth(fake_user) -> None:
     app.dependency_overrides.pop(get_current_user, None)
 
 
-@pytest.fixture(autouse=True, scope="session")
+@pytest.fixture()
 def noop_metrics() -> None:
     set_meter_provider(NoOpMeterProvider())
 ```
@@ -392,20 +393,9 @@ jobs:
   integration:
     runs-on: ubuntu-latest
     needs: unit
-    services:
-      redis:
-        image: redis:7-alpine
-        ports: [ "6379:6379" ]
-      postgres:
-        image: postgres:16-alpine
-        env:
-          POSTGRES_PASSWORD: test
-          POSTGRES_DB: agentops_test
-        ports: [ "5432:5432" ]
-        options: >-
-          --health-cmd="pg_isready"
-          --health-interval=5s
-          --health-retries=5
+    # No services block — RedisContainer and PostgresContainer fixtures spin up
+    # their own containers via testcontainers; REDIS_URL / DATABASE_URL are not
+    # needed as env vars because the fixtures inject connection details directly.
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
@@ -414,8 +404,6 @@ jobs:
           uv run pytest tests/integration/ -m integration \
             --cov=src --cov-append --cov-report=xml
         env:
-          REDIS_URL: redis://localhost:6379
-          DATABASE_URL: postgresql+asyncpg://postgres:test@localhost:5432/agentops_test
           OPENAI_API_KEY: sk-fake-for-ci
           GITHUB_OAUTH_CLIENT_ID: fake
           GITHUB_OAUTH_CLIENT_SECRET: fake
