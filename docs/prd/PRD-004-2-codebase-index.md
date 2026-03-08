@@ -173,7 +173,7 @@ def get_codebase_retriever(repository: str) -> VectorStoreRetriever:
         chromadb.errors.InvalidCollectionException: If the collection does not exist
             (repository has not been indexed yet). Propagates to the worker error handler.
     """
-    coll_name = collection_name(repository.rstrip("/"))
+    coll_name = collection_name(repository)
 
     # Chroma(persist_directory=...) silently creates missing collections, so we
     # must validate existence via the raw client first. get_collection() raises
@@ -265,7 +265,7 @@ async def build_codebase_index(ctx, repo_url: str, force: bool = False):
     """
     ARQ job: clone repo, chunk source files, embed, store in Chroma.
     """
-    col_name = collection_name(repo_url.rstrip("/"))
+    col_name = collection_name(repo_url)
     redis = ctx["redis"]
 
     # Per-repo lock to prevent concurrent index builds
@@ -446,7 +446,7 @@ async def update_codebase_index(ctx, repo_url: str, base_sha: str, head_sha: str
     ARQ job: incrementally re-index only the files changed between base_sha and head_sha.
     Falls back to full re-index if base_sha is not available in the shallow clone.
     """
-    col_name = collection_name(repo_url.rstrip("/"))
+    col_name = collection_name(repo_url)
     redis = ctx["redis"]
 
     async with redis.lock(f"index_lock:{col_name}", timeout=3600):

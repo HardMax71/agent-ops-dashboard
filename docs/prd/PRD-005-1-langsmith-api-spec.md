@@ -454,33 +454,50 @@ LangSmith POSTs to a configurable URL when a rule fires. The backend exposes:
 POST /internal/langsmith-alert
 ```
 
-This endpoint is **not** publicly documented and is protected by a shared secret in the
-`X-LangSmith-Signature` header (configured in LangSmith UI under the rule's webhook settings).
+This endpoint is **not** publicly documented. LangSmith does not use a request-signing header;
+instead the [LangSmith webhook docs](https://docs.langchain.com/langsmith/webhooks) recommend
+appending a secret query parameter to the webhook URL configured in the LangSmith UI:
+
+```
+https://api.agentops.internal/internal/langsmith-alert?secret=<LANGSMITH_WEBHOOK_SECRET>
+```
+
+Route each rule type by comparing `rule_id` against env-var-pinned IDs for each configured rule.
+`rule_id` is the UUID shown in the LangSmith UI for each automation rule.
 
 ```python
+from fastapi import Query
+
 @router.post("/internal/langsmith-alert")
 async def langsmith_alert_receiver(
     request: Request,
-    x_langsmith_signature: str = Header(None),
+    secret: str = Query(None),
 ):
-    if x_langsmith_signature != settings.langsmith_webhook_secret:
-        raise HTTPException(403, "Invalid signature")
+    if secret != settings.langsmith_webhook_secret:
+        raise HTTPException(403, "Invalid secret")
 
     payload = await request.json()
-    rule_name = payload.get("rule_name", "")
+    rule_id = payload.get("rule_id", "")
 
-    if "quality" in rule_name:
+    if rule_id == settings.langsmith_quality_rule_id:
         await notify_slack(f"Quality degradation alert: {payload}")
-    elif "cost" in rule_name:
+    elif rule_id == settings.langsmith_cost_rule_id:
         await notify_slack(f"High cost job alert: {payload}")
-    elif "error" in rule_name:
+    elif rule_id == settings.langsmith_error_rule_id:
         await notify_pagerduty(payload)
     # "slow" rule tags the run directly in LangSmith; no webhook action needed
 
     return {"ok": True}
 ```
 
-Add `LANGSMITH_WEBHOOK_SECRET` to the env var list.
+Add the following to the env var list:
+
+| Env var | Description |
+|---|---|
+| `LANGSMITH_WEBHOOK_SECRET` | Appended as `?secret=` to the webhook URL in LangSmith UI |
+| `LANGSMITH_QUALITY_RULE_ID` | UUID of the quality-degradation automation rule |
+| `LANGSMITH_COST_RULE_ID` | UUID of the high-cost automation rule |
+| `LANGSMITH_ERROR_RULE_ID` | UUID of the error-rate automation rule |
 
 ---
 
@@ -546,15 +563,17 @@ CREATE TABLE daily_eval_results (
 `scripts/run_evals.py` writes a row after each eval run:
 
 ```python
+from sqlalchemy import text
+
 await db.execute(
-    """
+    text("""
     INSERT INTO daily_eval_results (date, avg_score, sample_size, experiment_id)
     VALUES (:date, :avg_score, :sample_size, :experiment_id)
     ON CONFLICT (date) DO UPDATE
         SET avg_score = EXCLUDED.avg_score,
             sample_size = EXCLUDED.sample_size,
             experiment_id = EXCLUDED.experiment_id
-    """,
+    """),
     {
         "date": today,
         "avg_score": results.avg_score,
@@ -569,7 +588,7 @@ await db.execute(
 ```sql
 SELECT ROUND(AVG(avg_score)::numeric, 2) AS rolling_avg_7d
 FROM daily_eval_results
-WHERE date >= CURRENT_DATE - INTERVAL '7 days';
+WHERE date > CURRENT_DATE - INTERVAL '7 days';
 ```
 
 ### API Exposure

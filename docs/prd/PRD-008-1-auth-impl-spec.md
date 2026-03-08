@@ -80,23 +80,23 @@ async def refresh_access_token(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    # Redis key format: "refresh_token:{uuid}" → plain github_id string
-    github_id = await redis.get(f"refresh_token:{refresh_token}")
-    if github_id is None:
+    # Redis key format: "refresh_token:{uuid}" → "github_id:github_login" (colon-separated)
+    # Requires decode_responses=True on the Redis client so get() returns str | None.
+    stored: str | None = await redis.get(f"refresh_token:{refresh_token}")
+    if stored is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Refresh token expired or revoked — please log in",
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    # github_id is stored as bytes by redis-py; decode to str
-    if isinstance(github_id, bytes):
-        github_id = github_id.decode()
+    github_id, github_login = stored.split(":", 1)
 
     jti = str(uuid4())
     access_token = jwt.encode(
         {
             "sub": github_id,
+            "login": github_login,
             "jti": jti,
             "iat": datetime.now(timezone.utc),
             "exp": datetime.now(timezone.utc)
@@ -109,10 +109,20 @@ async def refresh_access_token(
     return AccessTokenResponse(access_token=access_token, token_type="bearer")
 ```
 
-**Note:** The `login` claim is omitted from the refreshed JWT because the refresh token stores
-only `github_id`. This is intentional: `login` is display-only and the frontend can retrieve it
-from the initial token or `GET /auth/me`. If `login` is needed in the refreshed token, store
-`github_id:github_login` in the Redis refresh key (same pattern as `auth_code` storage).
+**Note:** The Redis client must be initialised with `decode_responses=True` so that `get()`
+returns `str | None` throughout the auth module. The refresh token Redis value must be
+`"{github_id}:{github_login}"` (colon-separated), not a plain `github_id` string.
+`get_current_user` reads `github_login` from the JWT `login` claim (PRD-008 §`get_current_user`),
+so omitting it from the refreshed JWT causes `GET /auth/me` to return `github_login: ""` after
+every refresh. The `exchange_token` handler in PRD-008 must store this format:
+
+```python
+await redis.setex(
+    f"refresh_token:{refresh_token}",
+    settings.REFRESH_TOKEN_EXPIRE_SECONDS,
+    f"{github_id}:{github_login}",   # colon-separated; github_login from GitHub /user API
+)
+```
 
 ### Refresh Token Redis Value Format (Gap 2 Correction)
 
@@ -126,9 +136,9 @@ PRD-008's Token Lifecycle table states:
 await redis.setex(f"refresh_token:{refresh_token}", ..., github_id)
 ```
 
-The value is a **plain `github_id` string** (e.g. `"1234567"`). The `issued_at` field in the
-table is never used anywhere and should not be stored. The Token Lifecycle table in PRD-008 §Token
-Lifecycle → Refresh Token has been corrected to reflect this.
+The value is a **`"{github_id}:{github_login}"` colon-separated string** (e.g. `"1234567:alex-dev"`).
+The `issued_at` field in the table is never used anywhere and should not be stored. The Token
+Lifecycle table in PRD-008 §Token Lifecycle → Refresh Token has been corrected to reflect this.
 
 ### Out of Scope: Refresh Token Rotation
 
@@ -266,7 +276,7 @@ class Settings(BaseSettings):
 
 PRD-008 states: "GitHub OAuth tokens for OAuth Apps do not expire by default." This is technically
 correct but critically incomplete. **GitHub automatically revokes any OAuth App token that has not
-been used for 1 year.** See [GitHub docs — OAuth token expiration](https://docs.github.com/en/apps/creating-github-apps/authenticating-with-a-github-app/refreshing-user-access-tokens).
+been used for 1 year.** See [GitHub docs — Token expiration and revocation](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/token-expiration-and-revocation).
 
 This matters because:
 

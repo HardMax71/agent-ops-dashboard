@@ -101,7 +101,7 @@ This PRD covers all metric recording that requires explicit code:
 
 ### The Two-Pronged Solution
 
-```
+```text
 ┌────────────────────────────────────────────────────────────────────────┐
 │  LangGraph nodes · LCEL chains · LangServe agents                       │
 │  Zero metric calls. Zero event_bus calls. Zero OTel imports.            │
@@ -157,10 +157,13 @@ Explicit emission points (4 total — not in business logic):
   │  → create_feedback(), add_runs_to_annotation_queue()         │
   └──────────────────────────────────────────────────────────────┘
 
-OTel MeterProvider (configured once at startup):
+OTel MeterProvider (configured once per process at startup):
   ┌──────────────────────────────────────────────────────────────┐
-  │  Production (main.py):                                        │
-  │    PrometheusMetricReader → /metrics endpoint                 │
+  │  API process (main.py):  configure_api_metrics()             │
+  │    PrometheusMetricReader → ASGI /metrics on :8001           │
+  │                                                               │
+  │  ARQ worker:  configure_worker_metrics(port=8002)            │
+  │    PrometheusMetricReader → HTTP server thread on :8002      │
   │                                                               │
   │  Tests (conftest.py, one line):                               │
   │    metrics.set_meter_provider(NoOpMeterProvider())            │
@@ -352,6 +355,14 @@ No mocking needed. The callback is tested by calling its methods directly.
 
 ## 5. OTel MeterProvider Setup
 
+The API process and the ARQ worker are separate OS processes with separate memory spaces.
+Each must expose its own `/metrics` endpoint — they cannot share a single
+`prometheus_client` registry across process boundaries.
+
+- **API process** (`main.py`): mounts `/metrics` as an ASGI sub-app on port 8001.
+- **ARQ worker** (`worker.py`): starts a lightweight HTTP server thread on port 8002 at
+  startup. Prometheus scrapes both ports.
+
 ```python
 # agentops/metrics/setup.py
 from opentelemetry import metrics
@@ -360,22 +371,48 @@ from opentelemetry.exporter.prometheus import PrometheusMetricReader
 from prometheus_client import start_http_server  # only import in this file
 
 
-def configure_metrics_production() -> None:
-    """Call once at application startup (main.py and ARQ worker entry)."""
+def configure_api_metrics() -> None:
+    """Configure OTel metrics for the FastAPI process.
+
+    The /metrics ASGI endpoint is mounted separately in main.py via
+    prometheus_client.make_asgi_app(). Do not call start_http_server here.
+    """
     reader = PrometheusMetricReader()
     provider = MeterProvider(metric_readers=[reader])
     metrics.set_meter_provider(provider)
+
+
+def configure_worker_metrics(port: int = 8002) -> None:
+    """Configure OTel metrics for the ARQ worker process.
+
+    Starts a prometheus_client HTTP server thread on *port* so Prometheus can
+    scrape worker metrics (job_total, job_duration_seconds, jobs_active,
+    agent_calls_total, …) independently from the API process.
+    """
+    reader = PrometheusMetricReader()
+    provider = MeterProvider(metric_readers=[reader])
+    metrics.set_meter_provider(provider)
+    start_http_server(port)
 ```
 
 ```python
 # agentops/main.py
-from agentops.metrics.setup import configure_metrics_production
-configure_metrics_production()
+import prometheus_client
+from agentops.metrics.setup import configure_api_metrics
+
+configure_api_metrics()
 
 # Mount /metrics endpoint (PrometheusMetricReader auto-registers the ASGI app)
-import prometheus_client
-from starlette.routing import Mount
 app.mount("/metrics", prometheus_client.make_asgi_app())
+```
+
+```python
+# agentops/worker.py  (ARQ startup hook)
+from agentops.metrics.setup import configure_worker_metrics
+
+async def startup(ctx: dict) -> None:
+    configure_worker_metrics(port=8002)
+    ...
 ```
 
 ### Test Isolation (one line in conftest.py)
@@ -717,20 +754,16 @@ for `fetch_and_cache_trace_summary()` implementation and DB table schema.
 
 ## 11. Prometheus `/metrics` Endpoint
 
-```python
-# agentops/main.py
-import prometheus_client
-from starlette.routing import Mount
+Two scrape targets — one per process:
 
-# Mount at /metrics — served by PrometheusMetricReader via OTel SDK
-# prometheus_client.make_asgi_app() works because PrometheusMetricReader
-# registers metrics in the default prometheus_client registry
-app.mount("/metrics", prometheus_client.make_asgi_app())
-```
+| Process | Port | How served |
+|---------|------|------------|
+| API (`main.py`) | 8001 | `prometheus_client.make_asgi_app()` mounted on FastAPI |
+| ARQ worker | 8002 | `prometheus_client.start_http_server(8002)` thread |
 
-**Network access:** `/metrics` is not exposed through the public nginx reverse proxy. In
-docker-compose, the API service exposes the metrics port on `127.0.0.1` only, accessible
-to the Prometheus scraper on the internal `monitoring` network.
+**Network access:** Neither port is exposed through the public nginx reverse proxy. Both are
+bound to `127.0.0.1` and accessible to the Prometheus scraper on the internal `monitoring`
+network only.
 
 ```yaml
 # docker-compose.yml (relevant excerpt)
@@ -738,12 +771,26 @@ services:
   api:
     ports:
       - "8000:8000"            # public — proxied through nginx
-      - "127.0.0.1:8001:8001"  # metrics — internal only
+      - "127.0.0.1:8001:8001"  # API metrics — internal only
+  worker:
+    ports:
+      - "127.0.0.1:8002:8002"  # worker metrics — internal only
   prometheus:
     networks:
       - monitoring
     extra_hosts:
       - "host.docker.internal:host-gateway"
+```
+
+```yaml
+# prometheus.yml scrape config
+scrape_configs:
+  - job_name: agentops-api
+    static_configs:
+      - targets: ["host.docker.internal:8001"]
+  - job_name: agentops-worker
+    static_configs:
+      - targets: ["host.docker.internal:8002"]
 ```
 
 ---

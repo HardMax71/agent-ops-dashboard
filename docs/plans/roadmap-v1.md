@@ -159,7 +159,7 @@ All of the following must be true:
 | Deliverable | Criterion |
 |-------------|-----------|
 | D3.1 | Running fixture `FIXTURE_HITL` issue causes job status to reach `waiting` with non-empty `pending_question` |
-| D3.2 | `pytest tests/integration/test_job_control.py` passes all 6 control action tests |
+| D3.2 | `pytest tests/integration/test_job_control.py` passes all 5 control action tests |
 | D3.3 | Killing and restarting the worker mid-job, then calling `/resume`, completes the job successfully |
 | D3.4 | A job left in `waiting` for 10+ minutes (mocked clock) transitions to `timed_out` |
 

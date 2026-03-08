@@ -258,7 +258,7 @@ class InvestigatorFinding(AgentFindingBase):
 ### LCEL Chain
 
 ```python
-llm = ChatOpenAI(model="gpt-4o-mini", temperature=0, ...)
+llm = ChatOpenAI(model="gpt-4o-mini", temperature=0, ...)  # cheaper model: extraction-only task, no reasoning required
 
 primary = investigator_prompt | llm.with_structured_output(InvestigatorFinding)
 fallback = investigator_prompt | fallback_llm.with_structured_output(InvestigatorFinding)
@@ -487,6 +487,7 @@ is instantiated at call time using the `repository` field from the input:
 
 ```python
 from langchain_core.runnables import RunnableParallel, RunnablePassthrough, RunnableLambda
+from langchain_core.vectorstores import VectorStoreRetriever
 
 
 def build_codebase_chain(retriever: VectorStoreRetriever):
