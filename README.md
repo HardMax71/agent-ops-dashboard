@@ -1,23 +1,82 @@
 # AgentOps Dashboard
 
-Jira-like dashboard with multiple agents and whole LangX (LangChain, ..) stack.
+A Jira-like dashboard for AI agent operations, built with FastAPI, LangGraph, and the full LangChain ecosystem.
 
-> [!NOTE]
-> Precise description is to be written later.
-> Initial idea is to write PRDs with project description and explanations what-where-how,
-> then let Claude implement it.
->
-> Target: check what works and what doesn't.
->
-> Docs: https://hardmax71.github.io/agent-ops-dashboard/
+## Overview
 
-What works:
+AgentOps Dashboard orchestrates multi-agent pipelines for automated bug triage. GitHub issues are routed through a LangGraph supervisor that coordinates specialized agents (investigator, codebase search, web search, critic, writer) to produce structured triage reports with human-in-the-loop support.
 
-1. Combination of LLM writing PRDs and another 2-3 reviews checking inconsistencies: >2/3 issues are valid.
-2. `Websearch and fetch` commands (Claude Code) do reduce number of wrong types/outdated funcs dramatically. 
+**Key tech:** FastAPI · LangGraph · LangChain · LangServe · ARQ (async Redis queue) · PostgreSQL · Redis · OpenTelemetry · Prometheus
 
-What doesn't:
+Docs: https://hardmax71.github.io/agent-ops-dashboard/
 
-1. Models do not enforce any standard by default: globals, locals, DI and what not else can coexist simultenously.
-2. Implementation drifts quicker than PRDs added: if all configs are to be acquired via Settings obj, for example, it
-   happens that in PRDs conn string will be hardcoded, albeit context and previous PRDs state another thing.
+## Quickstart
+
+### Prerequisites
+
+- Python 3.12
+- [uv](https://docs.astral.sh/uv/) package manager
+- Docker & Docker Compose
+
+### Local development
+
+```bash
+# Clone and enter the repo
+git clone https://github.com/hardmax71/agent-ops-dashboard
+cd agent-ops-dashboard
+
+# Copy and fill in env
+cp .env.example .env
+# Edit .env — at minimum set OPENAI_API_KEY
+
+# Install dependencies
+uv sync --all-groups
+
+# Start infrastructure
+docker compose up db redis -d
+
+# Run the API
+uv run uvicorn agentops.api.main:app --reload
+
+# Run the worker (separate terminal)
+uv run python -m agentops.worker
+```
+
+### Running tests
+
+```bash
+uv run pytest tests/unit/ -v
+```
+
+### Linting
+
+```bash
+uv run ruff check .
+uv run ruff format .
+```
+
+## Architecture
+
+```
+src/agentops/
+  api/          FastAPI app, routers, dependency injection
+  auth/         JWT + GitHub OAuth, security middleware
+  config.py     Pydantic settings (env-driven)
+  graph/        LangGraph state, nodes, supervisor routing
+  metrics/      OpenTelemetry + Prometheus setup
+  lifespan.py   App startup/shutdown (Redis, metrics)
+  worker.py     ARQ worker for async job processing
+
+agents/
+  investigator/ Standalone LangServe microservice
+```
+
+**Metrics ports:** API → 8001, Worker → 8002 (Prometheus scrape targets)
+
+## Project structure notes
+
+- All PRDs in `docs/prd/`
+- Roadmap: `docs/plans/roadmap-v1.md`
+- No `isinstance()`, `cast()`, `type()`, or `Any` in business logic
+- Redis always uses `decode_responses=True`
+- No try/except in business logic — service-wide handlers only

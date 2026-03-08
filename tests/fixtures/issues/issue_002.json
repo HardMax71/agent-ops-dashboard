@@ -1,0 +1,6 @@
+{
+    "issue_url": "https://github.com/acme/frontend/issues/42",
+    "issue_title": "Race condition in WebSocket reconnect logic",
+    "issue_body": "The WebSocket client attempts to reconnect before closing the previous connection, causing duplicate event handlers and memory leaks. Observed in production with >100 concurrent users.",
+    "repository": "acme/frontend"
+}

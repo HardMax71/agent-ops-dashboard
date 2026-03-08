@@ -1,0 +1,6 @@
+{
+    "issue_url": "https://github.com/acme/backend/issues/1",
+    "issue_title": "NullPointerException in UserService.getUserById",
+    "issue_body": "When calling getUserById with a null userId, the service throws a NullPointerException instead of returning an empty Optional.\n\nStacktrace:\njava.lang.NullPointerException\n  at com.acme.UserService.getUserById(UserService.java:45)\n  at com.acme.UserController.getUser(UserController.java:23)",
+    "repository": "acme/backend"
+}

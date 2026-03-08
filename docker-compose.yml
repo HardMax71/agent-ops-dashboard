@@ -1,0 +1,37 @@
+version: "3.9"
+services:
+  api:
+    build: .
+    ports: ["8000:8000"]
+    env_file: .env
+    depends_on: [db, redis]
+    command: uvicorn agentops.api.main:app --host 0.0.0.0 --port 8000
+
+  worker:
+    build: .
+    env_file: .env
+    depends_on: [db, redis]
+    command: python -m agentops.worker
+
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: agentops
+      POSTGRES_PASSWORD: agentops
+      POSTGRES_DB: agentops
+    ports: ["5432:5432"]
+    volumes: ["pgdata:/var/lib/postgresql/data"]
+
+  redis:
+    image: redis:7
+    ports: ["6379:6379"]
+    volumes: ["redisdata:/data"]
+
+  investigator:
+    build: agents/investigator
+    ports: ["8001:8001"]
+    env_file: .env
+
+volumes:
+  pgdata:
+  redisdata:
