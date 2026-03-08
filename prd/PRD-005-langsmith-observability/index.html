@@ -1,0 +1,2346 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://hardmax71.github.io/agent-ops-dashboard/prd/PRD-005-langsmith-observability/">
+      
+      
+        <link rel="prev" href="../PRD-004-2-codebase-index/">
+      
+      
+        <link rel="next" href="../PRD-005-1-langsmith-api-spec/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.4">
+    
+    
+      
+        <title>Observability & Evaluation — LangSmith - AgentOps Dashboard</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#prd-005-observability-evaluation-langsmith" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="AgentOps Dashboard" class="md-header__button md-logo" aria-label="AgentOps Dashboard" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            AgentOps Dashboard
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Observability & Evaluation — LangSmith
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="AgentOps Dashboard" class="md-nav__button md-logo" aria-label="AgentOps Dashboard" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    AgentOps Dashboard
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PRDs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    PRDs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-001-master-overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Master Overview
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-002-frontend-ux/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frontend & UX
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_3" id="__nav_2_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frontend Detail
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Frontend Detail
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-002-1-design-system/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Design System & Components
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-002-2-pages-and-wireframes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pages & Wireframes
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-002-3-interactions-and-a11y/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interactions & Accessibility
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-003-langgraph-orchestration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LangGraph Orchestration
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_5" id="__nav_2_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Orchestration Detail
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Orchestration Detail
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-003-1-event-pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Event Pipeline & Worker
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-003-2-supervisor-spec/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Supervisor Prompt & Routing
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-004-agent-layer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agent Layer
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_7" id="__nav_2_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agent Layer Detail
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Agent Layer Detail
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-004-1-agent-chains/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Full LCEL Chain Specs
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-004-2-codebase-index/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Codebase Vector Index
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LangSmith Observability
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LangSmith Observability
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#why-langsmith" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why LangSmith
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#trace-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Trace Architecture
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Trace Architecture">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#trace-levels" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Trace Levels
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-gets-automatically-captured" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What Gets Automatically Captured
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#integration-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Integration Setup
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Integration Setup">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#environment-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Environment Variables
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#project-separation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Project Separation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tagging-runs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tagging Runs
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#trace-hierarchy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Trace Hierarchy
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Trace Hierarchy">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#accessing-the-trace-url" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Accessing the Trace URL
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ui-integration-langsmith-deep-links" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        UI Integration — LangSmith Deep Links
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="UI Integration — LangSmith Deep Links">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#view-in-langsmith-button" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        "View in LangSmith" Button
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#job-level-trace-summary-in-app" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Job-Level Trace Summary (In-App)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cost-and-latency-monitoring" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cost and Latency Monitoring
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Cost and Latency Monitoring">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#per-job-cost-tracking" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Per-Job Cost Tracking
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cost-budget-alerts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cost Budget Alerts
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#latency-dashboard" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Latency Dashboard
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#prompt-iteration-workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prompt Iteration Workflow
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#alerting-and-anomaly-detection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Alerting and Anomaly Detection
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Alerting and Anomaly Detection">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#automated-alerts-v11" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Automated Alerts (v1.1)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#manual-review-queue" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Manual Review Queue
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_9" id="__nav_2_9_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LangSmith Detail
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    LangSmith Detail
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-005-1-langsmith-api-spec/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API & Integration Spec
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-006-data-validation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Validation
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-007-developer-tooling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Developer Tooling
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-012-backend-di/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backend & DI
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-008-authentication/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authentication
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_14" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_14" id="__nav_2_14_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Auth Detail
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_14_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_14">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Auth Detail
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-008-1-auth-impl-spec/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Implementation Spec
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-009-documentation-standards/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Documentation Standards
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-010-evaluation-framework/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Evaluation Framework
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-011-metrics-collection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Metrics Collection
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-013-testing-strategy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing Strategy & CI
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Plans
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Plans
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-001-1-goals-and-dod/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Goals & Definition of Done
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../plans/roadmap-v1/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roadmap v1 (precise)
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../plans/roadmap-v2/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roadmap v2 (general)
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--PLANNED"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="prd-005-observability-evaluation-langsmith">PRD-005 — Observability &amp; Evaluation: LangSmith<a class="headerlink" href="#prd-005-observability-evaluation-langsmith" title="Permanent link">&para;</a></h1>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Document ID</td>
+<td>PRD-005</td>
+</tr>
+<tr>
+<td>Version</td>
+<td>1.0</td>
+</tr>
+<tr>
+<td>Status</td>
+<td>DRAFT</td>
+</tr>
+<tr>
+<td>Date</td>
+<td>March 2026</td>
+</tr>
+<tr>
+<td>Parent Doc</td>
+<td><a href="../PRD-001-master-overview/">PRD-001</a></td>
+</tr>
+<tr>
+<td>Related Docs</td>
+<td><a href="../PRD-003-langgraph-orchestration/">PRD-003</a> (Orchestration), <a href="../PRD-004-agent-layer/">PRD-004</a> (Agent Layer)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
+<blockquote>
+<p><strong>Detailed specs:</strong> <a href="../PRD-005-1-langsmith-api-spec/">LangSmith API &amp; Integration Spec</a> —
+fills 7 implementation gaps in this document (LangSmith read API, in-flight cost tracking,
+user feedback SDK calls, Manual Review Queue, automation rules, deep-link URL construction,
+and daily eval score storage).</p>
+</blockquote>
+<p>LangSmith is the observability and evaluation layer of AgentOps Dashboard. It wraps every layer of the stack
+automatically — LCEL chains inside each agent, LangGraph orchestration decisions, and full end-to-end job runs — and
+surfaces them in a unified tracing dashboard.</p>
+<p>Unlike typical application monitoring (Datadog, New Relic), LangSmith is specifically designed for LLM applications. It
+understands the concept of tokens, prompts, model calls, tool invocations, and agent reasoning chains — making it the
+right tool for this use case.</p>
+<p>LangSmith is used in three modes in this product:</p>
+<ol>
+<li><strong>Development</strong> — debug why an agent produced a wrong answer by inspecting its exact prompt and model response</li>
+<li><strong>Iteration</strong> — run eval datasets after every prompt change to catch regressions before deploying</li>
+<li><strong>Production</strong> — monitor live job quality, cost per job, latency per agent, and error rates</li>
+</ol>
+<hr />
+<h2 id="why-langsmith">Why LangSmith<a class="headerlink" href="#why-langsmith" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Need</th>
+<th>LangSmith Solution</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>"Why did the investigator agent produce the wrong hypothesis?"</td>
+<td>Full trace: exact prompt sent, token-by-token response, structured output parsed</td>
+</tr>
+<tr>
+<td>"Did my prompt change improve agent quality?"</td>
+<td>Dataset eval: run old vs. new prompt on golden dataset, compare scores side by side</td>
+</tr>
+<tr>
+<td>"How much does one bug triage job cost?"</td>
+<td>Automatic token counting and cost calculation per run, per agent, per job</td>
+</tr>
+<tr>
+<td>"Which agent is the slowest bottleneck?"</td>
+<td>Latency breakdown per node in the LangGraph trace</td>
+</tr>
+<tr>
+<td>"Is agent quality degrading over time?"</td>
+<td>Production monitoring with trend charts over rolling 7-day window</td>
+</tr>
+<tr>
+<td>"Can I A/B test two different critic prompts?"</td>
+<td>LangSmith experiments: split traffic or run parallel evals</td>
+</tr>
+</tbody>
+</table>
+<p>LangSmith is framework-agnostic — it instruments LCEL chains (via LangChain), LangGraph nodes (natively), and LangServe
+endpoints (automatically). Zero extra instrumentation code is required beyond setting the environment variables.</p>
+<hr />
+<h2 id="trace-architecture">Trace Architecture<a class="headerlink" href="#trace-architecture" title="Permanent link">&para;</a></h2>
+<h3 id="trace-levels">Trace Levels<a class="headerlink" href="#trace-levels" title="Permanent link">&para;</a></h3>
+<p>LangSmith captures traces at three levels, all linked in a parent–child hierarchy:</p>
+<pre class="mermaid"><code>flowchart TD
+    JOB["Job Run\njob_id: uuid-1234\ntokens: 12,450 · cost: $0.043 · duration: 127s"]
+
+    SUP1["supervisor [node 1]\nprompt: 840 tokens\ndecision: call investigator"]
+    INV["investigator [node 2] — 12s"]
+    LCEL_I["LCEL Chain: investigator\ngpt-4o-mini · 1,240 tokens\noutput: {hypothesis, confidence: 0.8}"]
+
+    SUP3["supervisor [node 3]\ndecision: call codebase_search"]
+    CS["codebase_search [node 4]"]
+    RET["Retriever: VectorStoreRetriever\nquery: JWT token expiry UTC\n→ 3 chunks from auth/middleware.py"]
+    LLM_C["LLM: gpt-4o · 3,200 tokens"]
+
+    HI["human_input [node 5]\nq: Focus on auth or DB layer?\na: Auth layer — recent JWT lib change\nwait: 145s"]
+
+    WR["writer [node N]"]
+    LCEL_W["LCEL Chain: writer\nparallel: report_chain · comment_chain · ticket_chain"]
+
+    JOB --&gt; SUP1
+    JOB --&gt; INV --&gt; LCEL_I
+    JOB --&gt; SUP3
+    JOB --&gt; CS --&gt; RET
+    CS --&gt; LLM_C
+    JOB --&gt; HI
+    JOB --&gt; WR --&gt; LCEL_W</code></pre>
+<h3 id="what-gets-automatically-captured">What Gets Automatically Captured<a class="headerlink" href="#what-gets-automatically-captured" title="Permanent link">&para;</a></h3>
+<p>No manual instrumentation is needed for:</p>
+<ul>
+<li>All LCEL chain inputs and outputs (LangChain native)</li>
+<li>All LangGraph node transitions, state diffs, and routing decisions (LangGraph native)</li>
+<li>All LangServe endpoint calls — token counts, latency, model used (LangServe native)</li>
+<li>Tool calls (Tavily, Chroma retriever) — query sent, results returned</li>
+</ul>
+<p>Manual tagging is added for:</p>
+<ul>
+<li><code>job_id</code> — links LangSmith trace to AgentOps job record</li>
+<li><code>repository</code> — enables filtering by repo in LangSmith dashboard</li>
+<li><code>human_question</code> / <code>human_answer</code> — captured as metadata on the <code>human_input</code> node</li>
+</ul>
+<hr />
+<h2 id="integration-setup">Integration Setup<a class="headerlink" href="#integration-setup" title="Permanent link">&para;</a></h2>
+<h3 id="environment-variables">Environment Variables<a class="headerlink" href="#environment-variables" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># Set in all services (orchestration + all LangServe agents)</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="nv">LANGSMITH_TRACING</span><span class="o">=</span><span class="nb">true</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="nv">LANGSMITH_API_KEY</span><span class="o">=</span>lsv2_...
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="nv">LANGSMITH_PROJECT</span><span class="o">=</span>agentops-dashboard<span class="w">   </span><span class="c1"># separates prod traces from dev</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="nv">LANGSMITH_ENDPOINT</span><span class="o">=</span>https://api.smith.langchain.com
+</code></pre></div>
+<p>No other code changes are required. LangSmith auto-instruments all LangChain and LangGraph calls when
+<code>LANGSMITH_TRACING=true</code>.</p>
+<h3 id="project-separation">Project Separation<a class="headerlink" href="#project-separation" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Environment</th>
+<th>LangSmith Project</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Development</td>
+<td><code>agentops-dev</code></td>
+<td>Local debugging; noisy traces acceptable</td>
+</tr>
+<tr>
+<td>Staging</td>
+<td><code>agentops-staging</code></td>
+<td>Eval runs against golden dataset</td>
+</tr>
+<tr>
+<td>Production</td>
+<td><code>agentops-prod</code></td>
+<td>Live monitoring; alerts configured here</td>
+</tr>
+</tbody>
+</table>
+<h3 id="tagging-runs">Tagging Runs<a class="headerlink" href="#tagging-runs" title="Permanent link">&para;</a></h3>
+<p>Each LangGraph job run is tagged with <code>metadata</code> and <code>tags</code> for filtering in the
+LangSmith dashboard. Both are set in the combined <code>config</code> dict assembled in the
+ARQ worker — see <a href="#accessing-the-trace-url">Accessing the Trace URL</a> for the
+full example.</p>
+<hr />
+<h2 id="trace-hierarchy">Trace Hierarchy<a class="headerlink" href="#trace-hierarchy" title="Permanent link">&para;</a></h2>
+<h3 id="accessing-the-trace-url">Accessing the Trace URL<a class="headerlink" href="#accessing-the-trace-url" title="Permanent link">&para;</a></h3>
+<p>The <code>run_id</code> is generated <strong>before</strong> graph invocation and passed via <code>config["run_id"]</code>.
+LangGraph forwards it to LangSmith as the root run ID. Because the ID is pre-assigned,
+it is stored in <code>BugTriageState.langsmith_run_id</code> and the DB before the graph runs —
+no callback manager, no <code>traced_runs</code> access, no race condition.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># worker.py — inside run_triage(), before astream_events</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">uuid</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="n">langsmith_run_id</span> <span class="o">=</span> <span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">()</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="n">config</span> <span class="o">=</span> <span class="p">{</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>    <span class="s2">&quot;configurable&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;thread_id&quot;</span><span class="p">:</span> <span class="n">job_id</span><span class="p">},</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>    <span class="s2">&quot;run_id&quot;</span><span class="p">:</span> <span class="n">langsmith_run_id</span><span class="p">,</span>   <span class="c1"># LangSmith root run ID; pre-assigned, never read back</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>    <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>        <span class="s2">&quot;job_id&quot;</span><span class="p">:</span> <span class="n">job_id</span><span class="p">,</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>        <span class="s2">&quot;repository&quot;</span><span class="p">:</span> <span class="n">initial_state</span><span class="p">[</span><span class="s2">&quot;repository&quot;</span><span class="p">],</span>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>        <span class="s2">&quot;issue_url&quot;</span><span class="p">:</span> <span class="n">initial_state</span><span class="p">[</span><span class="s2">&quot;issue_url&quot;</span><span class="p">],</span>
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>        <span class="s2">&quot;env&quot;</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;ENVIRONMENT&quot;</span><span class="p">,</span> <span class="s2">&quot;dev&quot;</span><span class="p">),</span>
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>    <span class="p">},</span>
+<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>    <span class="s2">&quot;tags&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;bug-triage&quot;</span><span class="p">,</span> <span class="n">initial_state</span><span class="p">[</span><span class="s2">&quot;repository&quot;</span><span class="p">]],</span>
+<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a><span class="p">}</span>
+<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>
+<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a><span class="c1"># Persist run ID in graph state so checkpointer carries it through the job lifetime</span>
+<a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a><span class="n">initial_state</span><span class="p">[</span><span class="s2">&quot;langsmith_run_id&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">langsmith_run_id</span><span class="p">)</span>
+<a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>
+<a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a><span class="k">async</span> <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">astream_events</span><span class="p">(</span><span class="n">initial_state</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="s2">&quot;v2&quot;</span><span class="p">):</span>
+<a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a>    <span class="o">...</span>
+</code></pre></div>
+<p>Deep-link format:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>https://smith.langchain.com/o/{org_id}/projects/p/{project_id}/r/{run_id}
+</code></pre></div>
+<hr />
+<h2 id="ui-integration-langsmith-deep-links">UI Integration — LangSmith Deep Links<a class="headerlink" href="#ui-integration-langsmith-deep-links" title="Permanent link">&para;</a></h2>
+<h3 id="view-in-langsmith-button">"View in LangSmith" Button<a class="headerlink" href="#view-in-langsmith-button" title="Permanent link">&para;</a></h3>
+<p>Every completed or failed job in the AgentOps Dashboard UI shows a <strong>"View in LangSmith"</strong> button in the Output Panel (
+<a href="../PRD-002-frontend-ux/">PRD-002</a>, Zone 3). This button opens the full job trace in a new tab.</p>
+<p>The trace shows:</p>
+<ul>
+<li>The complete LangGraph execution tree</li>
+<li>Every agent's exact prompt and response</li>
+<li>Token counts and costs broken down by node</li>
+<li>The human interrupt: question asked, time waited, answer given</li>
+<li>Any errors with full stack traces</li>
+</ul>
+<h3 id="job-level-trace-summary-in-app">Job-Level Trace Summary (In-App)<a class="headerlink" href="#job-level-trace-summary-in-app" title="Permanent link">&para;</a></h3>
+<p>A lightweight summary of the LangSmith trace is shown directly in the AgentOps UI (no need to navigate to LangSmith for
+basic info):</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>┌─────────────────────────────────────────────────────────┐
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>│  JOB TRACE SUMMARY                                       │
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>│  Total tokens: 12,450    Estimated cost: $0.043          │
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>│  Total duration: 2m 7s   Nodes executed: 8               │
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>│  Slowest agent: codebase_search (18s)                    │
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>│                              [View full trace ↗]         │
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>└─────────────────────────────────────────────────────────┘
+</code></pre></div>
+<p>This data is fetched from the LangSmith API after job completion and cached in the backend DB.</p>
+<hr />
+<p>Evaluation methodology — golden dataset, LLM-as-judge setup, scoring rubrics, and CI pipeline
+— is specified in <a href="../PRD-010-evaluation-framework/">PRD-010 §Evaluation Framework</a>.</p>
+<hr />
+<h2 id="cost-and-latency-monitoring">Cost and Latency Monitoring<a class="headerlink" href="#cost-and-latency-monitoring" title="Permanent link">&para;</a></h2>
+<h3 id="per-job-cost-tracking">Per-Job Cost Tracking<a class="headerlink" href="#per-job-cost-tracking" title="Permanent link">&para;</a></h3>
+<p>LangSmith automatically tracks token usage per run. The backend aggregates this into per-job cost estimates shown in the
+AgentOps UI:</p>
+<table>
+<thead>
+<tr>
+<th>Agent</th>
+<th>Avg Tokens/Job</th>
+<th>Avg Cost/Job</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Investigator</td>
+<td>~1,200</td>
+<td>~$0.001</td>
+</tr>
+<tr>
+<td>Codebase Search</td>
+<td>~3,500</td>
+<td>~$0.007</td>
+</tr>
+<tr>
+<td>Web Search</td>
+<td>~2,000</td>
+<td>~$0.002</td>
+</tr>
+<tr>
+<td>Critic</td>
+<td>~2,500</td>
+<td>~$0.005</td>
+</tr>
+<tr>
+<td>Writer</td>
+<td>~4,000</td>
+<td>~$0.012</td>
+</tr>
+<tr>
+<td>Supervisor (all hops)</td>
+<td>~2,000</td>
+<td>~$0.002</td>
+</tr>
+<tr>
+<td><strong>Total (typical job)</strong></td>
+<td><strong>~15,200</strong></td>
+<td><strong>~$0.029</strong></td>
+</tr>
+</tbody>
+</table>
+<p><em>Estimates based on GPT-4o-mini at $0.15/1M input tokens, GPT-4o at $2.50/1M input tokens.</em></p>
+<h3 id="cost-budget-alerts">Cost Budget Alerts<a class="headerlink" href="#cost-budget-alerts" title="Permanent link">&para;</a></h3>
+<p>Users can set a per-job cost limit in Settings. If a job's running cost exceeds the limit,
+the supervisor is notified and moves toward the <code>writer</code> node to wrap up, rather than spawning more agents.</p>
+<blockquote>
+<p><strong>Correction:</strong> In-flight cost cannot be tracked via LangSmith's API — the API only exposes
+completed run data. The correct approach is to accumulate cost from <code>on_chat_model_end</code> events
+in <code>astream_events()</code> using a model pricing table. See
+<a href="../PRD-005-1-langsmith-api-spec/#5-in-flight-cost-tracking-gap-2">PRD-005-1 §5</a> for the full
+spec, token extraction code, and the three new <code>BugTriageState</code> fields required.</p>
+</blockquote>
+<h3 id="latency-dashboard">Latency Dashboard<a class="headerlink" href="#latency-dashboard" title="Permanent link">&para;</a></h3>
+<p>The Analytics page (v1.1) shows rolling 7-day charts from LangSmith data:</p>
+<ul>
+<li>Average job duration (P50, P95)</li>
+<li>Per-agent latency breakdown</li>
+<li>Human wait time (time between question asked and answer received)</li>
+<li>Jobs per day, error rate per day</li>
+</ul>
+<hr />
+<h2 id="prompt-iteration-workflow">Prompt Iteration Workflow<a class="headerlink" href="#prompt-iteration-workflow" title="Permanent link">&para;</a></h2>
+<p>The workflow for safely improving agent quality using LangSmith:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>1. OBSERVE
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>   Identify a failing job in production via LangSmith traces
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>   Note which agent produced the bad output and why
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>2. PROTOTYPE
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>   Open LangFlow canvas for that agent
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>   Reproduce the failure with the same input
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>   Iterate on the system prompt until output improves
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>
+<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>3. EVALUATE
+<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a>   Export updated prompt to Python
+<a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a>   Update the agent&#39;s LangServe service
+<a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a>   Deploy to staging
+<a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a>
+<a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a>4. RUN EVALS
+<a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a>   Trigger eval pipeline: python scripts/run_evals.py
+<a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a>   Check score vs. baseline on golden dataset
+<a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a>   If score improves (or doesn&#39;t regress): proceed
+<a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a>
+<a id="__codelineno-4-20" name="__codelineno-4-20" href="#__codelineno-4-20"></a>5. DEPLOY
+<a id="__codelineno-4-21" name="__codelineno-4-21" href="#__codelineno-4-21"></a>   Merge to main
+<a id="__codelineno-4-22" name="__codelineno-4-22" href="#__codelineno-4-22"></a>   CI runs eval one more time as gate
+<a id="__codelineno-4-23" name="__codelineno-4-23" href="#__codelineno-4-23"></a>   Deploy to production LangServe endpoint
+<a id="__codelineno-4-24" name="__codelineno-4-24" href="#__codelineno-4-24"></a>
+<a id="__codelineno-4-25" name="__codelineno-4-25" href="#__codelineno-4-25"></a>6. MONITOR
+<a id="__codelineno-4-26" name="__codelineno-4-26" href="#__codelineno-4-26"></a>   LangSmith production dashboard shows new scores
+<a id="__codelineno-4-27" name="__codelineno-4-27" href="#__codelineno-4-27"></a>   Daily eval confirms improvement holds over time
+</code></pre></div>
+<hr />
+<h2 id="alerting-and-anomaly-detection">Alerting and Anomaly Detection<a class="headerlink" href="#alerting-and-anomaly-detection" title="Permanent link">&para;</a></h2>
+<h3 id="automated-alerts-v11">Automated Alerts (v1.1)<a class="headerlink" href="#automated-alerts-v11" title="Permanent link">&para;</a></h3>
+<blockquote>
+<p><strong>Implementation note:</strong> Automation rules are configured in the LangSmith UI, not in Python
+code. The backend provides a webhook receiver endpoint (<code>POST /internal/langsmith-alert</code>) that
+LangSmith calls when a rule fires. See
+<a href="../PRD-005-1-langsmith-api-spec/#8-online-evaluators--automation-rules-gap-5">PRD-005-1 §8</a>
+for rule conditions, LangSmith UI paths, and the webhook receiver implementation.</p>
+</blockquote>
+<p>LangSmith supports rule-based automations that trigger actions when conditions are met:</p>
+<table>
+<thead>
+<tr>
+<th>Alert</th>
+<th>Condition</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Quality degradation</td>
+<td>7-day rolling avg score drops below 3.5</td>
+<td>Slack notification to engineering team</td>
+</tr>
+<tr>
+<td>High cost job</td>
+<td>Single job exceeds $0.20</td>
+<td>Flag job in UI; notify via email</td>
+</tr>
+<tr>
+<td>Agent error spike</td>
+<td>Error rate &gt; 10% in last hour</td>
+<td>PagerDuty alert</td>
+</tr>
+<tr>
+<td>Slow job</td>
+<td>Job duration &gt; 5 minutes</td>
+<td>Warning badge in UI</td>
+</tr>
+</tbody>
+</table>
+<h3 id="manual-review-queue">Manual Review Queue<a class="headerlink" href="#manual-review-queue" title="Permanent link">&para;</a></h3>
+<p>Any job where:</p>
+<ul>
+<li>The final confidence score is &lt; 0.5, OR</li>
+<li>The user gave a thumbs-down on the output, OR</li>
+<li>An agent errored and was skipped</li>
+</ul>
+<p>…is automatically added to a <strong>Manual Review Queue</strong> in LangSmith for the team to inspect and potentially add to the
+golden dataset.</p>
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.top", "toc.integrate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

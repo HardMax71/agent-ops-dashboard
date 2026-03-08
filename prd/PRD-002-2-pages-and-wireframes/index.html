@@ -1,0 +1,2482 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://hardmax71.github.io/agent-ops-dashboard/prd/PRD-002-2-pages-and-wireframes/">
+      
+      
+        <link rel="prev" href="../PRD-002-1-design-system/">
+      
+      
+        <link rel="next" href="../PRD-002-3-interactions-and-a11y/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.4">
+    
+    
+      
+        <title>Pages, Routes & View States — Full Wireframes - AgentOps Dashboard</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#prd-002-2-pages-routes-view-states" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="AgentOps Dashboard" class="md-header__button md-logo" aria-label="AgentOps Dashboard" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            AgentOps Dashboard
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Pages, Routes & View States — Full Wireframes
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="AgentOps Dashboard" class="md-nav__button md-logo" aria-label="AgentOps Dashboard" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    AgentOps Dashboard
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PRDs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    PRDs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-001-master-overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Master Overview
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-002-frontend-ux/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frontend & UX
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2_3" id="__nav_2_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frontend Detail
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Frontend Detail
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-002-1-design-system/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Design System & Components
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pages & Wireframes
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pages & Wireframes
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-route-table" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Route Table
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-page-login-login" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Page: Login (/login)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Page: Login (/login)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#wireframe" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Wireframe
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#states" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        States
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#auth-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Auth Flow
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-page-dashboard-dashboard" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Page: Dashboard (/dashboard)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Page: Dashboard (/dashboard)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#3a-full-layout-skeleton" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3a. Full Layout Skeleton
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3b-topbar-always-rendered" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3b. Topbar (always rendered)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3c-zone-1-job-queue-sidebar" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3c. Zone 1 — Job Queue Sidebar
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3d-zone-2-live-workspace" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3d. Zone 2 — Live Workspace
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3d. Zone 2 — Live Workspace">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#state-1-empty-no-job-selected" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        State 1 — Empty (no job selected)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#state-2-running" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        State 2 — Running
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#state-3-hitl-waiting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        State 3 — HITL / Waiting
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#state-4-pausing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        State 4 — Pausing
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#state-5-done" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        State 5 — Done
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3e-zone-3-output-panel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3e. Zone 3 — Output Panel
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3e. Zone 3 — Output Panel">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#state-1-accumulating-streaming" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        State 1 — Accumulating (streaming)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#state-2-done" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        State 2 — Done
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#state-3-write-back-pending" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        State 3 — Write-back pending
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-page-settings-settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Page: Settings (/settings)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-page-404" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Page: 404
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-002-3-interactions-and-a11y/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interactions & Accessibility
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-003-langgraph-orchestration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LangGraph Orchestration
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_5" id="__nav_2_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Orchestration Detail
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Orchestration Detail
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-003-1-event-pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Event Pipeline & Worker
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-003-2-supervisor-spec/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Supervisor Prompt & Routing
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-004-agent-layer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agent Layer
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_7" id="__nav_2_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agent Layer Detail
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Agent Layer Detail
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-004-1-agent-chains/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Full LCEL Chain Specs
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-004-2-codebase-index/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Codebase Vector Index
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-005-langsmith-observability/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LangSmith Observability
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_9" id="__nav_2_9_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LangSmith Detail
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    LangSmith Detail
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-005-1-langsmith-api-spec/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API & Integration Spec
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-006-data-validation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Validation
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-007-developer-tooling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Developer Tooling
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-012-backend-di/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backend & DI
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-008-authentication/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authentication
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_14" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_14" id="__nav_2_14_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Auth Detail
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_14_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_14">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Auth Detail
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-008-1-auth-impl-spec/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Implementation Spec
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-009-documentation-standards/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Documentation Standards
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-010-evaluation-framework/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Evaluation Framework
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-011-metrics-collection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Metrics Collection
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-013-testing-strategy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing Strategy & CI
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Plans
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Plans
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-001-1-goals-and-dod/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Goals & Definition of Done
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../plans/roadmap-v1/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roadmap v1 (precise)
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../plans/roadmap-v2/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roadmap v2 (general)
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--PLANNED"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="prd-002-2-pages-routes-view-states">PRD-002-2 — Pages, Routes &amp; View States<a class="headerlink" href="#prd-002-2-pages-routes-view-states" title="Permanent link">&para;</a></h1>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Document ID</td>
+<td>PRD-002-2</td>
+</tr>
+<tr>
+<td>Version</td>
+<td>1.0</td>
+</tr>
+<tr>
+<td>Status</td>
+<td>DRAFT</td>
+</tr>
+<tr>
+<td>Date</td>
+<td>March 2026</td>
+</tr>
+<tr>
+<td>Parent Doc</td>
+<td><a href="../PRD-002-frontend-ux/">PRD-002</a></td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Part of:</strong> <a href="../PRD-002-1-design-system/">PRD-002-1 Design System</a> ·
+<a href="../PRD-002-3-interactions-and-a11y/">PRD-002-3 Interactions &amp; A11y</a></p>
+</blockquote>
+<hr />
+<h2 id="1-route-table">1. Route Table<a class="headerlink" href="#1-route-table" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Path</th>
+<th>Component</th>
+<th>Auth Required</th>
+<th>Redirect Behavior</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/login</code></td>
+<td><code>LoginPage</code></td>
+<td>No</td>
+<td>If authenticated → redirect to <code>/dashboard</code></td>
+</tr>
+<tr>
+<td><code>/</code></td>
+<td>—</td>
+<td>—</td>
+<td>Always redirect to <code>/dashboard</code></td>
+</tr>
+<tr>
+<td><code>/dashboard</code></td>
+<td><code>DashboardPage</code></td>
+<td>Yes</td>
+<td>If not authenticated → redirect to <code>/login</code></td>
+</tr>
+<tr>
+<td><code>/settings</code></td>
+<td><code>SettingsPage</code></td>
+<td>Yes</td>
+<td>If not authenticated → redirect to <code>/login</code></td>
+</tr>
+<tr>
+<td><code>*</code></td>
+<td><code>NotFoundPage</code></td>
+<td>No</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="2-page-login-login">2. Page: Login (<code>/login</code>)<a class="headerlink" href="#2-page-login-login" title="Permanent link">&para;</a></h2>
+<h3 id="wireframe">Wireframe<a class="headerlink" href="#wireframe" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>╔══════════════════════════════════════════════════════════════════════╗
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>║                                                                      ║
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>║                                                                      ║
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>║                                                                      ║
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>║                    ┌──────────────────────────────┐                 ║
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>║                    │                              │                 ║
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>║                    │        [AgentOps Logo]        │                 ║
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>║                    │          AgentOps            │                 ║
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>║                    │                              │                 ║
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>║                    │  Jira for AI agents.         │                 ║
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>║                    │  Supervise, steer, and trust │                 ║
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>║                    │  your multi-agent workflows. │                 ║
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>║                    │                              │                 ║
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>║                    │  ┌────────────────────────┐  │                 ║
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>║                    │  │  🐙  Continue with     │  │                 ║
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>║                    │  │       GitHub           │  │                 ║
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>║                    │  └────────────────────────┘  │                 ║
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>║                    │                              │                 ║
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>║                    └──────────────────────────────┘                 ║
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>║                                                                      ║
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>║              AgentOps Dashboard · v1.0 · Open Source                ║
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>║                                                                      ║
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>╚══════════════════════════════════════════════════════════════════════╝
+</code></pre></div>
+<p><strong>Exact copy:</strong></p>
+<ul>
+<li>Tagline: <code>"Jira for AI agents. Supervise, steer, and trust your multi-agent workflows."</code></li>
+<li>Button label: <code>"Continue with GitHub"</code></li>
+</ul>
+<h3 id="states">States<a class="headerlink" href="#states" title="Permanent link">&para;</a></h3>
+<p><strong>Idle (default):</strong> As shown above.</p>
+<p><strong>Loading:</strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>║  ┌────────────────────────┐  ║
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>║  │  ⟳  Connecting to      │  ║
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>║  │      GitHub...         │  ║
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>║  └────────────────────────┘  ║
+</code></pre></div>
+<p>Button disabled, spinner replaces GitHub icon, text changes to <code>"Connecting to GitHub..."</code>.</p>
+<p><strong>Error — OAuth denied:</strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>║  ┌──────────────────────────────┐  ║
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>║  │  ⚠  Access denied by GitHub  │  ║  ← red inline message
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>║  └──────────────────────────────┘  ║
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>║  ┌────────────────────────┐        ║
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>║  │  🐙  Continue with     │        ║
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>║  │       GitHub           │        ║
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>║  └────────────────────────┘        ║
+</code></pre></div>
+<p>Error message: <code>"Access denied. Please authorise the AgentOps app on GitHub to continue."</code></p>
+<p><strong>Error — server error:</strong></p>
+<p>Error message: <code>"Something went wrong. Please try again."</code> + retry button below the message.</p>
+<h3 id="auth-flow">Auth Flow<a class="headerlink" href="#auth-flow" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>[Click button] → GET /auth/login → GitHub OAuth consent → GET /auth/callback
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>→ Backend sets httpOnly cookie → redirect to /dashboard
+</code></pre></div>
+<hr />
+<h2 id="3-page-dashboard-dashboard">3. Page: Dashboard (<code>/dashboard</code>)<a class="headerlink" href="#3-page-dashboard-dashboard" title="Permanent link">&para;</a></h2>
+<h3 id="3a-full-layout-skeleton">3a. Full Layout Skeleton<a class="headerlink" href="#3a-full-layout-skeleton" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>┌─────────────────────────────────────────────────────────────────────────────┐  ← 48px topbar
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>│  AgentOps          ● Connected                    [⧉]  [@user ▾]           │
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>├─────────────────┬───────────────────────────────────────┬───────────────────┤
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>│  Zone 1         │  Zone 2                               │  Zone 3           │
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>│  280px fixed    │  flex (fills remaining ≈ 640px+)      │  320px fixed      │
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>│                 │                                       │                   │
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>│  Job Queue      │  Live Workspace                       │  Output Panel     │
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>│  Sidebar        │                                       │                   │
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>│                 │                                       │                   │
+<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>│                 │                                       │                   │
+<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a>│                 │                                       │                   │
+<a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a>│                 │                                       │                   │
+<a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a>│                 │                                       │                   │
+<a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a>│                 │                                       │                   │
+<a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a>│                 │                                       │                   │
+<a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a>└─────────────────┴───────────────────────────────────────┴───────────────────┘
+<a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a>  ↑ 280px            ↑ flex                                  ↑ 320px
+</code></pre></div>
+<p>Full app height = <code>100vh - 48px</code> (topbar). All three zones scroll independently.</p>
+<hr />
+<h3 id="3b-topbar-always-rendered">3b. Topbar (always rendered)<a class="headerlink" href="#3b-topbar-always-rendered" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>┌─────────────────────────────────────────────────────────────────────────────┐
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>│  [◈] AgentOps        ● Connected              [⧉ LangFlow]  [@user ▾]      │
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>└─────────────────────────────────────────────────────────────────────────────┘
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Section</th>
+<th>Contents</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Left</td>
+<td>App logo icon + <code>"AgentOps"</code> wordmark</td>
+</tr>
+<tr>
+<td>Center</td>
+<td>Connection status pill: <code>"● Connected"</code> (green) or <code>"○ Disconnected"</code> (gray)</td>
+</tr>
+<tr>
+<td>Right</td>
+<td>LangFlow icon link (external) + user avatar + <code>"@login ▾"</code> dropdown chevron</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Avatar dropdown:</strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>┌─────────────────┐
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>│  Settings       │
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>├─────────────────┤
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>│  Log out        │
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>└─────────────────┘
+</code></pre></div>
+<p>Separator between "Settings" and "Log out". Clicking outside or pressing Escape closes it.</p>
+<hr />
+<h3 id="3c-zone-1-job-queue-sidebar">3c. Zone 1 — Job Queue Sidebar<a class="headerlink" href="#3c-zone-1-job-queue-sidebar" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>┌─────────────────────────────────┐
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>│  [Status ▾] [Repo ▾]  [↕]  [+ New Job] │
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>├─────────────────────────────────┤
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>│ ┌─────────────────────────────┐ │
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>│ │ ● RUNNING          #1042   │ │  ← selected (left accent border)
+<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>│ │ Auth token expiry causes    │ │
+<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>│ │ 500 on /api/me              │ │
+<a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>│ │ github.com/org/repo         │ │
+<a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a>│ │ 4 min ago  3 agents active  │ │
+<a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a>│ └─────────────────────────────┘ │
+<a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a>│ ┌─────────────────────────────┐ │
+<a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a>│ │ ● WAITING          #1098   │ │
+<a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a>│ │ Null pointer in payment     │ │
+<a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a>│ │ checkout flow               │ │
+<a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a>│ │ github.com/org/payments-svc │ │
+<a id="__codelineno-7-16" name="__codelineno-7-16" href="#__codelineno-7-16"></a>│ │ 9 min ago  Needs your input │ │
+<a id="__codelineno-7-17" name="__codelineno-7-17" href="#__codelineno-7-17"></a>│ └─────────────────────────────┘ │
+<a id="__codelineno-7-18" name="__codelineno-7-18" href="#__codelineno-7-18"></a>│ ┌─────────────────────────────┐ │
+<a id="__codelineno-7-19" name="__codelineno-7-19" href="#__codelineno-7-19"></a>│ │ ● QUEUED           #1103   │ │
+<a id="__codelineno-7-20" name="__codelineno-7-20" href="#__codelineno-7-20"></a>│ │ Redis connection pool       │ │
+<a id="__codelineno-7-21" name="__codelineno-7-21" href="#__codelineno-7-21"></a>│ │ exhausted at peak load      │ │
+<a id="__codelineno-7-22" name="__codelineno-7-22" href="#__codelineno-7-22"></a>│ │ github.com/org/infra        │ │
+<a id="__codelineno-7-23" name="__codelineno-7-23" href="#__codelineno-7-23"></a>│ │ just now                    │ │
+<a id="__codelineno-7-24" name="__codelineno-7-24" href="#__codelineno-7-24"></a>│ └─────────────────────────────┘ │
+<a id="__codelineno-7-25" name="__codelineno-7-25" href="#__codelineno-7-25"></a>│ ┌─────────────────────────────┐ │
+<a id="__codelineno-7-26" name="__codelineno-7-26" href="#__codelineno-7-26"></a>│ │ ● DONE             #1031   │ │
+<a id="__codelineno-7-27" name="__codelineno-7-27" href="#__codelineno-7-27"></a>│ │ Login page flickers on      │ │
+<a id="__codelineno-7-28" name="__codelineno-7-28" href="#__codelineno-7-28"></a>│ │ Safari 16                   │ │
+<a id="__codelineno-7-29" name="__codelineno-7-29" href="#__codelineno-7-29"></a>│ │ github.com/org/frontend     │ │
+<a id="__codelineno-7-30" name="__codelineno-7-30" href="#__codelineno-7-30"></a>│ │ Completed 22 min ago        │ │
+<a id="__codelineno-7-31" name="__codelineno-7-31" href="#__codelineno-7-31"></a>│ └─────────────────────────────┘ │
+<a id="__codelineno-7-32" name="__codelineno-7-32" href="#__codelineno-7-32"></a>└─────────────────────────────────┘
+</code></pre></div>
+<p><strong>Filter row:</strong> Status dropdown, Repo dropdown, sort toggle (newest/oldest). All three are compact controls in a single row above the list.</p>
+<p><strong>Empty state</strong> (no jobs):</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>┌─────────────────────────────────┐
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>│  [Status ▾] [Repo ▾]  [↕]  [+ New Job] │
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>├─────────────────────────────────┤
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>│                                 │
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>│                                 │
+<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>│      No jobs yet.               │
+<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>│      Submit your first issue →  │
+<a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>│                                 │
+<a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a>│                                 │
+<a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a>└─────────────────────────────────┘
+</code></pre></div>
+<p>Faint muted text, centered vertically in the available list area.</p>
+<hr />
+<h3 id="3d-zone-2-live-workspace">3d. Zone 2 — Live Workspace<a class="headerlink" href="#3d-zone-2-live-workspace" title="Permanent link">&para;</a></h3>
+<h4 id="state-1-empty-no-job-selected">State 1 — Empty (no job selected)<a class="headerlink" href="#state-1-empty-no-job-selected" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>┌─────────────────────────────────────────────────────┐
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>│                                                     │
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>│                                                     │
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>│                                                     │
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>│                   [◈ icon, faint]                   │
+<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>│                                                     │
+<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a>│       Select a job from the queue,                  │
+<a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a>│       or submit a new one.                          │
+<a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a>│                                                     │
+<a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a>│              [+ New Job]                            │
+<a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a>│                                                     │
+<a id="__codelineno-9-12" name="__codelineno-9-12" href="#__codelineno-9-12"></a>│                                                     │
+<a id="__codelineno-9-13" name="__codelineno-9-13" href="#__codelineno-9-13"></a>└─────────────────────────────────────────────────────┘
+</code></pre></div>
+<p>Icon and text in <code>--color-text-muted</code>. "+ New Job" is a ghost button, centered.</p>
+<hr />
+<h4 id="state-2-running">State 2 — Running<a class="headerlink" href="#state-2-running" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>┌─────────────────────────────────────────────────────┐
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>│  #1042  Auth token expiry causes 500 on /api/me     │  ← workspace header
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>│  github.com/org/repo · @user · 2 hours ago          │
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>│  ● RUNNING        [↪ Redirect]  [⏸ Pause]  [✕ Kill] │
+<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>├─────────────────────────────────────────────────────┤
+<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>│  ●────────●────────◌────────◌────────◌              │  ← execution timeline
+<a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a>│ START   inv✓   cs_search  human   writer             │
+<a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a>│          12s    (18s...)                             │
+<a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a>├─────────────────────────────────────────────────────┤
+<a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a>│ ┌───────────────────────────────────────────────┐   │
+<a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a>│ │ 🔍 INVESTIGATOR AGENT            ● DONE (12s) │   │
+<a id="__codelineno-10-12" name="__codelineno-10-12" href="#__codelineno-10-12"></a>│ ├───────────────────────────────────────────────┤   │
+<a id="__codelineno-10-13" name="__codelineno-10-13" href="#__codelineno-10-13"></a>│ │ Reading issue body...                         │   │
+<a id="__codelineno-10-14" name="__codelineno-10-14" href="#__codelineno-10-14"></a>│ │ Identified error: HTTP 500 on auth endpoint   │   │
+<a id="__codelineno-10-15" name="__codelineno-10-15" href="#__codelineno-10-15"></a>│ │ Hypothesis: JWT validation or middleware      │   │
+<a id="__codelineno-10-16" name="__codelineno-10-16" href="#__codelineno-10-16"></a>│ │                                               │   │
+<a id="__codelineno-10-17" name="__codelineno-10-17" href="#__codelineno-10-17"></a>│ │ → Passed to: Codebase Searcher                │   │
+<a id="__codelineno-10-18" name="__codelineno-10-18" href="#__codelineno-10-18"></a>│ └───────────────────────────────────────────────┘   │
+<a id="__codelineno-10-19" name="__codelineno-10-19" href="#__codelineno-10-19"></a>│                                                     │
+<a id="__codelineno-10-20" name="__codelineno-10-20" href="#__codelineno-10-20"></a>│ ┌───────────────────────────────────────────────┐   │
+<a id="__codelineno-10-21" name="__codelineno-10-21" href="#__codelineno-10-21"></a>│ │ 🔎 CODEBASE SEARCH AGENT         ● RUNNING    │   │
+<a id="__codelineno-10-22" name="__codelineno-10-22" href="#__codelineno-10-22"></a>│ ├───────────────────────────────────────────────┤   │
+<a id="__codelineno-10-23" name="__codelineno-10-23" href="#__codelineno-10-23"></a>│ │ Searching for JWT middleware...               │   │
+<a id="__codelineno-10-24" name="__codelineno-10-24" href="#__codelineno-10-24"></a>│ │ 🔧 search_codebase — &quot;JWT expiry check&quot;...    │   │
+<a id="__codelineno-10-25" name="__codelineno-10-25" href="#__codelineno-10-25"></a>│ │ Found: auth/middleware.py:142▌                │   │
+<a id="__codelineno-10-26" name="__codelineno-10-26" href="#__codelineno-10-26"></a>│ └───────────────────────────────────────────────┘   │
+<a id="__codelineno-10-27" name="__codelineno-10-27" href="#__codelineno-10-27"></a>└─────────────────────────────────────────────────────┘
+</code></pre></div>
+<p>Control bar shows: <code>[↪ Redirect]</code> (ghost), <code>[⏸ Pause]</code> (secondary), <code>[✕ Kill]</code> (destructive).</p>
+<hr />
+<h4 id="state-3-hitl-waiting">State 3 — HITL / Waiting<a class="headerlink" href="#state-3-hitl-waiting" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>┌─────────────────────────────────────────────────────┐
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>│  #1042  Auth token expiry causes 500 on /api/me     │  ← workspace header
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>│  github.com/org/repo · @user · 2 hours ago          │
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>│  ● WAITING                    Awaiting your response… │
+<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>├─────────────────────────────────────────────────────┤
+<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>│  ●────────●────────◌────────◌────────◌              │  ← timeline: human_input = amber spinner
+<a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a>│ START   inv✓   cs_search⚠ human   writer             │
+<a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a>│                   amber↑                             │
+<a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a>├─────────────────────────────────────────────────────┤
+<a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a>│ ┌───────────────────────────────────────────────┐   │  ← amber border + glow
+<a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a>│ │ ⚠  SUPERVISOR NEEDS YOUR INPUT  ● WAITING     │   │
+<a id="__codelineno-11-12" name="__codelineno-11-12" href="#__codelineno-11-12"></a>│ ├───────────────────────────────────────────────┤   │
+<a id="__codelineno-11-13" name="__codelineno-11-13" href="#__codelineno-11-13"></a>│ │ The error appears in two code paths:          │   │
+<a id="__codelineno-11-14" name="__codelineno-11-14" href="#__codelineno-11-14"></a>│ │                                               │   │
+<a id="__codelineno-11-15" name="__codelineno-11-15" href="#__codelineno-11-15"></a>│ │ (A) auth/middleware.py — JWT validation       │   │
+<a id="__codelineno-11-16" name="__codelineno-11-16" href="#__codelineno-11-16"></a>│ │ (B) db/session.py — DB connection pooling     │   │
+<a id="__codelineno-11-17" name="__codelineno-11-17" href="#__codelineno-11-17"></a>│ │                                               │   │
+<a id="__codelineno-11-18" name="__codelineno-11-18" href="#__codelineno-11-18"></a>│ │ Which should agents prioritize?               │   │
+<a id="__codelineno-11-19" name="__codelineno-11-19" href="#__codelineno-11-19"></a>│ │                                               │   │
+<a id="__codelineno-11-20" name="__codelineno-11-20" href="#__codelineno-11-20"></a>│ │ ┌───────────────────────────────────────────┐ │   │
+<a id="__codelineno-11-21" name="__codelineno-11-21" href="#__codelineno-11-21"></a>│ │ │ Type your answer here...                  │ │   │
+<a id="__codelineno-11-22" name="__codelineno-11-22" href="#__codelineno-11-22"></a>│ │ └───────────────────────────────────────────┘ │   │
+<a id="__codelineno-11-23" name="__codelineno-11-23" href="#__codelineno-11-23"></a>│ │                              [Continue →]      │   │
+<a id="__codelineno-11-24" name="__codelineno-11-24" href="#__codelineno-11-24"></a>│ └───────────────────────────────────────────────┘   │
+<a id="__codelineno-11-25" name="__codelineno-11-25" href="#__codelineno-11-25"></a>│                                                     │
+<a id="__codelineno-11-26" name="__codelineno-11-26" href="#__codelineno-11-26"></a>│ ┌───────────────────────────────────────────────┐   │  ← frozen, no cursor
+<a id="__codelineno-11-27" name="__codelineno-11-27" href="#__codelineno-11-27"></a>│ │ 🔎 CODEBASE SEARCH AGENT         ● DONE (18s) │   │
+<a id="__codelineno-11-28" name="__codelineno-11-28" href="#__codelineno-11-28"></a>│ ├───────────────────────────────────────────────┤   │
+<a id="__codelineno-11-29" name="__codelineno-11-29" href="#__codelineno-11-29"></a>│ │ Found relevant files in auth/middleware.py    │   │
+<a id="__codelineno-11-30" name="__codelineno-11-30" href="#__codelineno-11-30"></a>│ └───────────────────────────────────────────────┘   │
+<a id="__codelineno-11-31" name="__codelineno-11-31" href="#__codelineno-11-31"></a>└─────────────────────────────────────────────────────┘
+</code></pre></div>
+<ul>
+<li>Control bar replaced by <code>"Awaiting your response…"</code> label (amber text).</li>
+<li>QuestionCard pinned above AgentCards.</li>
+<li>AgentCards below are frozen (no streaming cursor, no new tokens).</li>
+<li>Timeline <code>human_input</code> node shown as amber spinner.</li>
+</ul>
+<hr />
+<h4 id="state-4-pausing">State 4 — Pausing<a class="headerlink" href="#state-4-pausing" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>┌─────────────────────────────────────────────────────┐
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>│  #1042  Auth token expiry causes 500 on /api/me     │
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>│  github.com/org/repo · @user · 2 hours ago          │
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>│  ● PAUSING    [↪ Redirect]  [⟳ Pausing…]  [✕ Kill] │  ← Pause replaced by spinner
+<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>├─────────────────────────────────────────────────────┤
+<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>│  ●────────●────────◌────────◌────────◌              │
+<a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a>├─────────────────────────────────────────────────────┤
+<a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a>│ ┌───────────────────────────────────────────────┐   │
+<a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a>│ │ 🔎 CODEBASE SEARCH AGENT         ● RUNNING    │   │  ← still streaming
+<a id="__codelineno-12-10" name="__codelineno-12-10" href="#__codelineno-12-10"></a>│ ├───────────────────────────────────────────────┤   │
+<a id="__codelineno-12-11" name="__codelineno-12-11" href="#__codelineno-12-11"></a>│ │ Searching for JWT middleware...               │   │
+<a id="__codelineno-12-12" name="__codelineno-12-12" href="#__codelineno-12-12"></a>│ │ Found: auth/middleware.py▌                    │   │
+<a id="__codelineno-12-13" name="__codelineno-12-13" href="#__codelineno-12-13"></a>│ └───────────────────────────────────────────────┘   │
+<a id="__codelineno-12-14" name="__codelineno-12-14" href="#__codelineno-12-14"></a>└─────────────────────────────────────────────────────┘
+</code></pre></div>
+<ul>
+<li>Pause button replaced with <code>"⟳ Pausing…"</code> (disabled, spinner).</li>
+<li>Kill button remains active.</li>
+<li>Status badge shows <code>PAUSING</code> in static blue (no pulse).</li>
+<li>Agents continue streaming (pause has not taken effect yet).</li>
+</ul>
+<hr />
+<h4 id="state-5-done">State 5 — Done<a class="headerlink" href="#state-5-done" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>┌─────────────────────────────────────────────────────┐
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>│  #1042  Auth token expiry causes 500 on /api/me     │
+<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>│  github.com/org/repo · @user · 2 hours ago          │
+<a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a>│  ● DONE                    Job complete · 4m 32s    │  ← control bar replaced
+<a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a>├─────────────────────────────────────────────────────┤
+<a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a>│  ●────────●────────●────────●────────●              │  ← fully green timeline
+<a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a>│ START   inv✓   cs_search✓  human✓  writer✓           │
+<a id="__codelineno-13-8" name="__codelineno-13-8" href="#__codelineno-13-8"></a>├─────────────────────────────────────────────────────┤
+<a id="__codelineno-13-9" name="__codelineno-13-9" href="#__codelineno-13-9"></a>│ ┌───────────────────────────────────────────────┐   │
+<a id="__codelineno-13-10" name="__codelineno-13-10" href="#__codelineno-13-10"></a>│ │ 🔍 INVESTIGATOR AGENT            ● DONE (12s) │   │
+<a id="__codelineno-13-11" name="__codelineno-13-11" href="#__codelineno-13-11"></a>│ └───────────────────────────────────────────────┘   │
+<a id="__codelineno-13-12" name="__codelineno-13-12" href="#__codelineno-13-12"></a>│ ┌───────────────────────────────────────────────┐   │
+<a id="__codelineno-13-13" name="__codelineno-13-13" href="#__codelineno-13-13"></a>│ │ 🔎 CODEBASE SEARCH AGENT         ● DONE (18s) │   │
+<a id="__codelineno-13-14" name="__codelineno-13-14" href="#__codelineno-13-14"></a>│ └───────────────────────────────────────────────┘   │
+<a id="__codelineno-13-15" name="__codelineno-13-15" href="#__codelineno-13-15"></a>│ ┌───────────────────────────────────────────────┐   │
+<a id="__codelineno-13-16" name="__codelineno-13-16" href="#__codelineno-13-16"></a>│ │ ✍  WRITER AGENT                  ● DONE (31s) │   │
+<a id="__codelineno-13-17" name="__codelineno-13-17" href="#__codelineno-13-17"></a>│ └───────────────────────────────────────────────┘   │
+<a id="__codelineno-13-18" name="__codelineno-13-18" href="#__codelineno-13-18"></a>└─────────────────────────────────────────────────────┘
+</code></pre></div>
+<ul>
+<li>Control bar hidden; replaced by <code>"Job complete · {elapsed time}"</code> label.</li>
+<li>All AgentCards show ✓ DONE with elapsed time.</li>
+<li>Timeline fully green.</li>
+<li>Zone 3 fully populated.</li>
+</ul>
+<hr />
+<h3 id="3e-zone-3-output-panel">3e. Zone 3 — Output Panel<a class="headerlink" href="#3e-zone-3-output-panel" title="Permanent link">&para;</a></h3>
+<h4 id="state-1-accumulating-streaming">State 1 — Accumulating (streaming)<a class="headerlink" href="#state-1-accumulating-streaming" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>┌───────────────────────────────────┐
+<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>│  OUTPUT PANEL                     │
+<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>├───────────────────────────────────┤
+<a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a>│  TRIAGE REPORT                    │
+<a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a>│  ░░░░░░░░░░░░░░░░░░░░░            │  ← SkeletonBlock
+<a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a>│  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░     │
+<a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a>│  ░░░░░░░░░░░░░░░░                 │
+<a id="__codelineno-14-8" name="__codelineno-14-8" href="#__codelineno-14-8"></a>├───────────────────────────────────┤
+<a id="__codelineno-14-9" name="__codelineno-14-9" href="#__codelineno-14-9"></a>│  GITHUB COMMENT                   │
+<a id="__codelineno-14-10" name="__codelineno-14-10" href="#__codelineno-14-10"></a>│  ░░░░░░░░░░░░░░░░░░░░░            │  ← SkeletonBlock
+<a id="__codelineno-14-11" name="__codelineno-14-11" href="#__codelineno-14-11"></a>│  ░░░░░░░░░                        │
+<a id="__codelineno-14-12" name="__codelineno-14-12" href="#__codelineno-14-12"></a>├───────────────────────────────────┤
+<a id="__codelineno-14-13" name="__codelineno-14-13" href="#__codelineno-14-13"></a>│  TICKET DRAFT                     │
+<a id="__codelineno-14-14" name="__codelineno-14-14" href="#__codelineno-14-14"></a>│  ░░░░░░░░░░░░░░░░░░░░░            │  ← SkeletonBlock
+<a id="__codelineno-14-15" name="__codelineno-14-15" href="#__codelineno-14-15"></a>├───────────────────────────────────┤
+<a id="__codelineno-14-16" name="__codelineno-14-16" href="#__codelineno-14-16"></a>│  [Post Comment] [Create Issue]    │  ← all disabled
+<a id="__codelineno-14-17" name="__codelineno-14-17" href="#__codelineno-14-17"></a>│  [Copy Report]  [View LangSmith]  │
+<a id="__codelineno-14-18" name="__codelineno-14-18" href="#__codelineno-14-18"></a>└───────────────────────────────────┘
+</code></pre></div>
+<p>SkeletonBlock placeholders until first <code>output.token</code> arrives per section. Each section activates independently as its tokens stream in. Action buttons disabled until <code>job.done</code> SSE received.</p>
+<hr />
+<h4 id="state-2-done">State 2 — Done<a class="headerlink" href="#state-2-done" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>┌───────────────────────────────────┐
+<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>│  TRIAGE REPORT                    │
+<a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>│  ┌────────────────────────────┐   │
+<a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a>│  │ Severity:   🔴 HIGH        │   │
+<a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a>│  │ Category:   Auth / Tokens  │   │
+<a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a>│  │ Confidence: 87%            │   │
+<a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a>│  │                            │   │
+<a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a>│  │ Root Cause:                │   │
+<a id="__codelineno-15-9" name="__codelineno-15-9" href="#__codelineno-15-9"></a>│  │   JWT expiry check in      │   │
+<a id="__codelineno-15-10" name="__codelineno-15-10" href="#__codelineno-15-10"></a>│  │   auth/middleware.py:L142  │   │
+<a id="__codelineno-15-11" name="__codelineno-15-11" href="#__codelineno-15-11"></a>│  │   does not account for     │   │
+<a id="__codelineno-15-12" name="__codelineno-15-12" href="#__codelineno-15-12"></a>│  │   timezone offset.         │   │
+<a id="__codelineno-15-13" name="__codelineno-15-13" href="#__codelineno-15-13"></a>│  │                            │   │
+<a id="__codelineno-15-14" name="__codelineno-15-14" href="#__codelineno-15-14"></a>│  │ Relevant Files:            │   │
+<a id="__codelineno-15-15" name="__codelineno-15-15" href="#__codelineno-15-15"></a>│  │   · auth/middleware.py     │   │
+<a id="__codelineno-15-16" name="__codelineno-15-16" href="#__codelineno-15-16"></a>│  │   · tests/test_auth.py     │   │
+<a id="__codelineno-15-17" name="__codelineno-15-17" href="#__codelineno-15-17"></a>│  │   · config/jwt_settings.py │   │
+<a id="__codelineno-15-18" name="__codelineno-15-18" href="#__codelineno-15-18"></a>│  │                            │   │
+<a id="__codelineno-15-19" name="__codelineno-15-19" href="#__codelineno-15-19"></a>│  │ Similar Past Issues:       │   │
+<a id="__codelineno-15-20" name="__codelineno-15-20" href="#__codelineno-15-20"></a>│  │   · #891 — Fixed 2024-11   │   │
+<a id="__codelineno-15-21" name="__codelineno-15-21" href="#__codelineno-15-21"></a>│  └────────────────────────────┘   │
+<a id="__codelineno-15-22" name="__codelineno-15-22" href="#__codelineno-15-22"></a>├───────────────────────────────────┤
+<a id="__codelineno-15-23" name="__codelineno-15-23" href="#__codelineno-15-23"></a>│  GITHUB COMMENT                   │
+<a id="__codelineno-15-24" name="__codelineno-15-24" href="#__codelineno-15-24"></a>│  ┌────────────────────────────┐   │
+<a id="__codelineno-15-25" name="__codelineno-15-25" href="#__codelineno-15-25"></a>│  │ ## AgentOps Triage #1042   │   │
+<a id="__codelineno-15-26" name="__codelineno-15-26" href="#__codelineno-15-26"></a>│  │ **Severity:** High         │   │
+<a id="__codelineno-15-27" name="__codelineno-15-27" href="#__codelineno-15-27"></a>│  │ **Root Cause:** JWT bug... │   │  ← editable textarea
+<a id="__codelineno-15-28" name="__codelineno-15-28" href="#__codelineno-15-28"></a>│  │                            │   │
+<a id="__codelineno-15-29" name="__codelineno-15-29" href="#__codelineno-15-29"></a>│  └────────────────────────────┘   │
+<a id="__codelineno-15-30" name="__codelineno-15-30" href="#__codelineno-15-30"></a>│  [Preview]  1,247 chars           │
+<a id="__codelineno-15-31" name="__codelineno-15-31" href="#__codelineno-15-31"></a>├───────────────────────────────────┤
+<a id="__codelineno-15-32" name="__codelineno-15-32" href="#__codelineno-15-32"></a>│  TICKET DRAFT                     │
+<a id="__codelineno-15-33" name="__codelineno-15-33" href="#__codelineno-15-33"></a>│  Title: [Bug] JWT expiry fails... │
+<a id="__codelineno-15-34" name="__codelineno-15-34" href="#__codelineno-15-34"></a>│  Labels: [bug] [auth] [high-pri]  │
+<a id="__codelineno-15-35" name="__codelineno-15-35" href="#__codelineno-15-35"></a>│  Assignee: @backend-team          │
+<a id="__codelineno-15-36" name="__codelineno-15-36" href="#__codelineno-15-36"></a>│  Effort: M (2-4 hours)            │
+<a id="__codelineno-15-37" name="__codelineno-15-37" href="#__codelineno-15-37"></a>├───────────────────────────────────┤
+<a id="__codelineno-15-38" name="__codelineno-15-38" href="#__codelineno-15-38"></a>│  [Post Comment ↗]  [Create Issue] │
+<a id="__codelineno-15-39" name="__codelineno-15-39" href="#__codelineno-15-39"></a>│  [Copy Report]  [View LangSmith↗] │
+<a id="__codelineno-15-40" name="__codelineno-15-40" href="#__codelineno-15-40"></a>└───────────────────────────────────┘
+</code></pre></div>
+<p><strong>Action buttons:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Button</th>
+<th>Variant</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Post Comment</td>
+<td>primary</td>
+</tr>
+<tr>
+<td>Create Issue</td>
+<td>secondary</td>
+</tr>
+<tr>
+<td>Copy Report</td>
+<td>ghost</td>
+</tr>
+<tr>
+<td>View in LangSmith</td>
+<td>ghost + external link icon</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h4 id="state-3-write-back-pending">State 3 — Write-back pending<a class="headerlink" href="#state-3-write-back-pending" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>├───────────────────────────────────┤
+<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>│  [⟳ Posting…]  [Create Issue]    │  ← all buttons disabled
+<a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>│  [Copy Report]  [View LangSmith]  │
+<a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a>└───────────────────────────────────┘
+</code></pre></div>
+<p>"Post Comment" button shows spinner + <code>"Posting…"</code>. All other buttons disabled.</p>
+<p><strong>After success:</strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>├───────────────────────────────────┤
+<a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a>│  [✓ Posted · View on GitHub →]    │  ← link replaces button
+<a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a>│  [Create Issue]                   │
+<a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a>│  [Copy Report]  [View LangSmith]  │
+<a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a>└───────────────────────────────────┘
+</code></pre></div>
+<hr />
+<h2 id="4-page-settings-settings">4. Page: Settings (<code>/settings</code>)<a class="headerlink" href="#4-page-settings-settings" title="Permanent link">&para;</a></h2>
+<p>Single-column centered layout, <code>max-width: 600px</code>.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>┌─────────────────────────────────────────────────────────────────────┐
+<a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a>│  [topbar — same as dashboard]                                       │
+<a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a>├─────────────────────────────────────────────────────────────────────┤
+<a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a>│                                                                     │
+<a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a>│       Settings                                                      │
+<a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a>│                                                                     │
+<a id="__codelineno-18-7" name="__codelineno-18-7" href="#__codelineno-18-7"></a>│  ┌──────────────────────────────────────────────┐                  │
+<a id="__codelineno-18-8" name="__codelineno-18-8" href="#__codelineno-18-8"></a>│  │  GitHub Account                              │                  │
+<a id="__codelineno-18-9" name="__codelineno-18-9" href="#__codelineno-18-9"></a>│  │                                              │                  │
+<a id="__codelineno-18-10" name="__codelineno-18-10" href="#__codelineno-18-10"></a>│  │  [avatar]  @octocat                          │                  │
+<a id="__codelineno-18-11" name="__codelineno-18-11" href="#__codelineno-18-11"></a>│  │            Connected since Jan 12 2026       │                  │
+<a id="__codelineno-18-12" name="__codelineno-18-12" href="#__codelineno-18-12"></a>│  │                                              │                  │
+<a id="__codelineno-18-13" name="__codelineno-18-13" href="#__codelineno-18-13"></a>│  │                   [Disconnect GitHub]        │                  │
+<a id="__codelineno-18-14" name="__codelineno-18-14" href="#__codelineno-18-14"></a>│  └──────────────────────────────────────────────┘                  │
+<a id="__codelineno-18-15" name="__codelineno-18-15" href="#__codelineno-18-15"></a>│                                                                     │
+<a id="__codelineno-18-16" name="__codelineno-18-16" href="#__codelineno-18-16"></a>│  ┌──────────────────────────────────────────────┐                  │
+<a id="__codelineno-18-17" name="__codelineno-18-17" href="#__codelineno-18-17"></a>│  │  Session                                     │                  │
+<a id="__codelineno-18-18" name="__codelineno-18-18" href="#__codelineno-18-18"></a>│  │                                              │                  │
+<a id="__codelineno-18-19" name="__codelineno-18-19" href="#__codelineno-18-19"></a>│  │  @octocat                                    │                  │
+<a id="__codelineno-18-20" name="__codelineno-18-20" href="#__codelineno-18-20"></a>│  │                                              │                  │
+<a id="__codelineno-18-21" name="__codelineno-18-21" href="#__codelineno-18-21"></a>│  │                             [Log out]        │                  │
+<a id="__codelineno-18-22" name="__codelineno-18-22" href="#__codelineno-18-22"></a>│  └──────────────────────────────────────────────┘                  │
+<a id="__codelineno-18-23" name="__codelineno-18-23" href="#__codelineno-18-23"></a>│                                                                     │
+<a id="__codelineno-18-24" name="__codelineno-18-24" href="#__codelineno-18-24"></a>└─────────────────────────────────────────────────────────────────────┘
+</code></pre></div>
+<p><strong>After GitHub disconnect:</strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a>│  ┌──────────────────────────────────────────────┐  │
+<a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a>│  │  GitHub Account                              │  │
+<a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a>│  │                                              │  │
+<a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a>│  │  [○ gray circle]  Not connected              │  │
+<a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a>│  │                                              │  │
+<a id="__codelineno-19-6" name="__codelineno-19-6" href="#__codelineno-19-6"></a>│  │  ⚠ Write-back disabled until reconnected.   │  │
+<a id="__codelineno-19-7" name="__codelineno-19-7" href="#__codelineno-19-7"></a>│  │                                              │  │
+<a id="__codelineno-19-8" name="__codelineno-19-8" href="#__codelineno-19-8"></a>│  │                   [Connect GitHub]           │  │
+<a id="__codelineno-19-9" name="__codelineno-19-9" href="#__codelineno-19-9"></a>│  └──────────────────────────────────────────────┘  │
+</code></pre></div>
+<ul>
+<li>Avatar replaced with gray empty circle.</li>
+<li>"Disconnect GitHub" button replaced with "Connect GitHub" link (triggers OAuth flow).</li>
+<li>Inline warning shown in amber text.</li>
+</ul>
+<hr />
+<h2 id="5-page-404">5. Page: 404<a class="headerlink" href="#5-page-404" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a>╔══════════════════════════════════════════════════════════════════════╗
+<a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a>║                                                                      ║
+<a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a>║                                                                      ║
+<a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a>║                            404                                       ║  ← H1, mono, muted
+<a id="__codelineno-20-5" name="__codelineno-20-5" href="#__codelineno-20-5"></a>║                                                                      ║
+<a id="__codelineno-20-6" name="__codelineno-20-6" href="#__codelineno-20-6"></a>║                   This page doesn&#39;t exist.                          ║
+<a id="__codelineno-20-7" name="__codelineno-20-7" href="#__codelineno-20-7"></a>║                                                                      ║
+<a id="__codelineno-20-8" name="__codelineno-20-8" href="#__codelineno-20-8"></a>║                   ← Back to dashboard                               ║  ← link
+<a id="__codelineno-20-9" name="__codelineno-20-9" href="#__codelineno-20-9"></a>║                                                                      ║
+<a id="__codelineno-20-10" name="__codelineno-20-10" href="#__codelineno-20-10"></a>╚══════════════════════════════════════════════════════════════════════╝
+</code></pre></div>
+<p><code>"404"</code> rendered in H1 mono-data style at <code>--color-text-muted</code>. "This page doesn't exist." in body style. Link navigates to <code>/dashboard</code>.</p>
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.top", "toc.integrate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

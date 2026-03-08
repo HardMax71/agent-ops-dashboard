@@ -1,0 +1,3544 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://hardmax71.github.io/agent-ops-dashboard/prd/PRD-008-authentication/">
+      
+      
+        <link rel="prev" href="../PRD-012-backend-di/">
+      
+      
+        <link rel="next" href="../PRD-008-1-auth-impl-spec/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.4">
+    
+    
+      
+        <title>Authentication & Authorization - AgentOps Dashboard</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#prd-008-authentication-authorization" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="AgentOps Dashboard" class="md-header__button md-logo" aria-label="AgentOps Dashboard" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            AgentOps Dashboard
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Authentication & Authorization
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="AgentOps Dashboard" class="md-nav__button md-logo" aria-label="AgentOps Dashboard" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    AgentOps Dashboard
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PRDs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    PRDs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-001-master-overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Master Overview
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-002-frontend-ux/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frontend & UX
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_3" id="__nav_2_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frontend Detail
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Frontend Detail
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-002-1-design-system/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Design System & Components
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-002-2-pages-and-wireframes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pages & Wireframes
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-002-3-interactions-and-a11y/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interactions & Accessibility
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-003-langgraph-orchestration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LangGraph Orchestration
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_5" id="__nav_2_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Orchestration Detail
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Orchestration Detail
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-003-1-event-pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Event Pipeline & Worker
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-003-2-supervisor-spec/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Supervisor Prompt & Routing
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-004-agent-layer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agent Layer
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_7" id="__nav_2_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agent Layer Detail
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Agent Layer Detail
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-004-1-agent-chains/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Full LCEL Chain Specs
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-004-2-codebase-index/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Codebase Vector Index
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-005-langsmith-observability/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LangSmith Observability
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_9" id="__nav_2_9_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LangSmith Detail
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    LangSmith Detail
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-005-1-langsmith-api-spec/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API & Integration Spec
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-006-data-validation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Validation
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-007-developer-tooling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Developer Tooling
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-012-backend-di/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backend & DI
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authentication
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authentication
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Overview">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#why-this-prd-exists" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why This PRD Exists
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scope
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#threat-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Threat Model
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Threat Model">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#assets-worth-protecting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Assets Worth Protecting
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#in-scope-threats" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In-Scope Threats
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#out-of-scope-threats-not-in-v1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Out-of-Scope Threats (not in v1)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#identity-provider-github-oauth-20" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Identity Provider: GitHub OAuth 2.0
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Identity Provider: GitHub OAuth 2.0">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#why-github-oauth" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why GitHub OAuth
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#oauth-application-scopes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OAuth Application Scopes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#oauth-web-application-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OAuth Web Application Flow
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#csrf-state-parameter" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CSRF State Parameter
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#session-jwt-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Session &amp; JWT Model
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Session &amp; JWT Model">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#token-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Token Architecture
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#jwt-claims" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        JWT Claims
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#signing-algorithm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Signing Algorithm
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#rest-api-authentication" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        REST API Authentication
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="REST API Authentication">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#protected-endpoints" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Protected Endpoints
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get_current_user-dependency" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        get_current_user Dependency
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#auth-endpoints-not-under-jobs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Auth Endpoints (not under /jobs/*)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sse-endpoint-authentication" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SSE Endpoint Authentication
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="SSE Endpoint Authentication">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-problem" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The Problem
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#selected-approach-fetch-based-eventsource" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Selected Approach: Fetch-Based EventSource
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fallback-short-lived-stream-ticket" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fallback: Short-Lived Stream Ticket
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#token-expiry-during-an-active-stream" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Token Expiry During an Active Stream
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#job-ownership-per-resource-authorization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Job Ownership &amp; Per-Resource Authorization
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Job Ownership &amp; Per-Resource Authorization">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-idor-risk" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The IDOR Risk
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#job-registry" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Job Registry
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ownership-check-dependency" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Ownership Check Dependency
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bugtriagestate-schema-change" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        BugTriageState Schema Change
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#endpoint-authorization-matrix" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Endpoint Authorization Matrix
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#github-oauth-token-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GitHub OAuth Token Management
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="GitHub OAuth Token Management">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-needs-storing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What Needs Storing
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#storage-encrypted-in-redis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Storage: Encrypted in Redis
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#token-availability-in-worker-nodes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Token Availability in Worker Nodes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#token-expiry" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Token Expiry
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#token-revocation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Token Revocation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#inter-service-authentication" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Inter-Service Authentication
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Inter-Service Authentication">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-gap" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The Gap
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#primary-control-network-isolation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Primary Control: Network Isolation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#defense-in-depth-shared-secret-header" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Defense-in-Depth: Shared Secret Header
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-is-not-used-here" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What Is Not Used Here
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#token-lifecycle" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Token Lifecycle
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Token Lifecycle">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#access-token" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Access Token
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#refresh-token" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Refresh Token
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#silent-token-refresh-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Silent Token Refresh Flow
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#logout" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Logout
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cors-security-headers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CORS &amp; Security Headers
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="CORS &amp; Security Headers">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cors-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CORS Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#security-headers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Security Headers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#https" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        HTTPS
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dependencies-libraries" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dependencies &amp; Libraries
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Dependencies &amp; Libraries">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#backend-add-to-projectdependencies-in-pyprojecttoml" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Backend (add to [project.dependencies] in pyproject.toml)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#frontend-add-to-packagejson" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Frontend (add to package.json)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#implementation-patterns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Implementation Patterns
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Implementation Patterns">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#auth-router" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Auth Router
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#protecting-a-job-endpoint-full-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Protecting a Job Endpoint (Full Example)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#out-of-scope-v1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Out of Scope (v1)
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_14" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_14" id="__nav_2_14_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Auth Detail
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_14_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_14">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Auth Detail
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-008-1-auth-impl-spec/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Implementation Spec
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-009-documentation-standards/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Documentation Standards
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-010-evaluation-framework/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Evaluation Framework
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-011-metrics-collection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Metrics Collection
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-013-testing-strategy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing Strategy & CI
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Plans
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Plans
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-001-1-goals-and-dod/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Goals & Definition of Done
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../plans/roadmap-v1/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roadmap v1 (precise)
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../plans/roadmap-v2/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roadmap v2 (general)
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--PLANNED"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="prd-008-authentication-authorization">PRD-008 — Authentication &amp; Authorization<a class="headerlink" href="#prd-008-authentication-authorization" title="Permanent link">&para;</a></h1>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Document ID</td>
+<td>PRD-008</td>
+</tr>
+<tr>
+<td>Version</td>
+<td>1.0</td>
+</tr>
+<tr>
+<td>Status</td>
+<td>DRAFT</td>
+</tr>
+<tr>
+<td>Date</td>
+<td>March 2026</td>
+</tr>
+<tr>
+<td>Author</td>
+<td>Engineering Team</td>
+</tr>
+<tr>
+<td>Parent</td>
+<td><a href="../PRD-001-master-overview/">PRD-001</a></td>
+</tr>
+<tr>
+<td>Related Docs</td>
+<td><a href="../PRD-003-langgraph-orchestration/">PRD-003</a> (job endpoints), <a href="../PRD-006-data-validation/">PRD-006</a> (input validation), <a href="../PRD-007-developer-tooling/">PRD-007</a> (tooling standards)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<blockquote>
+<p><strong>Detailed specs:</strong> <a href="../PRD-008-1-auth-impl-spec/">Auth Implementation Spec</a> — fills 10 implementation gaps including the missing <code>POST /auth/refresh</code> handler, Pydantic model definitions, complete env var reference, GitHub token lifecycle, Content-Security-Policy, conditional cookie Secure flag, OAuth scope guidance, library maintenance status, and JWT clock-skew leeway.</p>
+</blockquote>
+<h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
+<h3 id="why-this-prd-exists">Why This PRD Exists<a class="headerlink" href="#why-this-prd-exists" title="Permanent link">&para;</a></h3>
+<p>PRD-003 specifies five authenticated endpoints — <code>POST /jobs</code>, <code>GET /jobs/{id}/stream</code>,
+<code>POST /jobs/{id}/answer</code>, <code>POST /jobs/{id}/pause</code>, <code>DELETE /jobs/{id}</code> — with no authentication
+mechanism defined. In the current spec:</p>
+<ul>
+<li>Any actor who knows a job UUID can read another user's output stream</li>
+<li>Any actor can answer another user's <code>interrupt()</code>, injecting arbitrary text into a running agent</li>
+<li>Any actor can kill any job</li>
+<li>Any actor can create jobs, consuming operator-paid LLM API credits and GitHub API quota</li>
+</ul>
+<p>This is not an oversight to defer — it is a design gap that affects the data model
+(<code>BugTriageState</code> must carry <code>owner_id</code>), the API layer (every endpoint needs a dependency),
+and the infrastructure (job registry, token store).</p>
+<h3 id="scope">Scope<a class="headerlink" href="#scope" title="Permanent link">&para;</a></h3>
+<p>This PRD specifies:</p>
+<ul>
+<li>GitHub OAuth 2.0 as the sole identity provider (natural fit: product is GitHub-native)</li>
+<li>JWT-based session tokens for all API calls</li>
+<li>The authentication strategy for SSE streams (non-trivial; see <a href="#sse-endpoint-authentication">SSE Endpoint Authentication</a>)</li>
+<li>Per-job authorization (ownership model)</li>
+<li>Secure storage of GitHub OAuth tokens for repo operations</li>
+<li>Inter-service authentication for ARQ worker → LangServe agent calls (see <a href="#inter-service-authentication">Inter-Service Authentication</a>)</li>
+<li>Token lifecycle and the v1/v2 simplification boundary</li>
+</ul>
+<hr />
+<h2 id="threat-model">Threat Model<a class="headerlink" href="#threat-model" title="Permanent link">&para;</a></h2>
+<h3 id="assets-worth-protecting">Assets Worth Protecting<a class="headerlink" href="#assets-worth-protecting" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Asset</th>
+<th>Why It Matters</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Job output stream</td>
+<td>May contain proprietary codebase content, security findings</td>
+</tr>
+<tr>
+<td>Human-in-the-loop interrupt</td>
+<td>Injecting a malicious answer steers the agent toward attacker-controlled output</td>
+</tr>
+<tr>
+<td>Job lifecycle control (kill/pause)</td>
+<td>Denial of service against a legitimate user</td>
+</tr>
+<tr>
+<td>GitHub OAuth token</td>
+<td>Repo read/write access; stored server-side</td>
+</tr>
+<tr>
+<td>LLM API budget</td>
+<td>Unlimited unauthenticated job creation burns operator credits</td>
+</tr>
+<tr>
+<td>LangServe agent endpoints (<code>/agents/*</code>)</td>
+<td>Unauthenticated invocation burns LLM credits and bypasses all job ownership controls</td>
+</tr>
+</tbody>
+</table>
+<h3 id="in-scope-threats">In-Scope Threats<a class="headerlink" href="#in-scope-threats" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Threat</th>
+<th>Vector</th>
+<th>Mitigation in This PRD</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Unauthenticated job creation</td>
+<td>No auth on <code>POST /jobs</code></td>
+<td><code>Depends(get_current_user)</code> on all <code>/jobs/*</code></td>
+</tr>
+<tr>
+<td>Cross-job access (IDOR)</td>
+<td>Knowing or guessing a job UUID</td>
+<td>Job ownership check on every per-job endpoint</td>
+</tr>
+<tr>
+<td>UUID enumeration</td>
+<td>Job UUIDs are v4 random (122 bits); guessing is computationally infeasible</td>
+<td>Defense-in-depth only — ownership check is the primary control</td>
+</tr>
+<tr>
+<td>Token theft via XSS</td>
+<td>JWT in <code>localStorage</code></td>
+<td>JWT in <code>sessionStorage</code> (v1) / memory + HttpOnly refresh cookie (v2)</td>
+</tr>
+<tr>
+<td>CSRF on state-mutating endpoints</td>
+<td>Cross-origin form/fetch triggering <code>POST /jobs/{id}/answer</code></td>
+<td><code>SameSite=Strict</code> on refresh cookie; Bearer token on all REST calls (CSRF requires stolen token, not just cookies)</td>
+</tr>
+<tr>
+<td>GitHub OAuth token exfiltration</td>
+<td>Token in JWT payload (base64-readable)</td>
+<td>Token stored encrypted in Redis; only referenced by user ID</td>
+</tr>
+<tr>
+<td>SSE stream hijack</td>
+<td>Attacker opens EventSource to stream URL without auth</td>
+<td>Auth required on SSE endpoint; see <a href="#sse-endpoint-authentication">SSE Endpoint Authentication</a></td>
+</tr>
+<tr>
+<td>Unauthenticated agent invocation</td>
+<td>Direct <code>POST</code> to <code>/agents/*/invoke</code> ports (8001–8005) without going through the job pipeline</td>
+<td>Network isolation (primary) + shared secret header (defense-in-depth); see <a href="#inter-service-authentication">Inter-Service Authentication</a></td>
+</tr>
+</tbody>
+</table>
+<h3 id="out-of-scope-threats-not-in-v1">Out-of-Scope Threats (not in v1)<a class="headerlink" href="#out-of-scope-threats-not-in-v1" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Compromised server / database — infrastructure-layer concern</li>
+<li>Brute-force of GitHub OAuth state parameter — mitigated by GitHub's own rate limiting</li>
+<li>Stolen refresh tokens — addressed in v2 (refresh token rotation)</li>
+<li>LLM prompt injection via authenticated user — separate concern (content moderation)</li>
+</ul>
+<hr />
+<h2 id="identity-provider-github-oauth-20">Identity Provider: GitHub OAuth 2.0<a class="headerlink" href="#identity-provider-github-oauth-20" title="Permanent link">&para;</a></h2>
+<h3 id="why-github-oauth">Why GitHub OAuth<a class="headerlink" href="#why-github-oauth" title="Permanent link">&para;</a></h3>
+<ul>
+<li>The product is GitHub-native: users connect GitHub repos, submit GitHub issues, and write back GitHub comments</li>
+<li>No need for a separate user database — GitHub identity (<code>github_id</code>, <code>login</code>) is the authoritative user record</li>
+<li>Users already have GitHub accounts by definition (<a href="../PRD-001-master-overview/#assumptions-constraints-dependencies">PRD-001 §Assumptions, Constraints, Dependencies</a>)</li>
+<li>GitHub's OAuth flow is standard, well-documented, and handles MFA transparently</li>
+</ul>
+<h3 id="oauth-application-scopes">OAuth Application Scopes<a class="headerlink" href="#oauth-application-scopes" title="Permanent link">&para;</a></h3>
+<p>Request the minimum scopes at authorization time:</p>
+<table>
+<thead>
+<tr>
+<th>Scope</th>
+<th>Why Required</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>read:user</code></td>
+<td>Get user identity: <code>id</code>, <code>login</code>, <code>name</code>, <code>avatar_url</code></td>
+</tr>
+<tr>
+<td><code>repo</code></td>
+<td>Read issues and write comments on private and public repos</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>If the target repository is always public and write-back is not required, <code>repo</code> can be dropped
+to reduce the permission surface. v1 always requests <code>repo</code> for full functionality.</p>
+</blockquote>
+<h3 id="oauth-web-application-flow">OAuth Web Application Flow<a class="headerlink" href="#oauth-web-application-flow" title="Permanent link">&para;</a></h3>
+<pre class="mermaid"><code>sequenceDiagram
+    actor Browser
+    participant Backend
+    participant GitHub
+
+    Browser-&gt;&gt;Backend: GET /auth/login
+    Backend--&gt;&gt;Browser: 302 → github.com/login/oauth/authorize
+    Note over Backend,GitHub: scope=read:user+repo, state=&lt;csrf_nonce&gt;
+
+    Browser-&gt;&gt;GitHub: GET /login/oauth/authorize
+    GitHub--&gt;&gt;Browser: 302 → /auth/callback?code=...&amp;state=...
+
+    Browser-&gt;&gt;Backend: GET /auth/callback?code=...&amp;state=...
+    Backend-&gt;&gt;GitHub: POST /login/oauth/access_token (code + client_secret)
+    GitHub--&gt;&gt;Backend: github_access_token
+    Backend-&gt;&gt;GitHub: GET /user (Bearer github_access_token)
+    GitHub--&gt;&gt;Backend: {id, login, name, avatar_url}
+
+    Note over Backend: encrypt &amp; store github_token in Redis
+    Note over Backend: issue one-time auth_code (30s TTL) → Redis
+
+    Backend--&gt;&gt;Browser: 302 → frontend /auth/callback?code=&lt;auth_code&gt;
+    Browser-&gt;&gt;Backend: POST /auth/token {code: auth_code}
+    Note over Backend: validate &amp; atomically delete auth_code (single-use)
+    Backend--&gt;&gt;Browser: {access_token, token_type: bearer}
+    Note over Backend,Browser: Set-Cookie: refresh_token (HttpOnly; Secure; SameSite=Strict)</code></pre>
+<p><strong>Why the one-time auth code step?</strong></p>
+<p>The backend OAuth callback issues a short-lived (30-second, single-use) opaque <code>auth_code</code> stored in
+Redis, then redirects the browser to the frontend with <code>?code=&lt;auth_code&gt;</code>. The frontend immediately
+POSTs this code to <code>POST /auth/token</code> and receives the JWT. This ensures the JWT itself never appears
+in a URL (not in browser history, not in server access logs, not as a URL fragment). The <code>auth_code</code>
+is single-use and 30-second TTL, limiting its attack window even if a redirect is intercepted.</p>
+<h3 id="csrf-state-parameter">CSRF State Parameter<a class="headerlink" href="#csrf-state-parameter" title="Permanent link">&para;</a></h3>
+<p>The <code>state</code> parameter sent to GitHub's authorization endpoint is a securely generated 32-byte random
+nonce, stored in the user's session (Redis, 10-minute TTL). On callback, the backend validates that
+the returned <code>state</code> matches the stored nonce before processing the code. This prevents CSRF attacks
+on the OAuth flow itself.</p>
+<hr />
+<h2 id="session-jwt-model">Session &amp; JWT Model<a class="headerlink" href="#session-jwt-model" title="Permanent link">&para;</a></h2>
+<h3 id="token-architecture">Token Architecture<a class="headerlink" href="#token-architecture" title="Permanent link">&para;</a></h3>
+<p>Two tokens exist per authenticated session:</p>
+<table>
+<thead>
+<tr>
+<th>Token</th>
+<th>Type</th>
+<th>Expiry</th>
+<th>Storage</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Access token</strong></td>
+<td>Signed JWT</td>
+<td>15 minutes</td>
+<td>React in-memory (<code>useRef</code> / context)</td>
+<td>Authenticates all API calls</td>
+</tr>
+<tr>
+<td><strong>Refresh token</strong></td>
+<td>Opaque UUID</td>
+<td>7 days</td>
+<td><code>HttpOnly; Secure; SameSite=Strict</code> cookie</td>
+<td>Silently renews access tokens</td>
+</tr>
+</tbody>
+</table>
+<p><strong>v1 simplification:</strong> If the refresh flow adds too much complexity for the initial build, v1 may use
+an 8-hour JWT stored in <code>sessionStorage</code> (survives page refresh within the tab, cleared on tab close).
+This is explicitly acknowledged as an XSS risk tradeoff acceptable for a developer-facing internal
+tool. The full two-token architecture is the target for v1.1.</p>
+<h3 id="jwt-claims">JWT Claims<a class="headerlink" href="#jwt-claims" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="p">{</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="nt">&quot;sub&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;1234567&quot;</span><span class="p">,</span><span class="w">          </span><span class="c1">// GitHub user ID (stable integer, string-encoded)</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span><span class="nt">&quot;login&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;alex-dev&quot;</span><span class="p">,</span><span class="w">       </span><span class="c1">// GitHub username (for display; not used for authz)</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">  </span><span class="nt">&quot;iat&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1741305600</span><span class="p">,</span><span class="w">         </span><span class="c1">// issued-at (UTC epoch)</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">  </span><span class="nt">&quot;exp&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1741306500</span><span class="p">,</span><span class="w">         </span><span class="c1">// expiry (iat + 900 seconds = 15 minutes)</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">  </span><span class="nt">&quot;jti&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;uuid-v4&quot;</span><span class="w">           </span><span class="c1">// JWT ID — used for access token revocation if needed</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="p">}</span>
+</code></pre></div>
+<p><strong>What is NOT in the JWT payload:</strong>
+- GitHub OAuth token — stored encrypted in Redis (JWT payload is base64-encoded, not encrypted)
+- Email — not needed; <code>sub</code> (GitHub user ID) is the authoritative identity
+- Permissions/roles — v1 has no RBAC; all authenticated users have equal access to their own jobs</p>
+<h3 id="signing-algorithm">Signing Algorithm<a class="headerlink" href="#signing-algorithm" title="Permanent link">&para;</a></h3>
+<p><strong>v1: HS256</strong> (HMAC-SHA256 with a shared secret). Simpler key management — one <code>JWT_SECRET</code> env var.</p>
+<p><strong>v2: RS256</strong> (RSA-SHA256, asymmetric). Private key signs on backend; public key exposed at
+<code>GET /auth/.well-known/jwks.json</code> for potential third-party verification. Migrate when the system
+scales to multiple backend services that need to verify tokens independently.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># Environment variables (managed via pydantic-settings — PRD-006)</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="n">JWT_SECRET</span><span class="o">=</span><span class="err">&lt;</span><span class="mi">64</span><span class="n">-byte</span><span class="w"> </span><span class="n">random</span><span class="w"> </span><span class="n">hex</span><span class="err">&gt;</span><span class="w">        </span><span class="c1"># v1</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="n">JWT_ALGORITHM</span><span class="o">=</span><span class="err">HS</span><span class="mi">256</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="n">ACCESS_TOKEN_EXPIRE_SECONDS</span><span class="o">=</span><span class="mi">900</span><span class="w">        </span><span class="c1"># 15 minutes</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="n">REFRESH_TOKEN_EXPIRE_SECONDS</span><span class="o">=</span><span class="mi">604800</span><span class="w">    </span><span class="c1"># 7 days</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="n">GITHUB_CLIENT_ID</span><span class="o">=</span><span class="err">&lt;from GitHub App settings&gt;</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="n">GITHUB_CLIENT_SECRET</span><span class="o">=</span><span class="err">&lt;from GitHub App settings&gt;</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="n">GITHUB_TOKEN_ENCRYPTION_KEY</span><span class="o">=</span><span class="err">&lt;Fernet.generate</span><span class="mi">_</span><span class="n">key</span><span class="err">()</span><span class="w"> </span><span class="err">—</span><span class="w"> </span><span class="n">URL-safe</span><span class="w"> </span><span class="n">base64</span><span class="err">,</span><span class="w"> </span><span class="n">32</span><span class="w"> </span><span class="n">bytes</span><span class="err">&gt;</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="n">INTERNAL_SERVICE_SECRET</span><span class="o">=</span><span class="err">&lt;</span><span class="mi">64</span><span class="n">-byte</span><span class="w"> </span><span class="n">random</span><span class="w"> </span><span class="n">hex</span><span class="err">&gt;</span><span class="w">   </span><span class="c1"># shared by ARQ worker + all agent services; see Inter-Service Authentication section</span>
+</code></pre></div>
+<hr />
+<h2 id="rest-api-authentication">REST API Authentication<a class="headerlink" href="#rest-api-authentication" title="Permanent link">&para;</a></h2>
+<h3 id="protected-endpoints">Protected Endpoints<a class="headerlink" href="#protected-endpoints" title="Permanent link">&para;</a></h3>
+<p>Every <code>/jobs/*</code> endpoint requires authentication. The <code>Depends(get_current_user)</code> FastAPI dependency
+is injected at the router level, not per-endpoint, so new endpoints cannot accidentally be added
+without auth.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># routes/jobs.py</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">fastapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">APIRouter</span><span class="p">,</span> <span class="n">Depends</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">auth.dependencies</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_current_user</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">auth.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">AuthenticatedUser</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="n">router</span> <span class="o">=</span> <span class="n">APIRouter</span><span class="p">(</span><span class="n">prefix</span><span class="o">=</span><span class="s2">&quot;/jobs&quot;</span><span class="p">,</span> <span class="n">dependencies</span><span class="o">=</span><span class="p">[</span><span class="n">Depends</span><span class="p">(</span><span class="n">get_current_user</span><span class="p">)])</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="nd">@router</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">create_job</span><span class="p">(</span>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>    <span class="n">body</span><span class="p">:</span> <span class="n">CreateJobRequest</span><span class="p">,</span>
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>    <span class="n">current_user</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="n">AuthenticatedUser</span><span class="p">,</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_current_user</span><span class="p">)],</span>
+<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">JobResponse</span><span class="p">:</span>
+<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>    <span class="o">...</span>
+<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>
+<a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a><span class="nd">@router</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/</span><span class="si">{job_id}</span><span class="s2">/stream&quot;</span><span class="p">)</span>
+<a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">stream_job</span><span class="p">(</span>
+<a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a>    <span class="n">job_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+<a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a>    <span class="n">current_user</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="n">AuthenticatedUser</span><span class="p">,</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_current_user</span><span class="p">)],</span>
+<a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StreamingResponse</span><span class="p">:</span>
+<a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a>    <span class="o">...</span>
+</code></pre></div>
+<h3 id="get_current_user-dependency"><code>get_current_user</code> Dependency<a class="headerlink" href="#get_current_user-dependency" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">fastapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">Depends</span><span class="p">,</span> <span class="n">HTTPException</span><span class="p">,</span> <span class="n">Request</span><span class="p">,</span> <span class="n">status</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">jwt</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseModel</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="k">class</span><span class="w"> </span><span class="nc">AuthenticatedUser</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Resolved identity from a validated JWT.&quot;&quot;&quot;</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>    <span class="n">github_id</span><span class="p">:</span> <span class="nb">str</span>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>    <span class="n">github_login</span><span class="p">:</span> <span class="nb">str</span>
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>    <span class="n">jti</span><span class="p">:</span> <span class="nb">str</span>
+<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>
+<a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a>
+<a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_current_user</span><span class="p">(</span>
+<a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a>    <span class="n">request</span><span class="p">:</span> <span class="n">Request</span><span class="p">,</span>
+<a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a>    <span class="n">settings</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="n">Settings</span><span class="p">,</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_settings</span><span class="p">)],</span>
+<a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AuthenticatedUser</span><span class="p">:</span>
+<a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Validate Bearer JWT and return the resolved user.</span>
+<a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a>
+<a id="__codelineno-3-20" name="__codelineno-3-20" href="#__codelineno-3-20"></a><span class="sd">    Args:</span>
+<a id="__codelineno-3-21" name="__codelineno-3-21" href="#__codelineno-3-21"></a><span class="sd">        request: Incoming HTTP request; Authorization header is read directly.</span>
+<a id="__codelineno-3-22" name="__codelineno-3-22" href="#__codelineno-3-22"></a><span class="sd">        settings: Application settings (JWT_SECRET, algorithm).</span>
+<a id="__codelineno-3-23" name="__codelineno-3-23" href="#__codelineno-3-23"></a>
+<a id="__codelineno-3-24" name="__codelineno-3-24" href="#__codelineno-3-24"></a><span class="sd">    Returns:</span>
+<a id="__codelineno-3-25" name="__codelineno-3-25" href="#__codelineno-3-25"></a><span class="sd">        Resolved authenticated user from JWT claims.</span>
+<a id="__codelineno-3-26" name="__codelineno-3-26" href="#__codelineno-3-26"></a>
+<a id="__codelineno-3-27" name="__codelineno-3-27" href="#__codelineno-3-27"></a><span class="sd">    Raises:</span>
+<a id="__codelineno-3-28" name="__codelineno-3-28" href="#__codelineno-3-28"></a><span class="sd">        HTTPException: 401 if token is missing, expired, or invalid.</span>
+<a id="__codelineno-3-29" name="__codelineno-3-29" href="#__codelineno-3-29"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-3-30" name="__codelineno-3-30" href="#__codelineno-3-30"></a>    <span class="n">credentials_exception</span> <span class="o">=</span> <span class="n">HTTPException</span><span class="p">(</span>
+<a id="__codelineno-3-31" name="__codelineno-3-31" href="#__codelineno-3-31"></a>        <span class="n">status_code</span><span class="o">=</span><span class="n">status</span><span class="o">.</span><span class="n">HTTP_401_UNAUTHORIZED</span><span class="p">,</span>
+<a id="__codelineno-3-32" name="__codelineno-3-32" href="#__codelineno-3-32"></a>        <span class="n">detail</span><span class="o">=</span><span class="s2">&quot;Invalid or expired token&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-33" name="__codelineno-3-33" href="#__codelineno-3-33"></a>        <span class="n">headers</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;WWW-Authenticate&quot;</span><span class="p">:</span> <span class="s2">&quot;Bearer&quot;</span><span class="p">},</span>
+<a id="__codelineno-3-34" name="__codelineno-3-34" href="#__codelineno-3-34"></a>    <span class="p">)</span>
+<a id="__codelineno-3-35" name="__codelineno-3-35" href="#__codelineno-3-35"></a>    <span class="n">authorization</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">headers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Authorization&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+<a id="__codelineno-3-36" name="__codelineno-3-36" href="#__codelineno-3-36"></a>    <span class="k">if</span> <span class="ow">not</span> <span class="n">authorization</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;Bearer &quot;</span><span class="p">):</span>
+<a id="__codelineno-3-37" name="__codelineno-3-37" href="#__codelineno-3-37"></a>        <span class="k">raise</span> <span class="n">credentials_exception</span>
+<a id="__codelineno-3-38" name="__codelineno-3-38" href="#__codelineno-3-38"></a>    <span class="n">token</span> <span class="o">=</span> <span class="n">authorization</span><span class="o">.</span><span class="n">removeprefix</span><span class="p">(</span><span class="s2">&quot;Bearer &quot;</span><span class="p">)</span>
+<a id="__codelineno-3-39" name="__codelineno-3-39" href="#__codelineno-3-39"></a>    <span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-3-40" name="__codelineno-3-40" href="#__codelineno-3-40"></a>        <span class="n">payload</span> <span class="o">=</span> <span class="n">jwt</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span>
+<a id="__codelineno-3-41" name="__codelineno-3-41" href="#__codelineno-3-41"></a>            <span class="n">token</span><span class="p">,</span>
+<a id="__codelineno-3-42" name="__codelineno-3-42" href="#__codelineno-3-42"></a>            <span class="n">settings</span><span class="o">.</span><span class="n">JWT_SECRET</span><span class="p">,</span>
+<a id="__codelineno-3-43" name="__codelineno-3-43" href="#__codelineno-3-43"></a>            <span class="n">algorithms</span><span class="o">=</span><span class="p">[</span><span class="n">settings</span><span class="o">.</span><span class="n">JWT_ALGORITHM</span><span class="p">],</span>
+<a id="__codelineno-3-44" name="__codelineno-3-44" href="#__codelineno-3-44"></a>        <span class="p">)</span>
+<a id="__codelineno-3-45" name="__codelineno-3-45" href="#__codelineno-3-45"></a>        <span class="n">github_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">payload</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;sub&quot;</span><span class="p">)</span>
+<a id="__codelineno-3-46" name="__codelineno-3-46" href="#__codelineno-3-46"></a>        <span class="n">github_login</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">payload</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;login&quot;</span><span class="p">)</span>
+<a id="__codelineno-3-47" name="__codelineno-3-47" href="#__codelineno-3-47"></a>        <span class="n">jti</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">payload</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;jti&quot;</span><span class="p">)</span>
+<a id="__codelineno-3-48" name="__codelineno-3-48" href="#__codelineno-3-48"></a>        <span class="k">if</span> <span class="n">github_id</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">jti</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-3-49" name="__codelineno-3-49" href="#__codelineno-3-49"></a>            <span class="k">raise</span> <span class="n">credentials_exception</span>
+<a id="__codelineno-3-50" name="__codelineno-3-50" href="#__codelineno-3-50"></a>
+<a id="__codelineno-3-51" name="__codelineno-3-51" href="#__codelineno-3-51"></a>    <span class="k">except</span> <span class="n">jwt</span><span class="o">.</span><span class="n">ExpiredSignatureError</span><span class="p">:</span>
+<a id="__codelineno-3-52" name="__codelineno-3-52" href="#__codelineno-3-52"></a>        <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span>
+<a id="__codelineno-3-53" name="__codelineno-3-53" href="#__codelineno-3-53"></a>            <span class="n">status_code</span><span class="o">=</span><span class="n">status</span><span class="o">.</span><span class="n">HTTP_401_UNAUTHORIZED</span><span class="p">,</span>
+<a id="__codelineno-3-54" name="__codelineno-3-54" href="#__codelineno-3-54"></a>            <span class="n">detail</span><span class="o">=</span><span class="s2">&quot;Token has expired&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-55" name="__codelineno-3-55" href="#__codelineno-3-55"></a>            <span class="n">headers</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;WWW-Authenticate&quot;</span><span class="p">:</span> <span class="s2">&quot;Bearer&quot;</span><span class="p">},</span>
+<a id="__codelineno-3-56" name="__codelineno-3-56" href="#__codelineno-3-56"></a>        <span class="p">)</span>
+<a id="__codelineno-3-57" name="__codelineno-3-57" href="#__codelineno-3-57"></a>    <span class="k">except</span> <span class="n">jwt</span><span class="o">.</span><span class="n">InvalidTokenError</span><span class="p">:</span>
+<a id="__codelineno-3-58" name="__codelineno-3-58" href="#__codelineno-3-58"></a>        <span class="k">raise</span> <span class="n">credentials_exception</span>
+<a id="__codelineno-3-59" name="__codelineno-3-59" href="#__codelineno-3-59"></a>
+<a id="__codelineno-3-60" name="__codelineno-3-60" href="#__codelineno-3-60"></a>    <span class="k">return</span> <span class="n">AuthenticatedUser</span><span class="p">(</span><span class="n">github_id</span><span class="o">=</span><span class="n">github_id</span><span class="p">,</span> <span class="n">github_login</span><span class="o">=</span><span class="n">github_login</span> <span class="ow">or</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">jti</span><span class="o">=</span><span class="n">jti</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="auth-endpoints-not-under-jobs">Auth Endpoints (not under <code>/jobs/*</code>)<a class="headerlink" href="#auth-endpoints-not-under-jobs" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>GET  /auth/login          → redirect to GitHub OAuth authorize URL
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>GET  /auth/callback       → exchange GitHub code, issue auth_code, redirect to frontend
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>POST /auth/token          → exchange auth_code for {access_token, token_type}
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>POST /auth/refresh        → exchange refresh cookie for new access_token
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>POST /auth/logout         → clear refresh cookie, invalidate refresh token in Redis
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>DELETE /auth/github-token → delete stored GitHub OAuth token from Redis; user stays logged in
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>GET  /auth/me             → return current user info (requires Bearer)
+</code></pre></div>
+<hr />
+<h2 id="sse-endpoint-authentication">SSE Endpoint Authentication<a class="headerlink" href="#sse-endpoint-authentication" title="Permanent link">&para;</a></h2>
+<h3 id="the-problem">The Problem<a class="headerlink" href="#the-problem" title="Permanent link">&para;</a></h3>
+<p>The browser's native <code>EventSource</code> API (<code>new EventSource(url)</code>) does not support setting custom
+request headers. This is a hard W3C specification constraint — not a browser quirk. Sending
+<code>Authorization: Bearer &lt;token&gt;</code> via the <code>EventSource</code> constructor is impossible.</p>
+<p>Three approaches exist; this PRD selects one and documents the rejected alternatives:</p>
+<table>
+<thead>
+<tr>
+<th>Approach</th>
+<th>Security</th>
+<th>Complexity</th>
+<th>Selected</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Fetch-based EventSource</strong> (<code>@microsoft/fetch-event-source</code>)</td>
+<td>Same as REST Bearer</td>
+<td>Low — uniform auth</td>
+<td>✅ <strong>Yes</strong></td>
+</tr>
+<tr>
+<td>Short-lived stream ticket (<code>?t=&lt;token&gt;</code>)</td>
+<td>Token in URL (logs, history)</td>
+<td>Medium — extra endpoint</td>
+<td>Fallback</td>
+</tr>
+<tr>
+<td>HttpOnly session cookie</td>
+<td>XSS-safe for SSE</td>
+<td>High — CSRF on REST, two auth mechanisms</td>
+<td>No</td>
+</tr>
+</tbody>
+</table>
+<h3 id="selected-approach-fetch-based-eventsource">Selected Approach: Fetch-Based EventSource<a class="headerlink" href="#selected-approach-fetch-based-eventsource" title="Permanent link">&para;</a></h3>
+<p>The React frontend uses <code>@microsoft/fetch-event-source</code> instead of the native <code>EventSource</code>. This
+library implements the SSE protocol on top of the Fetch API, which supports arbitrary headers.</p>
+<p><strong>Frontend (React):</strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">fetchEventSource</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">&quot;@microsoft/fetch-event-source&quot;</span><span class="p">;</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="c1">// Sentinel used to signal &quot;token was refreshed, retry immediately&quot;.</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="c1">// Identity comparison in onerror avoids string matching.</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="kd">const</span><span class="w"> </span><span class="nx">TOKEN_REFRESHED</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="ne">Error</span><span class="p">(</span><span class="s2">&quot;token_refreshed&quot;</span><span class="p">);</span>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="k">async</span><span class="w"> </span><span class="kd">function</span><span class="w"> </span><span class="nx">streamJob</span><span class="p">(</span><span class="nx">jobId</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">,</span><span class="w"> </span><span class="nx">accessToken</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="p">)</span><span class="o">:</span><span class="w"> </span><span class="nb">Promise</span><span class="o">&lt;</span><span class="ow">void</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="w">    </span><span class="c1">// Mutable record — fetchEventSource passes this same reference to every</span>
+<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="w">    </span><span class="c1">// fetch() attempt in its retry loop, so updating it in onopen takes effect</span>
+<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="w">    </span><span class="c1">// on the next attempt automatically.</span>
+<a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a><span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="nx">headers</span><span class="o">:</span><span class="w"> </span><span class="kt">Record</span><span class="o">&lt;</span><span class="kt">string</span><span class="p">,</span><span class="w"> </span><span class="kt">string</span><span class="o">&gt;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a><span class="w">        </span><span class="nx">Authorization</span><span class="o">:</span><span class="w"> </span><span class="sb">`Bearer </span><span class="si">${</span><span class="nx">accessToken</span><span class="si">}</span><span class="sb">`</span><span class="p">,</span>
+<a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a><span class="w">    </span><span class="p">};</span>
+<a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a>
+<a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a><span class="w">    </span><span class="k">await</span><span class="w"> </span><span class="nx">fetchEventSource</span><span class="p">(</span><span class="sb">`/jobs/</span><span class="si">${</span><span class="nx">jobId</span><span class="si">}</span><span class="sb">/stream`</span><span class="p">,</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a><span class="w">        </span><span class="nx">method</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;GET&quot;</span><span class="p">,</span>
+<a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a><span class="w">        </span><span class="nx">headers</span><span class="p">,</span>
+<a id="__codelineno-5-18" name="__codelineno-5-18" href="#__codelineno-5-18"></a><span class="w">        </span><span class="c1">// onopen receives the Response — the only place HTTP status is available.</span>
+<a id="__codelineno-5-19" name="__codelineno-5-19" href="#__codelineno-5-19"></a><span class="w">        </span><span class="k">async</span><span class="w"> </span><span class="nx">onopen</span><span class="p">(</span><span class="nx">response</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-5-20" name="__codelineno-5-20" href="#__codelineno-5-20"></a><span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">response</span><span class="p">.</span><span class="nx">status</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="mf">401</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-5-21" name="__codelineno-5-21" href="#__codelineno-5-21"></a><span class="w">                </span><span class="nx">headers</span><span class="p">.</span><span class="nx">Authorization</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="sb">`Bearer </span><span class="si">${</span><span class="k">await</span><span class="w"> </span><span class="nx">refreshAccessToken</span><span class="p">()</span><span class="si">}</span><span class="sb">`</span><span class="p">;</span>
+<a id="__codelineno-5-22" name="__codelineno-5-22" href="#__codelineno-5-22"></a><span class="w">                </span><span class="k">throw</span><span class="w"> </span><span class="nx">TOKEN_REFRESHED</span><span class="p">;</span>
+<a id="__codelineno-5-23" name="__codelineno-5-23" href="#__codelineno-5-23"></a><span class="w">            </span><span class="p">}</span>
+<a id="__codelineno-5-24" name="__codelineno-5-24" href="#__codelineno-5-24"></a><span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="nx">response</span><span class="p">.</span><span class="nx">ok</span><span class="p">)</span><span class="w"> </span><span class="k">throw</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="ne">Error</span><span class="p">(</span><span class="sb">`Stream error: </span><span class="si">${</span><span class="nx">response</span><span class="p">.</span><span class="nx">status</span><span class="si">}</span><span class="sb">`</span><span class="p">);</span>
+<a id="__codelineno-5-25" name="__codelineno-5-25" href="#__codelineno-5-25"></a><span class="w">        </span><span class="p">},</span>
+<a id="__codelineno-5-26" name="__codelineno-5-26" href="#__codelineno-5-26"></a><span class="w">        </span><span class="nx">onmessage</span><span class="p">(</span><span class="nx">event</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-5-27" name="__codelineno-5-27" href="#__codelineno-5-27"></a><span class="w">            </span><span class="nx">dispatch</span><span class="p">(</span><span class="nx">handleStreamEvent</span><span class="p">(</span><span class="nb">JSON</span><span class="p">.</span><span class="nx">parse</span><span class="p">(</span><span class="nx">event</span><span class="p">.</span><span class="nx">data</span><span class="p">)));</span>
+<a id="__codelineno-5-28" name="__codelineno-5-28" href="#__codelineno-5-28"></a><span class="w">        </span><span class="p">},</span>
+<a id="__codelineno-5-29" name="__codelineno-5-29" href="#__codelineno-5-29"></a><span class="w">        </span><span class="c1">// onerror receives an Error (never a Response); it is synchronous.</span>
+<a id="__codelineno-5-30" name="__codelineno-5-30" href="#__codelineno-5-30"></a><span class="w">        </span><span class="c1">// Returning 0 retries immediately; throwing stops the loop.</span>
+<a id="__codelineno-5-31" name="__codelineno-5-31" href="#__codelineno-5-31"></a><span class="w">        </span><span class="nx">onerror</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-5-32" name="__codelineno-5-32" href="#__codelineno-5-32"></a><span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">err</span><span class="w"> </span><span class="o">!==</span><span class="w"> </span><span class="nx">TOKEN_REFRESHED</span><span class="p">)</span><span class="w"> </span><span class="k">throw</span><span class="w"> </span><span class="nx">err</span><span class="p">;</span>
+<a id="__codelineno-5-33" name="__codelineno-5-33" href="#__codelineno-5-33"></a><span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="mf">0</span><span class="p">;</span><span class="w"> </span><span class="c1">// retry immediately — headers already carry the refreshed token</span>
+<a id="__codelineno-5-34" name="__codelineno-5-34" href="#__codelineno-5-34"></a><span class="w">        </span><span class="p">},</span>
+<a id="__codelineno-5-35" name="__codelineno-5-35" href="#__codelineno-5-35"></a><span class="w">    </span><span class="p">});</span>
+<a id="__codelineno-5-36" name="__codelineno-5-36" href="#__codelineno-5-36"></a><span class="p">}</span>
+</code></pre></div>
+<p><strong>Backend:</strong> The <code>GET /jobs/{id}/stream</code> endpoint authenticates via <code>Depends(get_current_user)</code>
+identically to all other endpoints. No special handling is needed on the server side.</p>
+<h3 id="fallback-short-lived-stream-ticket">Fallback: Short-Lived Stream Ticket<a class="headerlink" href="#fallback-short-lived-stream-ticket" title="Permanent link">&para;</a></h3>
+<p>If <code>@microsoft/fetch-event-source</code> introduces a compatibility issue (e.g., proxy that buffers Fetch
+responses but passes <code>EventSource</code> connections), the fallback is a stream ticket:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>POST /jobs/{id}/stream-token        (requires Bearer auth)
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>→ {&quot;stream_token&quot;: &quot;&lt;opaque&gt;&quot;, &quot;expires_in&quot;: 60}
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>GET /jobs/{id}/stream?t=&lt;stream_token&gt;   (single-use, 60s window)
+</code></pre></div>
+<p>The stream token is a UUID stored in Redis with a 60-second TTL. It is validated and immediately
+deleted when the stream connection is established (single-use). Once the SSE connection is open,
+it is authenticated by the open TCP socket — the token is only used for the handshake.</p>
+<p><strong>Fallback is not default</strong> — it is documented here only for operational contingency.</p>
+<h3 id="token-expiry-during-an-active-stream">Token Expiry During an Active Stream<a class="headerlink" href="#token-expiry-during-an-active-stream" title="Permanent link">&para;</a></h3>
+<p>Access tokens expire in 15 minutes. An ongoing stream may outlast the token. The frontend handles
+this by detecting the 401 status in <code>onopen</code>, calling <code>POST /auth/refresh</code> to get a new access
+token, and re-opening the stream — see the <code>streamJob</code> pattern in <a href="#selected-approach-fetch-based-eventsource">Selected Approach: Fetch-Based EventSource</a>. The <code>Last-Event-ID</code> header
+is sent automatically by <code>fetchEventSource</code> on reconnect, but the backend <strong>does not guarantee
+resume from the last event in v1</strong>: Redis Pub/Sub has no message history, so events emitted during
+the reconnect window are lost. v1 reconnects within 2 seconds; missed events are not replayed.
+Event history and gapless resume are a <strong>v2 concern</strong> (requires a persistent event log, e.g.,
+Redis Streams or a DB-backed event table).</p>
+<hr />
+<h2 id="job-ownership-per-resource-authorization">Job Ownership &amp; Per-Resource Authorization<a class="headerlink" href="#job-ownership-per-resource-authorization" title="Permanent link">&para;</a></h2>
+<h3 id="the-idor-risk">The IDOR Risk<a class="headerlink" href="#the-idor-risk" title="Permanent link">&para;</a></h3>
+<p>Job UUIDs are v4 random (122 bits of entropy). Guessing a UUID is computationally infeasible, but
+relying on UUID unpredictability as the sole access control mechanism is security through obscurity
+— not authorization. The correct control is: <strong>only the user who created a job can operate on it</strong>.</p>
+<h3 id="job-registry">Job Registry<a class="headerlink" href="#job-registry" title="Permanent link">&para;</a></h3>
+<p>A lightweight job registry is maintained in Redis alongside the ARQ job queue. On job creation:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="c1"># POST /jobs — after enqueuing the ARQ job</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="k">await</span> <span class="n">redis</span><span class="o">.</span><span class="n">hset</span><span class="p">(</span>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>    <span class="sa">f</span><span class="s2">&quot;job_registry:</span><span class="si">{</span><span class="n">job_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>    <span class="n">mapping</span><span class="o">=</span><span class="p">{</span>
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>        <span class="s2">&quot;owner_id&quot;</span><span class="p">:</span> <span class="n">current_user</span><span class="o">.</span><span class="n">github_id</span><span class="p">,</span>
+<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>        <span class="s2">&quot;created_at&quot;</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">utcnow</span><span class="p">()</span><span class="o">.</span><span class="n">isoformat</span><span class="p">(),</span>
+<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>        <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;queued&quot;</span><span class="p">,</span>
+<a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>    <span class="p">},</span>
+<a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="p">)</span>
+<a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a><span class="k">await</span> <span class="n">redis</span><span class="o">.</span><span class="n">expire</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;job_registry:</span><span class="si">{</span><span class="n">job_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="mi">7</span> <span class="o">*</span> <span class="mi">24</span> <span class="o">*</span> <span class="mi">3600</span><span class="p">)</span>  <span class="c1"># 7-day TTL</span>
+</code></pre></div>
+<p>This allows O(1) ownership checks without loading the full LangGraph checkpoint state from Postgres.</p>
+<h3 id="ownership-check-dependency">Ownership Check Dependency<a class="headerlink" href="#ownership-check-dependency" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_job_and_verify_owner</span><span class="p">(</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>    <span class="n">job_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>    <span class="n">current_user</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="n">AuthenticatedUser</span><span class="p">,</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_current_user</span><span class="p">)],</span>
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>    <span class="n">redis</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="n">Redis</span><span class="p">,</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_redis</span><span class="p">)],</span>
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Fetch job from registry and verify current user is the owner.</span>
+<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>
+<a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a><span class="sd">    Args:</span>
+<a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a><span class="sd">        job_id: Job UUID from path parameter.</span>
+<a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a><span class="sd">        current_user: Resolved authenticated user.</span>
+<a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a><span class="sd">        redis: Redis connection.</span>
+<a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a>
+<a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a><span class="sd">    Returns:</span>
+<a id="__codelineno-8-14" name="__codelineno-8-14" href="#__codelineno-8-14"></a><span class="sd">        The validated job_id.</span>
+<a id="__codelineno-8-15" name="__codelineno-8-15" href="#__codelineno-8-15"></a>
+<a id="__codelineno-8-16" name="__codelineno-8-16" href="#__codelineno-8-16"></a><span class="sd">    Raises:</span>
+<a id="__codelineno-8-17" name="__codelineno-8-17" href="#__codelineno-8-17"></a><span class="sd">        HTTPException: 404 if job not found or caller does not own the job (both cases return 404 to avoid revealing existence to non-owners).</span>
+<a id="__codelineno-8-18" name="__codelineno-8-18" href="#__codelineno-8-18"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-8-19" name="__codelineno-8-19" href="#__codelineno-8-19"></a>    <span class="n">registry</span> <span class="o">=</span> <span class="k">await</span> <span class="n">redis</span><span class="o">.</span><span class="n">hgetall</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;job_registry:</span><span class="si">{</span><span class="n">job_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-8-20" name="__codelineno-8-20" href="#__codelineno-8-20"></a>    <span class="k">if</span> <span class="ow">not</span> <span class="n">registry</span><span class="p">:</span>
+<a id="__codelineno-8-21" name="__codelineno-8-21" href="#__codelineno-8-21"></a>        <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="n">status_code</span><span class="o">=</span><span class="mi">404</span><span class="p">,</span> <span class="n">detail</span><span class="o">=</span><span class="s2">&quot;Job not found&quot;</span><span class="p">)</span>
+<a id="__codelineno-8-22" name="__codelineno-8-22" href="#__codelineno-8-22"></a>    <span class="k">if</span> <span class="n">registry</span><span class="p">[</span><span class="s2">&quot;owner_id&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="n">current_user</span><span class="o">.</span><span class="n">github_id</span><span class="p">:</span>
+<a id="__codelineno-8-23" name="__codelineno-8-23" href="#__codelineno-8-23"></a>        <span class="c1"># Return 404, not 403 — do not reveal that the job exists to non-owners</span>
+<a id="__codelineno-8-24" name="__codelineno-8-24" href="#__codelineno-8-24"></a>        <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="n">status_code</span><span class="o">=</span><span class="mi">404</span><span class="p">,</span> <span class="n">detail</span><span class="o">=</span><span class="s2">&quot;Job not found&quot;</span><span class="p">)</span>
+<a id="__codelineno-8-25" name="__codelineno-8-25" href="#__codelineno-8-25"></a>    <span class="k">return</span> <span class="n">job_id</span>
+</code></pre></div>
+<p><strong>Why 404 instead of 403:</strong> Returning 403 confirms to an attacker that a job with that UUID exists.
+Returning 404 reveals nothing about existence.</p>
+<h3 id="bugtriagestate-schema-change">BugTriageState Schema Change<a class="headerlink" href="#bugtriagestate-schema-change" title="Permanent link">&para;</a></h3>
+<p><code>BugTriageState</code> (<a href="../PRD-003-langgraph-orchestration/#shared-state-schema">PRD-003 §Shared State Schema</a>) requires one new field:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">BugTriageState</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">):</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>    <span class="c1"># ... existing fields ...</span>
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>    <span class="n">owner_id</span><span class="p">:</span> <span class="nb">str</span>
+</code></pre></div>
+<p>This field is checkpointed with all other state, providing an immutable ownership record in the
+LangGraph state history for audit purposes.</p>
+<h3 id="endpoint-authorization-matrix">Endpoint Authorization Matrix<a class="headerlink" href="#endpoint-authorization-matrix" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Endpoint</th>
+<th>Auth</th>
+<th>Ownership check</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>POST /jobs</code></td>
+<td>✅ <code>get_current_user</code></td>
+<td>N/A — creates new job</td>
+<td>Sets <code>owner_id</code> in state + registry</td>
+</tr>
+<tr>
+<td><code>GET /jobs/{id}/stream</code></td>
+<td>✅ <code>get_current_user</code></td>
+<td>✅ <code>get_job_and_verify_owner</code></td>
+<td>Read-only but contains private data</td>
+</tr>
+<tr>
+<td><code>POST /jobs/{id}/answer</code></td>
+<td>✅ <code>get_current_user</code></td>
+<td>✅ <code>get_job_and_verify_owner</code></td>
+<td>Critical: injects text into running agent</td>
+</tr>
+<tr>
+<td><code>POST /jobs/{id}/pause</code></td>
+<td>✅ <code>get_current_user</code></td>
+<td>✅ <code>get_job_and_verify_owner</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>DELETE /jobs/{id}</code></td>
+<td>✅ <code>get_current_user</code></td>
+<td>✅ <code>get_job_and_verify_owner</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>GET /auth/me</code></td>
+<td>✅ <code>get_current_user</code></td>
+<td>N/A</td>
+<td>Returns caller's own identity</td>
+</tr>
+<tr>
+<td><code>POST /auth/refresh</code></td>
+<td>✅ refresh cookie</td>
+<td>N/A</td>
+<td>No Bearer needed — cookie carries identity</td>
+</tr>
+<tr>
+<td><code>POST /auth/logout</code></td>
+<td>✅ refresh cookie</td>
+<td>N/A</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="github-oauth-token-management">GitHub OAuth Token Management<a class="headerlink" href="#github-oauth-token-management" title="Permanent link">&para;</a></h2>
+<h3 id="what-needs-storing">What Needs Storing<a class="headerlink" href="#what-needs-storing" title="Permanent link">&para;</a></h3>
+<p>After the GitHub OAuth callback, the backend holds a GitHub access token (<code>gho_...</code>). This token is
+used by LangGraph worker nodes when calling the GitHub API (reading issues, writing comments). It
+must be accessible at job execution time, which may be hours after the initial login.</p>
+<h3 id="storage-encrypted-in-redis">Storage: Encrypted in Redis<a class="headerlink" href="#storage-encrypted-in-redis" title="Permanent link">&para;</a></h3>
+<p>The GitHub OAuth token is never stored in the JWT payload (JWTs are signed, not encrypted — the
+payload is base64-decodable). It is stored encrypted in Redis:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">cryptography.fernet</span><span class="w"> </span><span class="kn">import</span> <span class="n">Fernet</span>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="n">fernet</span> <span class="o">=</span> <span class="n">Fernet</span><span class="p">(</span><span class="n">settings</span><span class="o">.</span><span class="n">GITHUB_TOKEN_ENCRYPTION_KEY</span><span class="p">)</span>
+<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>
+<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">store_github_token</span><span class="p">(</span><span class="n">github_user_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">github_token</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">redis</span><span class="p">:</span> <span class="n">Redis</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Encrypt and store GitHub OAuth token in Redis.&quot;&quot;&quot;</span>
+<a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a>    <span class="n">encrypted</span> <span class="o">=</span> <span class="n">fernet</span><span class="o">.</span><span class="n">encrypt</span><span class="p">(</span><span class="n">github_token</span><span class="o">.</span><span class="n">encode</span><span class="p">())</span>
+<a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a>    <span class="k">await</span> <span class="n">redis</span><span class="o">.</span><span class="n">setex</span><span class="p">(</span>
+<a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a>        <span class="sa">f</span><span class="s2">&quot;github_token:</span><span class="si">{</span><span class="n">github_user_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+<a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a>        <span class="mi">365</span> <span class="o">*</span> <span class="mi">24</span> <span class="o">*</span> <span class="mi">3600</span><span class="p">,</span>        <span class="c1"># 365-day TTL — re-stored on every OAuth login; see PRD-008-1 §5</span>
+<a id="__codelineno-10-12" name="__codelineno-10-12" href="#__codelineno-10-12"></a>        <span class="n">encrypted</span><span class="p">,</span>
+<a id="__codelineno-10-13" name="__codelineno-10-13" href="#__codelineno-10-13"></a>    <span class="p">)</span>
+<a id="__codelineno-10-14" name="__codelineno-10-14" href="#__codelineno-10-14"></a>
+<a id="__codelineno-10-15" name="__codelineno-10-15" href="#__codelineno-10-15"></a>
+<a id="__codelineno-10-16" name="__codelineno-10-16" href="#__codelineno-10-16"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">get_github_token</span><span class="p">(</span><span class="n">github_user_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">redis</span><span class="p">:</span> <span class="n">Redis</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-10-17" name="__codelineno-10-17" href="#__codelineno-10-17"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Retrieve and decrypt GitHub OAuth token from Redis.&quot;&quot;&quot;</span>
+<a id="__codelineno-10-18" name="__codelineno-10-18" href="#__codelineno-10-18"></a>    <span class="n">encrypted</span> <span class="o">=</span> <span class="k">await</span> <span class="n">redis</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;github_token:</span><span class="si">{</span><span class="n">github_user_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-10-19" name="__codelineno-10-19" href="#__codelineno-10-19"></a>    <span class="k">if</span> <span class="n">encrypted</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-10-20" name="__codelineno-10-20" href="#__codelineno-10-20"></a>        <span class="k">return</span> <span class="kc">None</span>
+<a id="__codelineno-10-21" name="__codelineno-10-21" href="#__codelineno-10-21"></a>    <span class="k">return</span> <span class="n">fernet</span><span class="o">.</span><span class="n">decrypt</span><span class="p">(</span><span class="n">encrypted</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span>
+</code></pre></div>
+<h3 id="token-availability-in-worker-nodes">Token Availability in Worker Nodes<a class="headerlink" href="#token-availability-in-worker-nodes" title="Permanent link">&para;</a></h3>
+<p>The ARQ worker context does not carry the JWT. <strong><code>writer_node</code> does not post to GitHub</strong> — it only
+prepares the draft. Actual posting is user-initiated via <code>POST /jobs/{id}/post-comment</code> (see
+<a href="../PRD-002-frontend-ux/#github-write-back-flow">PRD-002 §GitHub Write-Back Flow</a>). The GitHub token is fetched at that point, not inside the
+graph node:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">writer_node</span><span class="p">(</span><span class="n">state</span><span class="p">:</span> <span class="n">BugTriageState</span><span class="p">,</span> <span class="n">ctx</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>    <span class="n">github_comment_draft</span> <span class="o">=</span> <span class="n">_build_comment_draft</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>    <span class="n">ticket_draft</span> <span class="o">=</span> <span class="n">_build_ticket_draft</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>    <span class="k">return</span> <span class="p">{</span>
+<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>        <span class="s2">&quot;github_comment_draft&quot;</span><span class="p">:</span> <span class="n">github_comment_draft</span><span class="p">,</span>
+<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>        <span class="s2">&quot;ticket_draft&quot;</span><span class="p">:</span> <span class="n">ticket_draft</span><span class="p">,</span>
+<a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a>        <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;completed&quot;</span><span class="p">,</span>
+<a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a>    <span class="p">}</span>
+</code></pre></div>
+<p>The <code>get_github_token</code> helper (<a href="#storage-encrypted-in-redis">Storage: Encrypted in Redis</a>) is called only from the write-back endpoint handler, which
+runs in the FastAPI request context after the user explicitly clicks "Post Comment":</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="nd">@router</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s2">&quot;/jobs/</span><span class="si">{job_id}</span><span class="s2">/post-comment&quot;</span><span class="p">)</span>
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">post_comment</span><span class="p">(</span>
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>    <span class="n">job_id</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_job_and_verify_owner</span><span class="p">)],</span>
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>    <span class="n">body</span><span class="p">:</span> <span class="n">PostCommentRequest</span><span class="p">,</span>
+<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>    <span class="n">current_user</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="n">AuthenticatedUser</span><span class="p">,</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_current_user</span><span class="p">)],</span>
+<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>    <span class="n">redis</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="n">Redis</span><span class="p">,</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_redis</span><span class="p">)],</span>
+<a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PostCommentResponse</span><span class="p">:</span>
+<a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a>    <span class="n">github_token</span> <span class="o">=</span> <span class="k">await</span> <span class="n">get_github_token</span><span class="p">(</span><span class="n">current_user</span><span class="o">.</span><span class="n">github_id</span><span class="p">,</span> <span class="n">redis</span><span class="p">)</span>
+<a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a>    <span class="k">if</span> <span class="n">github_token</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-12-10" name="__codelineno-12-10" href="#__codelineno-12-10"></a>        <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="n">status_code</span><span class="o">=</span><span class="mi">401</span><span class="p">,</span> <span class="n">detail</span><span class="o">=</span><span class="s2">&quot;GitHub session expired — re-authenticate&quot;</span><span class="p">)</span>
+<a id="__codelineno-12-11" name="__codelineno-12-11" href="#__codelineno-12-11"></a>    <span class="c1"># ... post comment via GitHub API ...</span>
+</code></pre></div>
+<h3 id="token-expiry">Token Expiry<a class="headerlink" href="#token-expiry" title="Permanent link">&para;</a></h3>
+<p>GitHub OAuth tokens for OAuth Apps do not expire by default. However, GitHub automatically
+revokes any OAuth token unused for <strong>1 year of inactivity</strong>. Additionally, if a user revokes
+the app's authorization via GitHub Settings → Authorized OAuth Apps, the stored token is
+immediately invalidated. See <a href="../PRD-008-1-auth-impl-spec/#5-github-token-lifecycle--1-year-inactivity-revocation-gap-4">PRD-008-1 §5</a>
+for the full lifecycle spec, recommended TTL (365 days), and the GitHub API 401 error path in
+<code>POST /jobs/{id}/post-comment</code>.</p>
+<p>GitHub App user tokens expire after 8 hours (with refresh tokens). v1 uses an OAuth App
+(non-expiring tokens subject to 1-year inactivity policy). v2 migration to GitHub Apps requires
+implementing the token refresh cycle.</p>
+<h3 id="token-revocation">Token Revocation<a class="headerlink" href="#token-revocation" title="Permanent link">&para;</a></h3>
+<p>Users can disconnect their GitHub account without logging out. <code>DELETE /auth/github-token</code>
+deletes the Fernet-encrypted token from Redis; the user's JWT and refresh token remain valid.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="nd">@router</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="s2">&quot;/github-token&quot;</span><span class="p">,</span> <span class="n">status_code</span><span class="o">=</span><span class="mi">204</span><span class="p">)</span>
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">revoke_github_token</span><span class="p">(</span>
+<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>    <span class="n">current_user</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="n">AuthenticatedUser</span><span class="p">,</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_current_user</span><span class="p">)],</span>
+<a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a>    <span class="n">redis</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="n">Redis</span><span class="p">,</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_redis</span><span class="p">)],</span>
+<a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Delete stored GitHub OAuth token. Session (JWT + refresh token) remains active.&quot;&quot;&quot;</span>
+<a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a>    <span class="k">await</span> <span class="n">redis</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;github_token:</span><span class="si">{</span><span class="n">current_user</span><span class="o">.</span><span class="n">github_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p>After revocation, <code>POST /jobs/{id}/post-comment</code> returns
+<code>401 GitHub session expired — re-authenticate</code>. The user must complete a new OAuth flow to
+re-authorize write-back operations. This is surfaced in the UI via the Settings page
+(see <a href="../PRD-002-frontend-ux/#settings-page">PRD-002 §Settings Page</a>).</p>
+<hr />
+<h2 id="inter-service-authentication">Inter-Service Authentication<a class="headerlink" href="#inter-service-authentication" title="Permanent link">&para;</a></h2>
+<h3 id="the-gap">The Gap<a class="headerlink" href="#the-gap" title="Permanent link">&para;</a></h3>
+<p>The ARQ worker calls LangServe agent endpoints with a plain <code>httpx.post</code> and no auth header:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="n">client</span><span class="o">.</span><span class="n">post</span><span class="p">(</span>
+<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>    <span class="s2">&quot;http://localhost:8001/agents/investigator/invoke&quot;</span><span class="p">,</span>
+<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>    <span class="n">json</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;input&quot;</span><span class="p">:</span> <span class="p">{</span><span class="o">...</span><span class="p">}},</span>
+<a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="p">)</span>
+</code></pre></div>
+<p>The <code>/agents/*</code> services (ports 8001–8005, see <a href="../PRD-004-agent-layer/#service-registry">PRD-004 §Service Registry</a>) have no auth
+guard. <code>get_current_user</code> does not protect them — it applies only to the public <code>/jobs/*</code> router.
+Anyone who can reach those ports can invoke agents directly, burning LLM API credits and bypassing
+all job ownership checks.</p>
+<h3 id="primary-control-network-isolation">Primary Control: Network Isolation<a class="headerlink" href="#primary-control-network-isolation" title="Permanent link">&para;</a></h3>
+<p>Agent services <strong>must not be reachable from the public internet</strong>. This is non-negotiable:</p>
+<ul>
+<li>Bind each agent service to <code>127.0.0.1</code> (loopback) or an internal-only network interface — never
+  <code>0.0.0.0</code> without a firewall rule blocking external access</li>
+<li>The public-facing reverse proxy (nginx / Caddy) must not route any <code>/agents/*</code> paths</li>
+<li>In production, deploy agent services in the same VPC / private subnet as the ARQ workers with no
+  public IP and no public security group ingress rule</li>
+</ul>
+<p>Network isolation alone prevents external abuse. Everything below is defense-in-depth.</p>
+<h3 id="defense-in-depth-shared-secret-header">Defense-in-Depth: Shared Secret Header<a class="headerlink" href="#defense-in-depth-shared-secret-header" title="Permanent link">&para;</a></h3>
+<p>Network isolation can fail (misconfigured proxy, SSRF pivot from another internal service). A
+shared secret header provides a second independent layer.</p>
+<p><code>INTERNAL_SERVICE_SECRET</code> is set in all ARQ worker and agent service environments (see <a href="#signing-algorithm">Signing Algorithm</a> for env vars). The worker sends it on every agent call:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="k">async</span> <span class="k">with</span> <span class="n">httpx</span><span class="o">.</span><span class="n">AsyncClient</span><span class="p">()</span> <span class="k">as</span> <span class="n">client</span><span class="p">:</span>
+<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>    <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="n">client</span><span class="o">.</span><span class="n">post</span><span class="p">(</span>
+<a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>        <span class="s2">&quot;http://localhost:8001/agents/investigator/invoke&quot;</span><span class="p">,</span>
+<a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a>        <span class="n">json</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;input&quot;</span><span class="p">:</span> <span class="p">{</span><span class="o">...</span><span class="p">}},</span>
+<a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a>        <span class="n">headers</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;X-Internal-Token&quot;</span><span class="p">:</span> <span class="n">settings</span><span class="o">.</span><span class="n">INTERNAL_SERVICE_SECRET</span><span class="p">},</span>
+<a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a>    <span class="p">)</span>
+</code></pre></div>
+<p>Each LangServe agent service validates it via a FastAPI dependency applied at the router level:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">verify_internal_token</span><span class="p">(</span>
+<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>    <span class="n">x_internal_token</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">Header</span><span class="p">()]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>    <span class="n">settings</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="n">Settings</span><span class="p">,</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_settings</span><span class="p">)],</span>
+<a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Reject requests that do not carry the correct internal service secret.</span>
+<a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a>
+<a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a><span class="sd">    The header is declared optional (str | None) so FastAPI does not return 422</span>
+<a id="__codelineno-16-8" name="__codelineno-16-8" href="#__codelineno-16-8"></a><span class="sd">    on a missing header — both absent and wrong-value cases are handled here as 403.</span>
+<a id="__codelineno-16-9" name="__codelineno-16-9" href="#__codelineno-16-9"></a>
+<a id="__codelineno-16-10" name="__codelineno-16-10" href="#__codelineno-16-10"></a><span class="sd">    Raises:</span>
+<a id="__codelineno-16-11" name="__codelineno-16-11" href="#__codelineno-16-11"></a><span class="sd">        HTTPException: 403 if the header is missing or does not match.</span>
+<a id="__codelineno-16-12" name="__codelineno-16-12" href="#__codelineno-16-12"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-16-13" name="__codelineno-16-13" href="#__codelineno-16-13"></a>    <span class="k">if</span> <span class="n">x_internal_token</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">secrets</span><span class="o">.</span><span class="n">compare_digest</span><span class="p">(</span>
+<a id="__codelineno-16-14" name="__codelineno-16-14" href="#__codelineno-16-14"></a>        <span class="n">x_internal_token</span><span class="p">,</span> <span class="n">settings</span><span class="o">.</span><span class="n">INTERNAL_SERVICE_SECRET</span>
+<a id="__codelineno-16-15" name="__codelineno-16-15" href="#__codelineno-16-15"></a>    <span class="p">):</span>
+<a id="__codelineno-16-16" name="__codelineno-16-16" href="#__codelineno-16-16"></a>        <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="n">status_code</span><span class="o">=</span><span class="mi">403</span><span class="p">,</span> <span class="n">detail</span><span class="o">=</span><span class="s2">&quot;Forbidden&quot;</span><span class="p">)</span>
+<a id="__codelineno-16-17" name="__codelineno-16-17" href="#__codelineno-16-17"></a>
+<a id="__codelineno-16-18" name="__codelineno-16-18" href="#__codelineno-16-18"></a>
+<a id="__codelineno-16-19" name="__codelineno-16-19" href="#__codelineno-16-19"></a><span class="n">router</span> <span class="o">=</span> <span class="n">APIRouter</span><span class="p">(</span>
+<a id="__codelineno-16-20" name="__codelineno-16-20" href="#__codelineno-16-20"></a>    <span class="n">prefix</span><span class="o">=</span><span class="s2">&quot;/agents&quot;</span><span class="p">,</span>
+<a id="__codelineno-16-21" name="__codelineno-16-21" href="#__codelineno-16-21"></a>    <span class="n">dependencies</span><span class="o">=</span><span class="p">[</span><span class="n">Depends</span><span class="p">(</span><span class="n">verify_internal_token</span><span class="p">)],</span>
+<a id="__codelineno-16-22" name="__codelineno-16-22" href="#__codelineno-16-22"></a><span class="p">)</span>
+</code></pre></div>
+<p><code>secrets.compare_digest</code> prevents timing attacks. The secret is rotated by updating the env var
+and redeploying all affected services — no token store or expiry mechanism required.</p>
+<h3 id="what-is-not-used-here">What Is Not Used Here<a class="headerlink" href="#what-is-not-used-here" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Rejected option</th>
+<th>Reason</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>get_current_user</code> (user JWT) on <code>/agents/*</code></td>
+<td>Agent calls originate from the ARQ worker — no user session exists in that context</td>
+</tr>
+<tr>
+<td>Re-routing under <code>/jobs/{id}/agents/*</code></td>
+<td>Couples LangServe microservices to the job lifecycle; intentionally avoided (<a href="../PRD-004-agent-layer/#architecture-decision">PRD-004 §Architecture Decision</a>)</td>
+</tr>
+<tr>
+<td>mTLS</td>
+<td>Correct for zero-trust infrastructure; operationally complex for v1 single-operator deployment</td>
+</tr>
+<tr>
+<td>Internal JWT signed by a service account</td>
+<td>Appropriate for multi-team microservice meshes; shared secret is simpler and sufficient for v1</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="token-lifecycle">Token Lifecycle<a class="headerlink" href="#token-lifecycle" title="Permanent link">&para;</a></h2>
+<h3 id="access-token">Access Token<a class="headerlink" href="#access-token" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Type</td>
+<td>Signed JWT (HS256)</td>
+</tr>
+<tr>
+<td>Expiry</td>
+<td>15 minutes</td>
+</tr>
+<tr>
+<td>Storage</td>
+<td>React in-memory (<code>useRef</code> in auth context)</td>
+</tr>
+<tr>
+<td>Lost on</td>
+<td>Page refresh (triggers silent refresh via refresh cookie)</td>
+</tr>
+<tr>
+<td>Revocation</td>
+<td>Not supported in v1 (15-min window is the effective revocation delay)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="refresh-token">Refresh Token<a class="headerlink" href="#refresh-token" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Type</td>
+<td>Opaque UUID v4</td>
+</tr>
+<tr>
+<td>Expiry</td>
+<td>7 days</td>
+</tr>
+<tr>
+<td>Storage</td>
+<td><code>HttpOnly; Secure; SameSite=Strict</code> cookie</td>
+</tr>
+<tr>
+<td>Redis key</td>
+<td><code>refresh_token:{uuid}</code> → <code>"{github_id}:{github_login}"</code> colon-separated string (e.g. <code>"1234567:octocat"</code>)</td>
+</tr>
+<tr>
+<td>Revocation</td>
+<td>Delete Redis key → immediate revocation</td>
+</tr>
+<tr>
+<td>Rotation</td>
+<td>Not in v1; add on v1.1 (new refresh token issued on every <code>/auth/refresh</code> call)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="silent-token-refresh-flow">Silent Token Refresh Flow<a class="headerlink" href="#silent-token-refresh-flow" title="Permanent link">&para;</a></h3>
+<p>On page load and on every <code>401</code> response from the API, React calls <code>POST /auth/refresh</code>. The
+browser automatically sends the HttpOnly refresh cookie; the backend validates it, issues a new
+access JWT, and returns it in the response body. React stores the new access token in memory and
+retries the failed request.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="c1">// src/api/client.ts</span>
+<a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="kd">const</span><span class="w"> </span><span class="nx">api</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">axios</span><span class="p">.</span><span class="nx">create</span><span class="p">({</span><span class="w"> </span><span class="nx">baseURL</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;/api&quot;</span><span class="p">,</span><span class="w"> </span><span class="nx">withCredentials</span><span class="o">:</span><span class="w"> </span><span class="kt">true</span><span class="w"> </span><span class="p">});</span>
+<a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a>
+<a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a><span class="nx">api</span><span class="p">.</span><span class="nx">interceptors</span><span class="p">.</span><span class="nx">response</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span>
+<a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a><span class="w">  </span><span class="p">(</span><span class="nx">response</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">response</span><span class="p">,</span>
+<a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a><span class="w">  </span><span class="k">async</span><span class="w"> </span><span class="p">(</span><span class="nx">error</span><span class="p">)</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-17-7" name="__codelineno-17-7" href="#__codelineno-17-7"></a><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">error</span><span class="p">.</span><span class="nx">response</span><span class="o">?</span><span class="p">.</span><span class="nx">status</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="mf">401</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="o">!</span><span class="nx">error</span><span class="p">.</span><span class="nx">config</span><span class="p">.</span><span class="nx">_retry</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-17-8" name="__codelineno-17-8" href="#__codelineno-17-8"></a><span class="w">      </span><span class="nx">error</span><span class="p">.</span><span class="nx">config</span><span class="p">.</span><span class="nx">_retry</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">;</span>
+<a id="__codelineno-17-9" name="__codelineno-17-9" href="#__codelineno-17-9"></a><span class="w">      </span><span class="kd">const</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">data</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">axios</span><span class="p">.</span><span class="nx">post</span><span class="p">(</span><span class="s2">&quot;/auth/refresh&quot;</span><span class="p">,</span><span class="w"> </span><span class="p">{},</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">withCredentials</span><span class="o">:</span><span class="w"> </span><span class="kt">true</span><span class="w"> </span><span class="p">});</span>
+<a id="__codelineno-17-10" name="__codelineno-17-10" href="#__codelineno-17-10"></a><span class="w">      </span><span class="nx">setAccessToken</span><span class="p">(</span><span class="nx">data</span><span class="p">.</span><span class="nx">access_token</span><span class="p">);</span>
+<a id="__codelineno-17-11" name="__codelineno-17-11" href="#__codelineno-17-11"></a><span class="w">      </span><span class="nx">error</span><span class="p">.</span><span class="nx">config</span><span class="p">.</span><span class="nx">headers</span><span class="p">.</span><span class="nx">Authorization</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="sb">`Bearer </span><span class="si">${</span><span class="nx">data</span><span class="p">.</span><span class="nx">access_token</span><span class="si">}</span><span class="sb">`</span><span class="p">;</span>
+<a id="__codelineno-17-12" name="__codelineno-17-12" href="#__codelineno-17-12"></a><span class="w">      </span><span class="k">return</span><span class="w"> </span><span class="nx">api</span><span class="p">(</span><span class="nx">error</span><span class="p">.</span><span class="nx">config</span><span class="p">);</span>
+<a id="__codelineno-17-13" name="__codelineno-17-13" href="#__codelineno-17-13"></a><span class="w">    </span><span class="p">}</span>
+<a id="__codelineno-17-14" name="__codelineno-17-14" href="#__codelineno-17-14"></a><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="nb">Promise</span><span class="p">.</span><span class="nx">reject</span><span class="p">(</span><span class="nx">error</span><span class="p">);</span>
+<a id="__codelineno-17-15" name="__codelineno-17-15" href="#__codelineno-17-15"></a><span class="w">  </span><span class="p">}</span>
+<a id="__codelineno-17-16" name="__codelineno-17-16" href="#__codelineno-17-16"></a><span class="p">);</span>
+</code></pre></div>
+<h3 id="logout">Logout<a class="headerlink" href="#logout" title="Permanent link">&para;</a></h3>
+<p><code>POST /auth/logout</code>:
+1. Delete the refresh token from Redis (immediate revocation)
+2. Clear the <code>refresh_token</code> cookie (<code>Set-Cookie: refresh_token=; Max-Age=0; ...</code>)
+3. React clears the in-memory access token</p>
+<p>The 15-minute access token window remains valid after logout if the token is extracted, but this
+is an accepted tradeoff (no server-side access token revocation in v1).</p>
+<hr />
+<h2 id="cors-security-headers">CORS &amp; Security Headers<a class="headerlink" href="#cors-security-headers" title="Permanent link">&para;</a></h2>
+<h3 id="cors-configuration">CORS Configuration<a class="headerlink" href="#cors-configuration" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">fastapi.middleware.cors</span><span class="w"> </span><span class="kn">import</span> <span class="n">CORSMiddleware</span>
+<a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a>
+<a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a><span class="n">app</span><span class="o">.</span><span class="n">add_middleware</span><span class="p">(</span>
+<a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a>    <span class="n">CORSMiddleware</span><span class="p">,</span>
+<a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a>    <span class="n">allow_origins</span><span class="o">=</span><span class="p">[</span><span class="n">settings</span><span class="o">.</span><span class="n">FRONTEND_ORIGIN</span><span class="p">],</span>  <span class="c1"># e.g. &quot;http://localhost:5173&quot; in dev</span>
+<a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a>    <span class="n">allow_credentials</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>    <span class="c1"># required for refresh token cookie</span>
+<a id="__codelineno-18-7" name="__codelineno-18-7" href="#__codelineno-18-7"></a>    <span class="n">allow_methods</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;GET&quot;</span><span class="p">,</span> <span class="s2">&quot;POST&quot;</span><span class="p">,</span> <span class="s2">&quot;DELETE&quot;</span><span class="p">],</span>
+<a id="__codelineno-18-8" name="__codelineno-18-8" href="#__codelineno-18-8"></a>    <span class="n">allow_headers</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Authorization&quot;</span><span class="p">,</span> <span class="s2">&quot;Content-Type&quot;</span><span class="p">],</span>
+<a id="__codelineno-18-9" name="__codelineno-18-9" href="#__codelineno-18-9"></a><span class="p">)</span>
+</code></pre></div>
+<p><code>allow_origins</code> is a strict allowlist — never <code>["*"]</code> with <code>allow_credentials=True</code> (browsers
+reject this combination, and it would negate cookie security).</p>
+<h3 id="security-headers">Security Headers<a class="headerlink" href="#security-headers" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">starlette.middleware.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseHTTPMiddleware</span>
+<a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a>
+<a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a><span class="k">class</span><span class="w"> </span><span class="nc">SecurityHeadersMiddleware</span><span class="p">(</span><span class="n">BaseHTTPMiddleware</span><span class="p">):</span>
+<a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Add security headers to all responses.&quot;&quot;&quot;</span>
+<a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a>
+<a id="__codelineno-19-6" name="__codelineno-19-6" href="#__codelineno-19-6"></a>    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">dispatch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">call_next</span><span class="p">):</span>
+<a id="__codelineno-19-7" name="__codelineno-19-7" href="#__codelineno-19-7"></a>        <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="n">call_next</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+<a id="__codelineno-19-8" name="__codelineno-19-8" href="#__codelineno-19-8"></a>        <span class="n">response</span><span class="o">.</span><span class="n">headers</span><span class="p">[</span><span class="s2">&quot;Strict-Transport-Security&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;max-age=63072000; includeSubDomains&quot;</span>
+<a id="__codelineno-19-9" name="__codelineno-19-9" href="#__codelineno-19-9"></a>        <span class="n">response</span><span class="o">.</span><span class="n">headers</span><span class="p">[</span><span class="s2">&quot;X-Content-Type-Options&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;nosniff&quot;</span>
+<a id="__codelineno-19-10" name="__codelineno-19-10" href="#__codelineno-19-10"></a>        <span class="n">response</span><span class="o">.</span><span class="n">headers</span><span class="p">[</span><span class="s2">&quot;Referrer-Policy&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;strict-origin-when-cross-origin&quot;</span>
+<a id="__codelineno-19-11" name="__codelineno-19-11" href="#__codelineno-19-11"></a>        <span class="n">response</span><span class="o">.</span><span class="n">headers</span><span class="p">[</span><span class="s2">&quot;X-Frame-Options&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;DENY&quot;</span>
+<a id="__codelineno-19-12" name="__codelineno-19-12" href="#__codelineno-19-12"></a>        <span class="k">return</span> <span class="n">response</span>
+</code></pre></div>
+<p><code>Strict-Transport-Security</code> is only meaningful in production (behind HTTPS). In development it
+is harmless.</p>
+<blockquote>
+<p><strong>Gap:</strong> <code>Content-Security-Policy</code> is absent from this middleware. CSP is the primary XSS
+mitigation for in-memory JWT storage. See <a href="../PRD-008-1-auth-impl-spec/#6-content-security-policy-gap-5">PRD-008-1 §6</a>
+for the complete middleware including CSP and the Swagger UI carve-out strategy.</p>
+</blockquote>
+<h3 id="https">HTTPS<a class="headerlink" href="#https" title="Permanent link">&para;</a></h3>
+<p>All production traffic terminates TLS at the reverse proxy (nginx / Caddy). The FastAPI app itself
+runs on HTTP internally. The <code>Secure</code> cookie flag and <code>SameSite=Strict</code> on the refresh token
+cookie are meaningless without HTTPS, so production deployment must enforce it.</p>
+<hr />
+<h2 id="dependencies-libraries">Dependencies &amp; Libraries<a class="headerlink" href="#dependencies-libraries" title="Permanent link">&para;</a></h2>
+<h3 id="backend-add-to-projectdependencies-in-pyprojecttoml">Backend (add to <code>[project.dependencies]</code> in pyproject.toml)<a class="headerlink" href="#backend-add-to-projectdependencies-in-pyprojecttoml" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="s2">&quot;PyJWT&gt;=2.8&quot;</span><span class="err">,</span><span class="w">           </span><span class="c1"># JWT encode/decode (HS256/RS256)</span>
+<a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a><span class="s2">&quot;cryptography&gt;=42.0&quot;</span><span class="err">,</span><span class="w">   </span><span class="c1"># Fernet (AES-128-CBC + HMAC-SHA256) for GitHub token encryption</span>
+<a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a><span class="s2">&quot;httpx&gt;=0.27&quot;</span><span class="err">,</span><span class="w">          </span><span class="c1"># GitHub API calls in OAuth callback (already in deps)</span>
+</code></pre></div>
+<p>No <code>python-jose</code> — it is effectively unmaintained. <code>PyJWT</code> is the actively maintained standard.</p>
+<h3 id="frontend-add-to-packagejson">Frontend (add to package.json)<a class="headerlink" href="#frontend-add-to-packagejson" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="nt">&quot;@microsoft/fetch-event-source&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;^2.0.1&quot;</span>
+</code></pre></div>
+<p><code>@microsoft/fetch-event-source</code> (MIT) — Fetch-based SSE client supporting custom headers.
+Maintained by Microsoft, used in Azure and VS Code. Drop-in replacement for <code>EventSource</code>
+with a hook-based API compatible with React.</p>
+<hr />
+<h2 id="implementation-patterns">Implementation Patterns<a class="headerlink" href="#implementation-patterns" title="Permanent link">&para;</a></h2>
+<h3 id="auth-router">Auth Router<a class="headerlink" href="#auth-router" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a><span class="c1"># src/auth/router.py</span>
+<a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+<a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a>
+<a id="__codelineno-22-4" name="__codelineno-22-4" href="#__codelineno-22-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timedelta</span><span class="p">,</span> <span class="n">timezone</span>
+<a id="__codelineno-22-5" name="__codelineno-22-5" href="#__codelineno-22-5"></a><span class="kn">from</span><span class="w"> </span><span class="nn">urllib.parse</span><span class="w"> </span><span class="kn">import</span> <span class="n">urlencode</span>
+<a id="__codelineno-22-6" name="__codelineno-22-6" href="#__codelineno-22-6"></a><span class="kn">from</span><span class="w"> </span><span class="nn">uuid</span><span class="w"> </span><span class="kn">import</span> <span class="n">uuid4</span>
+<a id="__codelineno-22-7" name="__codelineno-22-7" href="#__codelineno-22-7"></a>
+<a id="__codelineno-22-8" name="__codelineno-22-8" href="#__codelineno-22-8"></a><span class="kn">from</span><span class="w"> </span><span class="nn">fastapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">APIRouter</span><span class="p">,</span> <span class="n">Depends</span><span class="p">,</span> <span class="n">HTTPException</span><span class="p">,</span> <span class="n">Response</span><span class="p">,</span> <span class="n">Request</span>
+<a id="__codelineno-22-9" name="__codelineno-22-9" href="#__codelineno-22-9"></a><span class="kn">from</span><span class="w"> </span><span class="nn">fastapi.responses</span><span class="w"> </span><span class="kn">import</span> <span class="n">RedirectResponse</span>
+<a id="__codelineno-22-10" name="__codelineno-22-10" href="#__codelineno-22-10"></a><span class="kn">import</span><span class="w"> </span><span class="nn">secrets</span>
+<a id="__codelineno-22-11" name="__codelineno-22-11" href="#__codelineno-22-11"></a><span class="kn">import</span><span class="w"> </span><span class="nn">httpx</span>
+<a id="__codelineno-22-12" name="__codelineno-22-12" href="#__codelineno-22-12"></a><span class="kn">import</span><span class="w"> </span><span class="nn">jwt</span>
+<a id="__codelineno-22-13" name="__codelineno-22-13" href="#__codelineno-22-13"></a>
+<a id="__codelineno-22-14" name="__codelineno-22-14" href="#__codelineno-22-14"></a><span class="n">router</span> <span class="o">=</span> <span class="n">APIRouter</span><span class="p">(</span><span class="n">prefix</span><span class="o">=</span><span class="s2">&quot;/auth&quot;</span><span class="p">)</span>
+<a id="__codelineno-22-15" name="__codelineno-22-15" href="#__codelineno-22-15"></a>
+<a id="__codelineno-22-16" name="__codelineno-22-16" href="#__codelineno-22-16"></a><span class="n">GITHUB_AUTHORIZE_URL</span> <span class="o">=</span> <span class="s2">&quot;https://github.com/login/oauth/authorize&quot;</span>
+<a id="__codelineno-22-17" name="__codelineno-22-17" href="#__codelineno-22-17"></a><span class="n">GITHUB_TOKEN_URL</span> <span class="o">=</span> <span class="s2">&quot;https://github.com/login/oauth/access_token&quot;</span>
+<a id="__codelineno-22-18" name="__codelineno-22-18" href="#__codelineno-22-18"></a><span class="n">GITHUB_USER_URL</span> <span class="o">=</span> <span class="s2">&quot;https://api.github.com/user&quot;</span>
+<a id="__codelineno-22-19" name="__codelineno-22-19" href="#__codelineno-22-19"></a>
+<a id="__codelineno-22-20" name="__codelineno-22-20" href="#__codelineno-22-20"></a>
+<a id="__codelineno-22-21" name="__codelineno-22-21" href="#__codelineno-22-21"></a><span class="nd">@router</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/login&quot;</span><span class="p">)</span>
+<a id="__codelineno-22-22" name="__codelineno-22-22" href="#__codelineno-22-22"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">login</span><span class="p">(</span>
+<a id="__codelineno-22-23" name="__codelineno-22-23" href="#__codelineno-22-23"></a>    <span class="n">request</span><span class="p">:</span> <span class="n">Request</span><span class="p">,</span>
+<a id="__codelineno-22-24" name="__codelineno-22-24" href="#__codelineno-22-24"></a>    <span class="n">redis</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="n">Redis</span><span class="p">,</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_redis</span><span class="p">)],</span>
+<a id="__codelineno-22-25" name="__codelineno-22-25" href="#__codelineno-22-25"></a>    <span class="n">settings</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="n">Settings</span><span class="p">,</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_settings</span><span class="p">)],</span>
+<a id="__codelineno-22-26" name="__codelineno-22-26" href="#__codelineno-22-26"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RedirectResponse</span><span class="p">:</span>
+<a id="__codelineno-22-27" name="__codelineno-22-27" href="#__codelineno-22-27"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Initiate GitHub OAuth flow.&quot;&quot;&quot;</span>
+<a id="__codelineno-22-28" name="__codelineno-22-28" href="#__codelineno-22-28"></a>    <span class="n">state</span> <span class="o">=</span> <span class="n">secrets</span><span class="o">.</span><span class="n">token_urlsafe</span><span class="p">(</span><span class="mi">32</span><span class="p">)</span>
+<a id="__codelineno-22-29" name="__codelineno-22-29" href="#__codelineno-22-29"></a>    <span class="k">await</span> <span class="n">redis</span><span class="o">.</span><span class="n">setex</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;oauth_state:</span><span class="si">{</span><span class="n">state</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="mi">600</span><span class="p">,</span> <span class="s2">&quot;valid&quot;</span><span class="p">)</span>  <span class="c1"># 10-minute window</span>
+<a id="__codelineno-22-30" name="__codelineno-22-30" href="#__codelineno-22-30"></a>
+<a id="__codelineno-22-31" name="__codelineno-22-31" href="#__codelineno-22-31"></a>    <span class="n">params</span> <span class="o">=</span> <span class="p">{</span>
+<a id="__codelineno-22-32" name="__codelineno-22-32" href="#__codelineno-22-32"></a>        <span class="s2">&quot;client_id&quot;</span><span class="p">:</span> <span class="n">settings</span><span class="o">.</span><span class="n">GITHUB_CLIENT_ID</span><span class="p">,</span>
+<a id="__codelineno-22-33" name="__codelineno-22-33" href="#__codelineno-22-33"></a>        <span class="s2">&quot;redirect_uri&quot;</span><span class="p">:</span> <span class="n">settings</span><span class="o">.</span><span class="n">GITHUB_REDIRECT_URI</span><span class="p">,</span>
+<a id="__codelineno-22-34" name="__codelineno-22-34" href="#__codelineno-22-34"></a>        <span class="s2">&quot;scope&quot;</span><span class="p">:</span> <span class="s2">&quot;read:user repo&quot;</span><span class="p">,</span>
+<a id="__codelineno-22-35" name="__codelineno-22-35" href="#__codelineno-22-35"></a>        <span class="s2">&quot;state&quot;</span><span class="p">:</span> <span class="n">state</span><span class="p">,</span>
+<a id="__codelineno-22-36" name="__codelineno-22-36" href="#__codelineno-22-36"></a>    <span class="p">}</span>
+<a id="__codelineno-22-37" name="__codelineno-22-37" href="#__codelineno-22-37"></a>    <span class="n">url</span> <span class="o">=</span> <span class="n">GITHUB_AUTHORIZE_URL</span> <span class="o">+</span> <span class="s2">&quot;?&quot;</span> <span class="o">+</span> <span class="n">urlencode</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+<a id="__codelineno-22-38" name="__codelineno-22-38" href="#__codelineno-22-38"></a>    <span class="k">return</span> <span class="n">RedirectResponse</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+<a id="__codelineno-22-39" name="__codelineno-22-39" href="#__codelineno-22-39"></a>
+<a id="__codelineno-22-40" name="__codelineno-22-40" href="#__codelineno-22-40"></a>
+<a id="__codelineno-22-41" name="__codelineno-22-41" href="#__codelineno-22-41"></a><span class="nd">@router</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/callback&quot;</span><span class="p">)</span>
+<a id="__codelineno-22-42" name="__codelineno-22-42" href="#__codelineno-22-42"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">callback</span><span class="p">(</span>
+<a id="__codelineno-22-43" name="__codelineno-22-43" href="#__codelineno-22-43"></a>    <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+<a id="__codelineno-22-44" name="__codelineno-22-44" href="#__codelineno-22-44"></a>    <span class="n">state</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+<a id="__codelineno-22-45" name="__codelineno-22-45" href="#__codelineno-22-45"></a>    <span class="n">redis</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="n">Redis</span><span class="p">,</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_redis</span><span class="p">)],</span>
+<a id="__codelineno-22-46" name="__codelineno-22-46" href="#__codelineno-22-46"></a>    <span class="n">settings</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="n">Settings</span><span class="p">,</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_settings</span><span class="p">)],</span>
+<a id="__codelineno-22-47" name="__codelineno-22-47" href="#__codelineno-22-47"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RedirectResponse</span><span class="p">:</span>
+<a id="__codelineno-22-48" name="__codelineno-22-48" href="#__codelineno-22-48"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle GitHub OAuth callback; issue one-time auth_code.&quot;&quot;&quot;</span>
+<a id="__codelineno-22-49" name="__codelineno-22-49" href="#__codelineno-22-49"></a>    <span class="n">stored</span> <span class="o">=</span> <span class="k">await</span> <span class="n">redis</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;oauth_state:</span><span class="si">{</span><span class="n">state</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-22-50" name="__codelineno-22-50" href="#__codelineno-22-50"></a>    <span class="k">if</span> <span class="n">stored</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-22-51" name="__codelineno-22-51" href="#__codelineno-22-51"></a>        <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="n">status_code</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span> <span class="n">detail</span><span class="o">=</span><span class="s2">&quot;Invalid or expired OAuth state&quot;</span><span class="p">)</span>
+<a id="__codelineno-22-52" name="__codelineno-22-52" href="#__codelineno-22-52"></a>    <span class="k">await</span> <span class="n">redis</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;oauth_state:</span><span class="si">{</span><span class="n">state</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-22-53" name="__codelineno-22-53" href="#__codelineno-22-53"></a>
+<a id="__codelineno-22-54" name="__codelineno-22-54" href="#__codelineno-22-54"></a>    <span class="k">async</span> <span class="k">with</span> <span class="n">httpx</span><span class="o">.</span><span class="n">AsyncClient</span><span class="p">()</span> <span class="k">as</span> <span class="n">client</span><span class="p">:</span>
+<a id="__codelineno-22-55" name="__codelineno-22-55" href="#__codelineno-22-55"></a>        <span class="n">token_resp</span> <span class="o">=</span> <span class="k">await</span> <span class="n">client</span><span class="o">.</span><span class="n">post</span><span class="p">(</span>
+<a id="__codelineno-22-56" name="__codelineno-22-56" href="#__codelineno-22-56"></a>            <span class="n">GITHUB_TOKEN_URL</span><span class="p">,</span>
+<a id="__codelineno-22-57" name="__codelineno-22-57" href="#__codelineno-22-57"></a>            <span class="n">data</span><span class="o">=</span><span class="p">{</span>
+<a id="__codelineno-22-58" name="__codelineno-22-58" href="#__codelineno-22-58"></a>                <span class="s2">&quot;client_id&quot;</span><span class="p">:</span> <span class="n">settings</span><span class="o">.</span><span class="n">GITHUB_CLIENT_ID</span><span class="p">,</span>
+<a id="__codelineno-22-59" name="__codelineno-22-59" href="#__codelineno-22-59"></a>                <span class="s2">&quot;client_secret&quot;</span><span class="p">:</span> <span class="n">settings</span><span class="o">.</span><span class="n">GITHUB_CLIENT_SECRET</span><span class="p">,</span>
+<a id="__codelineno-22-60" name="__codelineno-22-60" href="#__codelineno-22-60"></a>                <span class="s2">&quot;code&quot;</span><span class="p">:</span> <span class="n">code</span><span class="p">,</span>
+<a id="__codelineno-22-61" name="__codelineno-22-61" href="#__codelineno-22-61"></a>            <span class="p">},</span>
+<a id="__codelineno-22-62" name="__codelineno-22-62" href="#__codelineno-22-62"></a>            <span class="n">headers</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;Accept&quot;</span><span class="p">:</span> <span class="s2">&quot;application/json&quot;</span><span class="p">},</span>
+<a id="__codelineno-22-63" name="__codelineno-22-63" href="#__codelineno-22-63"></a>        <span class="p">)</span>
+<a id="__codelineno-22-64" name="__codelineno-22-64" href="#__codelineno-22-64"></a>    <span class="n">github_token</span> <span class="o">=</span> <span class="n">token_resp</span><span class="o">.</span><span class="n">json</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;access_token&quot;</span><span class="p">)</span>
+<a id="__codelineno-22-65" name="__codelineno-22-65" href="#__codelineno-22-65"></a>    <span class="k">if</span> <span class="ow">not</span> <span class="n">github_token</span><span class="p">:</span>
+<a id="__codelineno-22-66" name="__codelineno-22-66" href="#__codelineno-22-66"></a>        <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="n">status_code</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span> <span class="n">detail</span><span class="o">=</span><span class="s2">&quot;GitHub token exchange failed&quot;</span><span class="p">)</span>
+<a id="__codelineno-22-67" name="__codelineno-22-67" href="#__codelineno-22-67"></a>
+<a id="__codelineno-22-68" name="__codelineno-22-68" href="#__codelineno-22-68"></a>    <span class="k">async</span> <span class="k">with</span> <span class="n">httpx</span><span class="o">.</span><span class="n">AsyncClient</span><span class="p">()</span> <span class="k">as</span> <span class="n">client</span><span class="p">:</span>
+<a id="__codelineno-22-69" name="__codelineno-22-69" href="#__codelineno-22-69"></a>        <span class="n">user_resp</span> <span class="o">=</span> <span class="k">await</span> <span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+<a id="__codelineno-22-70" name="__codelineno-22-70" href="#__codelineno-22-70"></a>            <span class="n">GITHUB_USER_URL</span><span class="p">,</span>
+<a id="__codelineno-22-71" name="__codelineno-22-71" href="#__codelineno-22-71"></a>            <span class="n">headers</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;Authorization&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;Bearer </span><span class="si">{</span><span class="n">github_token</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">},</span>
+<a id="__codelineno-22-72" name="__codelineno-22-72" href="#__codelineno-22-72"></a>        <span class="p">)</span>
+<a id="__codelineno-22-73" name="__codelineno-22-73" href="#__codelineno-22-73"></a>    <span class="n">github_user</span> <span class="o">=</span> <span class="n">user_resp</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+<a id="__codelineno-22-74" name="__codelineno-22-74" href="#__codelineno-22-74"></a>
+<a id="__codelineno-22-75" name="__codelineno-22-75" href="#__codelineno-22-75"></a>    <span class="k">await</span> <span class="n">store_github_token</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">github_user</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">]),</span> <span class="n">github_token</span><span class="p">,</span> <span class="n">redis</span><span class="p">)</span>
+<a id="__codelineno-22-76" name="__codelineno-22-76" href="#__codelineno-22-76"></a>
+<a id="__codelineno-22-77" name="__codelineno-22-77" href="#__codelineno-22-77"></a>    <span class="n">auth_code</span> <span class="o">=</span> <span class="n">secrets</span><span class="o">.</span><span class="n">token_urlsafe</span><span class="p">(</span><span class="mi">32</span><span class="p">)</span>
+<a id="__codelineno-22-78" name="__codelineno-22-78" href="#__codelineno-22-78"></a>    <span class="k">await</span> <span class="n">redis</span><span class="o">.</span><span class="n">setex</span><span class="p">(</span>
+<a id="__codelineno-22-79" name="__codelineno-22-79" href="#__codelineno-22-79"></a>        <span class="sa">f</span><span class="s2">&quot;auth_code:</span><span class="si">{</span><span class="n">auth_code</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+<a id="__codelineno-22-80" name="__codelineno-22-80" href="#__codelineno-22-80"></a>        <span class="mi">30</span><span class="p">,</span>   <span class="c1"># 30-second single-use window</span>
+<a id="__codelineno-22-81" name="__codelineno-22-81" href="#__codelineno-22-81"></a>        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">github_user</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">github_user</span><span class="p">[</span><span class="s1">&#39;login&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+<a id="__codelineno-22-82" name="__codelineno-22-82" href="#__codelineno-22-82"></a>    <span class="p">)</span>
+<a id="__codelineno-22-83" name="__codelineno-22-83" href="#__codelineno-22-83"></a>
+<a id="__codelineno-22-84" name="__codelineno-22-84" href="#__codelineno-22-84"></a>    <span class="k">return</span> <span class="n">RedirectResponse</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">settings</span><span class="o">.</span><span class="n">FRONTEND_ORIGIN</span><span class="si">}</span><span class="s2">/auth/callback?code=</span><span class="si">{</span><span class="n">auth_code</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-22-85" name="__codelineno-22-85" href="#__codelineno-22-85"></a>
+<a id="__codelineno-22-86" name="__codelineno-22-86" href="#__codelineno-22-86"></a>
+<a id="__codelineno-22-87" name="__codelineno-22-87" href="#__codelineno-22-87"></a><span class="nd">@router</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s2">&quot;/token&quot;</span><span class="p">)</span>
+<a id="__codelineno-22-88" name="__codelineno-22-88" href="#__codelineno-22-88"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">exchange_token</span><span class="p">(</span>
+<a id="__codelineno-22-89" name="__codelineno-22-89" href="#__codelineno-22-89"></a>    <span class="n">body</span><span class="p">:</span> <span class="n">AuthCodeRequest</span><span class="p">,</span>
+<a id="__codelineno-22-90" name="__codelineno-22-90" href="#__codelineno-22-90"></a>    <span class="n">response</span><span class="p">:</span> <span class="n">Response</span><span class="p">,</span>
+<a id="__codelineno-22-91" name="__codelineno-22-91" href="#__codelineno-22-91"></a>    <span class="n">redis</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="n">Redis</span><span class="p">,</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_redis</span><span class="p">)],</span>
+<a id="__codelineno-22-92" name="__codelineno-22-92" href="#__codelineno-22-92"></a>    <span class="n">settings</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="n">Settings</span><span class="p">,</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_settings</span><span class="p">)],</span>
+<a id="__codelineno-22-93" name="__codelineno-22-93" href="#__codelineno-22-93"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AccessTokenResponse</span><span class="p">:</span>
+<a id="__codelineno-22-94" name="__codelineno-22-94" href="#__codelineno-22-94"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Exchange one-time auth_code for access + refresh tokens.&quot;&quot;&quot;</span>
+<a id="__codelineno-22-95" name="__codelineno-22-95" href="#__codelineno-22-95"></a>    <span class="n">value</span> <span class="o">=</span> <span class="k">await</span> <span class="n">redis</span><span class="o">.</span><span class="n">getdel</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;auth_code:</span><span class="si">{</span><span class="n">body</span><span class="o">.</span><span class="n">code</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>  <span class="c1"># getdel: atomic fetch-and-delete guarantees single-use</span>
+<a id="__codelineno-22-96" name="__codelineno-22-96" href="#__codelineno-22-96"></a>    <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-22-97" name="__codelineno-22-97" href="#__codelineno-22-97"></a>        <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="n">status_code</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span> <span class="n">detail</span><span class="o">=</span><span class="s2">&quot;Invalid or expired auth code&quot;</span><span class="p">)</span>
+<a id="__codelineno-22-98" name="__codelineno-22-98" href="#__codelineno-22-98"></a>
+<a id="__codelineno-22-99" name="__codelineno-22-99" href="#__codelineno-22-99"></a>    <span class="n">github_id</span><span class="p">,</span> <span class="n">github_login</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<a id="__codelineno-22-100" name="__codelineno-22-100" href="#__codelineno-22-100"></a>
+<a id="__codelineno-22-101" name="__codelineno-22-101" href="#__codelineno-22-101"></a>    <span class="n">jti</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">uuid4</span><span class="p">())</span>
+<a id="__codelineno-22-102" name="__codelineno-22-102" href="#__codelineno-22-102"></a>    <span class="n">access_token</span> <span class="o">=</span> <span class="n">jwt</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span>
+<a id="__codelineno-22-103" name="__codelineno-22-103" href="#__codelineno-22-103"></a>        <span class="p">{</span>
+<a id="__codelineno-22-104" name="__codelineno-22-104" href="#__codelineno-22-104"></a>            <span class="s2">&quot;sub&quot;</span><span class="p">:</span> <span class="n">github_id</span><span class="p">,</span>
+<a id="__codelineno-22-105" name="__codelineno-22-105" href="#__codelineno-22-105"></a>            <span class="s2">&quot;login&quot;</span><span class="p">:</span> <span class="n">github_login</span><span class="p">,</span>
+<a id="__codelineno-22-106" name="__codelineno-22-106" href="#__codelineno-22-106"></a>            <span class="s2">&quot;jti&quot;</span><span class="p">:</span> <span class="n">jti</span><span class="p">,</span>
+<a id="__codelineno-22-107" name="__codelineno-22-107" href="#__codelineno-22-107"></a>            <span class="s2">&quot;iat&quot;</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(</span><span class="n">timezone</span><span class="o">.</span><span class="n">utc</span><span class="p">),</span>
+<a id="__codelineno-22-108" name="__codelineno-22-108" href="#__codelineno-22-108"></a>            <span class="s2">&quot;exp&quot;</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">(</span><span class="n">timezone</span><span class="o">.</span><span class="n">utc</span><span class="p">)</span> <span class="o">+</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">ACCESS_TOKEN_EXPIRE_SECONDS</span><span class="p">),</span>
+<a id="__codelineno-22-109" name="__codelineno-22-109" href="#__codelineno-22-109"></a>        <span class="p">},</span>
+<a id="__codelineno-22-110" name="__codelineno-22-110" href="#__codelineno-22-110"></a>        <span class="n">settings</span><span class="o">.</span><span class="n">JWT_SECRET</span><span class="p">,</span>
+<a id="__codelineno-22-111" name="__codelineno-22-111" href="#__codelineno-22-111"></a>        <span class="n">algorithm</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">JWT_ALGORITHM</span><span class="p">,</span>
+<a id="__codelineno-22-112" name="__codelineno-22-112" href="#__codelineno-22-112"></a>    <span class="p">)</span>
+<a id="__codelineno-22-113" name="__codelineno-22-113" href="#__codelineno-22-113"></a>
+<a id="__codelineno-22-114" name="__codelineno-22-114" href="#__codelineno-22-114"></a>    <span class="n">refresh_token</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">uuid4</span><span class="p">())</span>
+<a id="__codelineno-22-115" name="__codelineno-22-115" href="#__codelineno-22-115"></a>    <span class="k">await</span> <span class="n">redis</span><span class="o">.</span><span class="n">setex</span><span class="p">(</span>
+<a id="__codelineno-22-116" name="__codelineno-22-116" href="#__codelineno-22-116"></a>        <span class="sa">f</span><span class="s2">&quot;refresh_token:</span><span class="si">{</span><span class="n">refresh_token</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+<a id="__codelineno-22-117" name="__codelineno-22-117" href="#__codelineno-22-117"></a>        <span class="n">settings</span><span class="o">.</span><span class="n">REFRESH_TOKEN_EXPIRE_SECONDS</span><span class="p">,</span>
+<a id="__codelineno-22-118" name="__codelineno-22-118" href="#__codelineno-22-118"></a>        <span class="n">github_id</span><span class="p">,</span>
+<a id="__codelineno-22-119" name="__codelineno-22-119" href="#__codelineno-22-119"></a>    <span class="p">)</span>
+<a id="__codelineno-22-120" name="__codelineno-22-120" href="#__codelineno-22-120"></a>    <span class="n">response</span><span class="o">.</span><span class="n">set_cookie</span><span class="p">(</span>
+<a id="__codelineno-22-121" name="__codelineno-22-121" href="#__codelineno-22-121"></a>        <span class="n">key</span><span class="o">=</span><span class="s2">&quot;refresh_token&quot;</span><span class="p">,</span>
+<a id="__codelineno-22-122" name="__codelineno-22-122" href="#__codelineno-22-122"></a>        <span class="n">value</span><span class="o">=</span><span class="n">refresh_token</span><span class="p">,</span>
+<a id="__codelineno-22-123" name="__codelineno-22-123" href="#__codelineno-22-123"></a>        <span class="n">httponly</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<a id="__codelineno-22-124" name="__codelineno-22-124" href="#__codelineno-22-124"></a>        <span class="n">secure</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<a id="__codelineno-22-125" name="__codelineno-22-125" href="#__codelineno-22-125"></a>        <span class="n">samesite</span><span class="o">=</span><span class="s2">&quot;strict&quot;</span><span class="p">,</span>
+<a id="__codelineno-22-126" name="__codelineno-22-126" href="#__codelineno-22-126"></a>        <span class="n">max_age</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">REFRESH_TOKEN_EXPIRE_SECONDS</span><span class="p">,</span>
+<a id="__codelineno-22-127" name="__codelineno-22-127" href="#__codelineno-22-127"></a>        <span class="n">path</span><span class="o">=</span><span class="s2">&quot;/auth&quot;</span><span class="p">,</span>   <span class="c1"># cookie only sent to /auth endpoints</span>
+<a id="__codelineno-22-128" name="__codelineno-22-128" href="#__codelineno-22-128"></a>    <span class="p">)</span>
+<a id="__codelineno-22-129" name="__codelineno-22-129" href="#__codelineno-22-129"></a>
+<a id="__codelineno-22-130" name="__codelineno-22-130" href="#__codelineno-22-130"></a>    <span class="k">return</span> <span class="n">AccessTokenResponse</span><span class="p">(</span><span class="n">access_token</span><span class="o">=</span><span class="n">access_token</span><span class="p">,</span> <span class="n">token_type</span><span class="o">=</span><span class="s2">&quot;bearer&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="protecting-a-job-endpoint-full-example">Protecting a Job Endpoint (Full Example)<a class="headerlink" href="#protecting-a-job-endpoint-full-example" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a><span class="nd">@router</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/</span><span class="si">{job_id}</span><span class="s2">/stream&quot;</span><span class="p">)</span>
+<a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">stream_job</span><span class="p">(</span>
+<a id="__codelineno-23-3" name="__codelineno-23-3" href="#__codelineno-23-3"></a>    <span class="n">job_id</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_job_and_verify_owner</span><span class="p">)],</span>
+<a id="__codelineno-23-4" name="__codelineno-23-4" href="#__codelineno-23-4"></a>    <span class="n">redis</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="n">Redis</span><span class="p">,</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_redis</span><span class="p">)],</span>
+<a id="__codelineno-23-5" name="__codelineno-23-5" href="#__codelineno-23-5"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StreamingResponse</span><span class="p">:</span>
+<a id="__codelineno-23-6" name="__codelineno-23-6" href="#__codelineno-23-6"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Stream live agent events for a job.</span>
+<a id="__codelineno-23-7" name="__codelineno-23-7" href="#__codelineno-23-7"></a>
+<a id="__codelineno-23-8" name="__codelineno-23-8" href="#__codelineno-23-8"></a><span class="sd">    Authenticated via Bearer token (Authorization header).</span>
+<a id="__codelineno-23-9" name="__codelineno-23-9" href="#__codelineno-23-9"></a><span class="sd">    Ownership verified via job registry in Redis.</span>
+<a id="__codelineno-23-10" name="__codelineno-23-10" href="#__codelineno-23-10"></a><span class="sd">    Uses @microsoft/fetch-event-source on the frontend — not native EventSource.</span>
+<a id="__codelineno-23-11" name="__codelineno-23-11" href="#__codelineno-23-11"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-23-12" name="__codelineno-23-12" href="#__codelineno-23-12"></a>    <span class="n">channel</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;jobs:</span><span class="si">{</span><span class="n">job_id</span><span class="si">}</span><span class="s2">:events&quot;</span>
+<a id="__codelineno-23-13" name="__codelineno-23-13" href="#__codelineno-23-13"></a>
+<a id="__codelineno-23-14" name="__codelineno-23-14" href="#__codelineno-23-14"></a>    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">event_generator</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">AsyncGenerator</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+<a id="__codelineno-23-15" name="__codelineno-23-15" href="#__codelineno-23-15"></a>        <span class="n">pubsub</span> <span class="o">=</span> <span class="n">redis</span><span class="o">.</span><span class="n">pubsub</span><span class="p">()</span>
+<a id="__codelineno-23-16" name="__codelineno-23-16" href="#__codelineno-23-16"></a>        <span class="k">await</span> <span class="n">pubsub</span><span class="o">.</span><span class="n">subscribe</span><span class="p">(</span><span class="n">channel</span><span class="p">)</span>
+<a id="__codelineno-23-17" name="__codelineno-23-17" href="#__codelineno-23-17"></a>        <span class="n">seq</span> <span class="o">=</span> <span class="mi">0</span>
+<a id="__codelineno-23-18" name="__codelineno-23-18" href="#__codelineno-23-18"></a>        <span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-23-19" name="__codelineno-23-19" href="#__codelineno-23-19"></a>            <span class="k">async</span> <span class="k">for</span> <span class="n">message</span> <span class="ow">in</span> <span class="n">pubsub</span><span class="o">.</span><span class="n">listen</span><span class="p">():</span>
+<a id="__codelineno-23-20" name="__codelineno-23-20" href="#__codelineno-23-20"></a>                <span class="k">if</span> <span class="n">message</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;message&quot;</span><span class="p">:</span>
+<a id="__codelineno-23-21" name="__codelineno-23-21" href="#__codelineno-23-21"></a>                    <span class="k">continue</span>
+<a id="__codelineno-23-22" name="__codelineno-23-22" href="#__codelineno-23-22"></a>                <span class="k">yield</span> <span class="sa">f</span><span class="s2">&quot;id: </span><span class="si">{</span><span class="n">seq</span><span class="si">}</span><span class="se">\n</span><span class="s2">data: </span><span class="si">{</span><span class="n">message</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span><span class="si">}</span><span class="se">\n\n</span><span class="s2">&quot;</span>
+<a id="__codelineno-23-23" name="__codelineno-23-23" href="#__codelineno-23-23"></a>                <span class="n">seq</span> <span class="o">+=</span> <span class="mi">1</span>
+<a id="__codelineno-23-24" name="__codelineno-23-24" href="#__codelineno-23-24"></a>                <span class="k">if</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">message</span><span class="p">[</span><span class="s2">&quot;data&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;type&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;job.done&quot;</span><span class="p">:</span>
+<a id="__codelineno-23-25" name="__codelineno-23-25" href="#__codelineno-23-25"></a>                    <span class="k">break</span>
+<a id="__codelineno-23-26" name="__codelineno-23-26" href="#__codelineno-23-26"></a>        <span class="k">finally</span><span class="p">:</span>
+<a id="__codelineno-23-27" name="__codelineno-23-27" href="#__codelineno-23-27"></a>            <span class="k">await</span> <span class="n">pubsub</span><span class="o">.</span><span class="n">unsubscribe</span><span class="p">(</span><span class="n">channel</span><span class="p">)</span>
+<a id="__codelineno-23-28" name="__codelineno-23-28" href="#__codelineno-23-28"></a>            <span class="k">await</span> <span class="n">pubsub</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+<a id="__codelineno-23-29" name="__codelineno-23-29" href="#__codelineno-23-29"></a>
+<a id="__codelineno-23-30" name="__codelineno-23-30" href="#__codelineno-23-30"></a>    <span class="k">return</span> <span class="n">StreamingResponse</span><span class="p">(</span>
+<a id="__codelineno-23-31" name="__codelineno-23-31" href="#__codelineno-23-31"></a>        <span class="n">event_generator</span><span class="p">(),</span>
+<a id="__codelineno-23-32" name="__codelineno-23-32" href="#__codelineno-23-32"></a>        <span class="n">media_type</span><span class="o">=</span><span class="s2">&quot;text/event-stream&quot;</span><span class="p">,</span>
+<a id="__codelineno-23-33" name="__codelineno-23-33" href="#__codelineno-23-33"></a>        <span class="n">headers</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;Cache-Control&quot;</span><span class="p">:</span> <span class="s2">&quot;no-cache&quot;</span><span class="p">,</span> <span class="s2">&quot;X-Accel-Buffering&quot;</span><span class="p">:</span> <span class="s2">&quot;no&quot;</span><span class="p">},</span>
+<a id="__codelineno-23-34" name="__codelineno-23-34" href="#__codelineno-23-34"></a>    <span class="p">)</span>
+</code></pre></div>
+<hr />
+<h2 id="out-of-scope-v1">Out of Scope (v1)<a class="headerlink" href="#out-of-scope-v1" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>Rationale for Deferral</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>RBAC / roles</strong></td>
+<td>Single-user-per-job model; no shared access or team permissions in v1</td>
+</tr>
+<tr>
+<td><strong>Refresh token rotation</strong></td>
+<td>Adds client complexity; 15-min access token + 7-day non-rotating refresh is acceptable for v1</td>
+</tr>
+<tr>
+<td><strong>Access token revocation</strong></td>
+<td>Requires a Redis token blocklist; 15-min expiry limits the damage window</td>
+</tr>
+<tr>
+<td><strong>GitHub App (vs OAuth App)</strong></td>
+<td>GitHub Apps have expiring tokens + finer permission granularity; migration path documented in <a href="#token-expiry">Token Expiry</a></td>
+</tr>
+<tr>
+<td><strong>Multi-user job sharing</strong></td>
+<td>Share a job stream with a colleague — v2 feature requiring explicit ACL</td>
+</tr>
+<tr>
+<td><strong>Rate limiting per user</strong></td>
+<td>Prevent a single user from creating thousands of jobs; separate infrastructure concern (API gateway / Redis rate limiter)</td>
+</tr>
+<tr>
+<td><strong>Audit log</strong></td>
+<td>Record of who did what to which job; v2 compliance feature</td>
+</tr>
+<tr>
+<td><strong>RS256 JWT signing</strong></td>
+<td>Asymmetric keys useful when multiple services verify tokens; overkill for v1 monolith</td>
+</tr>
+</tbody>
+</table>
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.top", "toc.integrate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

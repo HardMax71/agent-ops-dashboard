@@ -1,0 +1,2782 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://hardmax71.github.io/agent-ops-dashboard/prd/PRD-003-1-event-pipeline/">
+      
+      
+        <link rel="prev" href="../PRD-003-langgraph-orchestration/">
+      
+      
+        <link rel="next" href="../PRD-003-2-supervisor-spec/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.4">
+    
+    
+      
+        <title>SSE Event Pipeline & ARQ Worker Specification - AgentOps Dashboard</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#prd-003-1-sse-event-pipeline-arq-worker-specification" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="AgentOps Dashboard" class="md-header__button md-logo" aria-label="AgentOps Dashboard" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            AgentOps Dashboard
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              SSE Event Pipeline & ARQ Worker Specification
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="AgentOps Dashboard" class="md-nav__button md-logo" aria-label="AgentOps Dashboard" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    AgentOps Dashboard
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PRDs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    PRDs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-001-master-overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Master Overview
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-002-frontend-ux/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frontend & UX
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_3" id="__nav_2_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frontend Detail
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Frontend Detail
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-002-1-design-system/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Design System & Components
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-002-2-pages-and-wireframes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pages & Wireframes
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-002-3-interactions-and-a11y/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interactions & Accessibility
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-003-langgraph-orchestration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LangGraph Orchestration
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_5" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2_5" id="__nav_2_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Orchestration Detail
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Orchestration Detail
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Event Pipeline & Worker
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Event Pipeline & Worker
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-purpose-scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Purpose &amp; Scope
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-astream_events-v2-reference" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. astream_events v2 Reference
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. astream_events v2 Reference">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#full-event-type-table" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Full Event Type Table
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#metadata-field-glossary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Metadata Field Glossary
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#token-content-formats" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Token Content Formats
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-langgraph-frontend-sse-mapping-table" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. LangGraph → Frontend SSE Mapping Table
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. LangGraph → Frontend SSE Mapping Table">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#all_nodes-constant" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ALL_NODES Constant
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-worker_nodes-constant" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. WORKER_NODES Constant
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-sse-event-type-definitions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. SSE Event Type Definitions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-langgrapheventtransformer-specification" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. LangGraphEventTransformer Specification
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. LangGraphEventTransformer Specification">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#handler-type" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Handler Type
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#metadata-helper" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Metadata Helper
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#individual-handlers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Individual Handlers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#transformer-class" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Transformer Class
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#section-helper-for-writer-tokens" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Section Helper for Writer Tokens
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-interrupt-detection-_check_for_interrupt" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Interrupt Detection: _check_for_interrupt()
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Interrupt Detection: _check_for_interrupt()">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#primary-method-recommended" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Primary Method (Recommended)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#alternative-method-stream-mode-updates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Alternative Method (Stream-Mode Updates)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#interrupt-payload-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Interrupt Payload Structure
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-agent-identity-tracking" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Agent Identity Tracking
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. Agent Identity Tracking">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#problem" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Problem
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Solution
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-writer-runnableparallel-outputsection_done" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Writer RunnableParallel → output.section_done
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="9. Writer RunnableParallel → output.section_done">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#event-detection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Event Detection
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#token-attribution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Token Attribution
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-full-annotated-run_triage-function" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Full Annotated run_triage() Function
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10. Full Annotated run_triage() Function">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#service-wide-worker-error-handler" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Service-Wide Worker Error Handler
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#run_triage-clean-no-exception-handling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        run_triage() — Clean, No Exception Handling
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-known-issues-gotchas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. Known Issues &amp; Gotchas
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="11. Known Issues &amp; Gotchas">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#on_llm_stream-vs-on_chat_model_stream" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        on_llm_stream vs on_chat_model_stream
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#nested-runnable-streaming" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Nested Runnable Streaming
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#event-deduplication" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Event Deduplication
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#empty-content-chunks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Empty Content Chunks
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#multiple-on_chain_start-for-the-same-node" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Multiple on_chain_start for the Same Node
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-003-2-supervisor-spec/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Supervisor Prompt & Routing
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-004-agent-layer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agent Layer
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_7" id="__nav_2_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agent Layer Detail
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Agent Layer Detail
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-004-1-agent-chains/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Full LCEL Chain Specs
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-004-2-codebase-index/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Codebase Vector Index
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-005-langsmith-observability/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LangSmith Observability
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_9" id="__nav_2_9_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LangSmith Detail
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    LangSmith Detail
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-005-1-langsmith-api-spec/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API & Integration Spec
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-006-data-validation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Validation
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-007-developer-tooling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Developer Tooling
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-012-backend-di/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backend & DI
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-008-authentication/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authentication
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_14" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_14" id="__nav_2_14_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Auth Detail
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_14_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_14">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Auth Detail
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-008-1-auth-impl-spec/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Implementation Spec
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-009-documentation-standards/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Documentation Standards
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-010-evaluation-framework/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Evaluation Framework
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-011-metrics-collection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Metrics Collection
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-013-testing-strategy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing Strategy & CI
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Plans
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Plans
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-001-1-goals-and-dod/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Goals & Definition of Done
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../plans/roadmap-v1/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roadmap v1 (precise)
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../plans/roadmap-v2/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roadmap v2 (general)
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--PLANNED"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="prd-003-1-sse-event-pipeline-arq-worker-specification">PRD-003-1 — SSE Event Pipeline &amp; ARQ Worker Specification<a class="headerlink" href="#prd-003-1-sse-event-pipeline-arq-worker-specification" title="Permanent link">&para;</a></h1>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Document ID</td>
+<td>PRD-003-1</td>
+</tr>
+<tr>
+<td>Version</td>
+<td>1.0</td>
+</tr>
+<tr>
+<td>Status</td>
+<td>DRAFT</td>
+</tr>
+<tr>
+<td>Date</td>
+<td>March 2026</td>
+</tr>
+<tr>
+<td>Parent Doc</td>
+<td><a href="../PRD-003-langgraph-orchestration/">PRD-003</a></td>
+</tr>
+<tr>
+<td>Related Docs</td>
+<td><a href="../PRD-002-frontend-ux/">PRD-002</a> (Frontend SSE schema)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="1-purpose-scope">1. Purpose &amp; Scope<a class="headerlink" href="#1-purpose-scope" title="Permanent link">&para;</a></h2>
+<p>This document fully specifies the <code>transform_langgraph_event()</code> function and the surrounding
+translation layer between LangGraph's internal event stream and the frontend SSE schema defined
+in PRD-002.</p>
+<p>PRD-003 establishes that the ARQ worker calls <code>graph.astream_events()</code> and publishes transformed
+events to a Redis Pub/Sub channel. This document answers <strong>how</strong> that transformation works —
+every LangGraph event type, every mapping rule, every edge case, and the complete annotated
+<code>run_triage()</code> function.</p>
+<p><strong>Boundary with PRD-003:</strong> PRD-003 specifies the graph structure, state schema, HITL flow, and
+checkpointing. This document covers only the event pipeline: what comes out of
+<code>astream_events()</code> and how it becomes frontend SSE events.</p>
+<hr />
+<h2 id="2-astream_events-v2-reference">2. <code>astream_events</code> v2 Reference<a class="headerlink" href="#2-astream_events-v2-reference" title="Permanent link">&para;</a></h2>
+<p><code>graph.astream_events(input, config=config, version="v2")</code> is an async generator that yields
+event dicts. The <code>version="v2"</code> parameter is required and changes event naming and metadata.</p>
+<h3 id="full-event-type-table">Full Event Type Table<a class="headerlink" href="#full-event-type-table" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Event type</th>
+<th>Fires when</th>
+<th><code>event["data"]</code> contents</th>
+<th>Key <code>event["metadata"]</code> fields</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>on_chain_start</code></td>
+<td>A LangGraph node begins executing</td>
+<td><code>{"input": &lt;node input dict&gt;}</code></td>
+<td><code>langgraph_node</code>, <code>langgraph_step</code>, <code>langgraph_checkpoint_ns</code>, <code>langgraph_triggers</code>, <code>langgraph_path</code></td>
+</tr>
+<tr>
+<td><code>on_chain_end</code></td>
+<td>A LangGraph node finishes executing</td>
+<td><code>{"output": &lt;node return dict&gt;}</code></td>
+<td><code>langgraph_node</code>, <code>langgraph_step</code>, <code>langgraph_checkpoint_ns</code></td>
+</tr>
+<tr>
+<td><code>on_chain_stream</code></td>
+<td>Intermediate output from a node mid-run</td>
+<td><code>{"chunk": &lt;partial output&gt;}</code></td>
+<td><code>langgraph_node</code>, <code>langgraph_step</code></td>
+</tr>
+<tr>
+<td><code>on_chat_model_stream</code></td>
+<td>An LLM token is generated inside a node</td>
+<td><code>{"chunk": AIMessageChunk}</code></td>
+<td><code>langgraph_node</code>, <code>langgraph_step</code>, <code>langgraph_checkpoint_ns</code></td>
+</tr>
+<tr>
+<td><code>on_tool_start</code></td>
+<td>A tool invocation begins inside a node</td>
+<td><code>{"input": &lt;tool input dict&gt;}</code></td>
+<td><code>langgraph_node</code>, <code>langgraph_step</code></td>
+</tr>
+<tr>
+<td><code>on_tool_end</code></td>
+<td>A tool invocation completes inside a node</td>
+<td><code>{"output": &lt;tool result&gt;}</code></td>
+<td><code>langgraph_node</code>, <code>langgraph_step</code></td>
+</tr>
+<tr>
+<td><code>on_custom_event</code></td>
+<td>Application code called <code>emit_event()</code></td>
+<td><code>{"data": &lt;custom payload&gt;}</code></td>
+<td><code>langgraph_node</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="metadata-field-glossary">Metadata Field Glossary<a class="headerlink" href="#metadata-field-glossary" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>langgraph_node</code></td>
+<td><code>str</code></td>
+<td>Name of the currently executing graph node (e.g. <code>"investigator"</code>)</td>
+</tr>
+<tr>
+<td><code>langgraph_step</code></td>
+<td><code>int</code></td>
+<td>Monotonically increasing step counter for the current graph execution</td>
+</tr>
+<tr>
+<td><code>langgraph_checkpoint_ns</code></td>
+<td><code>str</code></td>
+<td>Namespace identifying the active checkpoint; format: <code>"node_name:uuid"</code> for parallel branches</td>
+</tr>
+<tr>
+<td><code>langgraph_triggers</code></td>
+<td><code>list[str]</code></td>
+<td>Which edges triggered this node (usually <code>["supervisor"]</code> for worker nodes)</td>
+</tr>
+<tr>
+<td><code>langgraph_path</code></td>
+<td><code>tuple[str, ...]</code></td>
+<td>Full path of the current execution context (useful for nested graphs)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="token-content-formats">Token Content Formats<a class="headerlink" href="#token-content-formats" title="Permanent link">&para;</a></h3>
+<p><code>on_chat_model_stream</code> events contain <code>event["data"]["chunk"]</code> which is an <code>AIMessageChunk</code>.
+The <code>.content</code> field varies by provider:</p>
+<ul>
+<li><strong>OpenAI / most providers:</strong> <code>chunk.content</code> is a <code>str</code> — the raw token text.</li>
+<li><strong>Anthropic:</strong> <code>chunk.content</code> may be a <code>list[dict]</code>, where each dict has <code>{"type": "text", "text": "..."}</code>.</li>
+</ul>
+<p>The transformer uses <code>chunk.text</code> (a <code>TextAccessor</code> str subclass) which handles both forms internally — no branching needed in application code (see §6).</p>
+<blockquote>
+<p><strong>Note:</strong> <code>on_llm_stream</code> is the older pre-v2 event name. Some non-OpenAI providers and older
+LangChain integrations still emit it. The transformer handles both (see §11).</p>
+</blockquote>
+<hr />
+<h2 id="3-langgraph-frontend-sse-mapping-table">3. LangGraph → Frontend SSE Mapping Table<a class="headerlink" href="#3-langgraph-frontend-sse-mapping-table" title="Permanent link">&para;</a></h2>
+<p>This is the authoritative mapping between LangGraph events and the frontend SSE schema from
+PRD-002. Every SSE event type in PRD-002's event table has a row here.</p>
+<table>
+<thead>
+<tr>
+<th>LangGraph event</th>
+<th>Condition</th>
+<th>Frontend SSE event</th>
+<th>Payload mapping</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>on_chain_start</code></td>
+<td><code>metadata["langgraph_node"] in WORKER_NODES</code></td>
+<td><code>agent.spawned</code></td>
+<td><code>agent_id</code>: new UUID stored in <code>spawned_agents</code>; <code>agent_name</code>: <code>langgraph_node</code>; <code>node</code>: <code>langgraph_node</code></td>
+<td>Every <code>on_chain_start</code> generates a new agent card — including re-entries (node called twice); each gets its own UUID</td>
+</tr>
+<tr>
+<td><code>on_chat_model_stream</code></td>
+<td><code>metadata["langgraph_node"] in WORKER_NODES</code> AND token non-empty</td>
+<td><code>agent.token</code></td>
+<td><code>agent_id</code>: from <code>spawned_agents[langgraph_node]</code>; <code>token</code>: extracted string token</td>
+<td>Drop events where extracted token is <code>""</code></td>
+</tr>
+<tr>
+<td><code>on_tool_start</code></td>
+<td><code>metadata["langgraph_node"] in WORKER_NODES</code></td>
+<td><code>agent.tool_call</code></td>
+<td><code>agent_id</code>: from <code>spawned_agents</code>; <code>tool_name</code>: <code>event["name"]</code>; <code>input_preview</code>: truncated JSON of <code>data["input"]</code> at 60 chars</td>
+<td><strong>Requires <code>ToolNode</code></strong> for Tavily and any other tool — <code>on_tool_start</code> is not emitted by <code>RunnableLambda</code>; see PRD-004-1 §5</td>
+</tr>
+<tr>
+<td><code>on_tool_end</code></td>
+<td><code>metadata["langgraph_node"] in WORKER_NODES</code></td>
+<td><code>agent.tool_result</code></td>
+<td><code>agent_id</code>: from <code>spawned_agents</code>; <code>tool_name</code>: <code>event["name"]</code>; <code>result_summary</code>: <code>str(data["output"])[:120]</code></td>
+<td>Same <code>ToolNode</code> requirement as <code>on_tool_start</code></td>
+</tr>
+<tr>
+<td><code>on_chain_end</code></td>
+<td><code>metadata["langgraph_node"] in WORKER_NODES</code></td>
+<td><code>agent.done</code></td>
+<td><code>agent_id</code>: from <code>spawned_agents</code>; <code>node</code>: <code>langgraph_node</code>; <code>elapsed_ms</code>: not directly available — omit or compute from wall time</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Post-loop <code>aget_state()</code></td>
+<td><code>bool(state.tasks)</code> is True after loop exits</td>
+<td><code>graph.interrupt</code></td>
+<td><code>question</code>: from <code>interrupt_payload.question</code>; <code>context</code>: from <code>interrupt_payload.context</code> (<code>HumanExchange</code> dot fields)</td>
+<td>See §7 for interrupt detection details</td>
+</tr>
+<tr>
+<td>Answer endpoint</td>
+<td>After <code>Command(resume=...)</code> succeeds</td>
+<td><code>graph.resumed</code></td>
+<td><code>job_id</code></td>
+<td>Emitted by the answer endpoint, not the worker</td>
+</tr>
+<tr>
+<td><code>on_chain_end</code></td>
+<td><code>metadata["langgraph_node"] in ALL_NODES</code> (any node)</td>
+<td><code>graph.node_complete</code></td>
+<td><code>node</code>: <code>langgraph_node</code>; <code>step</code>: <code>langgraph_step</code></td>
+<td>Includes supervisor; useful for ExecutionTimeline</td>
+</tr>
+<tr>
+<td>Pause endpoint</td>
+<td>After interrupt fires for manual pause</td>
+<td><code>graph.paused</code></td>
+<td><code>job_id</code></td>
+<td>Emitted by the pause endpoint, not the worker</td>
+</tr>
+<tr>
+<td><code>on_chat_model_stream</code></td>
+<td><code>metadata["langgraph_node"] == "writer"</code> AND token non-empty</td>
+<td><code>output.token</code></td>
+<td><code>token</code>: extracted string; <code>section</code>: derived from <code>langgraph_checkpoint_ns</code></td>
+<td>Uses checkpoint namespace to identify which RunnableParallel branch</td>
+</tr>
+<tr>
+<td><code>on_chain_end</code></td>
+<td><code>metadata["langgraph_node"] == "writer"</code> AND <code>event["name"] in {"report", "comment_draft", "ticket_draft"}</code></td>
+<td><code>output.section_done</code></td>
+<td><code>section</code>: <code>event["name"]</code></td>
+<td>See §9 for RunnableParallel details</td>
+</tr>
+<tr>
+<td>After <code>astream_events</code> loop completes without interrupt</td>
+<td>—</td>
+<td><code>job.done</code></td>
+<td>—</td>
+<td>Emitted by worker after loop exits clean</td>
+</tr>
+<tr>
+<td>Exception in <code>astream_events</code> loop</td>
+<td>—</td>
+<td><code>job.failed</code></td>
+<td><code>error</code>: exception message</td>
+<td>Emitted by worker's except block</td>
+</tr>
+</tbody>
+</table>
+<h3 id="all_nodes-constant">ALL_NODES Constant<a class="headerlink" href="#all_nodes-constant" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">ALL_NODES</span> <span class="o">=</span> <span class="p">{</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="s2">&quot;supervisor&quot;</span><span class="p">,</span> <span class="s2">&quot;investigator&quot;</span><span class="p">,</span> <span class="s2">&quot;codebase_search&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="s2">&quot;web_search&quot;</span><span class="p">,</span> <span class="s2">&quot;critic&quot;</span><span class="p">,</span> <span class="s2">&quot;human_input&quot;</span><span class="p">,</span> <span class="s2">&quot;writer&quot;</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="p">}</span>
+</code></pre></div>
+<hr />
+<h2 id="4-worker_nodes-constant">4. WORKER_NODES Constant<a class="headerlink" href="#4-worker_nodes-constant" title="Permanent link">&para;</a></h2>
+<p><code>WORKER_NODES</code> is the set of node names that generate agent cards in the UI. The supervisor and
+<code>human_input</code> nodes are excluded — they do not produce agent cards.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">WORKER_NODES</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;investigator&quot;</span><span class="p">,</span> <span class="s2">&quot;codebase_search&quot;</span><span class="p">,</span> <span class="s2">&quot;web_search&quot;</span><span class="p">,</span> <span class="s2">&quot;critic&quot;</span><span class="p">,</span> <span class="s2">&quot;writer&quot;</span><span class="p">}</span>
+</code></pre></div>
+<p>This constant is used in <code>transform_langgraph_event()</code> to gate which events produce
+<code>agent.*</code> SSE events.</p>
+<hr />
+<h2 id="5-sse-event-type-definitions">5. SSE Event Type Definitions<a class="headerlink" href="#5-sse-event-type-definitions" title="Permanent link">&para;</a></h2>
+<p>All SSE event types are declared as <code>TypedDict</code>s so every payload is statically typed
+end-to-end. No <code>dict</code> literals, no <code>cast()</code>, no <code>isinstance()</code>.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">TypeAlias</span><span class="p">,</span> <span class="n">TypedDict</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">langchain_core.runnables.schema</span><span class="w"> </span><span class="kn">import</span> <span class="n">StandardStreamEvent</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="k">class</span><span class="w"> </span><span class="nc">LangGraphEventMetadata</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">,</span> <span class="n">total</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>    <span class="n">langgraph_node</span><span class="p">:</span> <span class="nb">str</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>    <span class="n">langgraph_step</span><span class="p">:</span> <span class="nb">int</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>    <span class="n">langgraph_checkpoint_ns</span><span class="p">:</span> <span class="nb">str</span>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>    <span class="n">langgraph_triggers</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>
+<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="k">class</span><span class="w"> </span><span class="nc">AgentSpawnedEvent</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">):</span>
+<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>    <span class="nb">type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;agent.spawned&quot;</span><span class="p">]</span>
+<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>    <span class="n">agent_id</span><span class="p">:</span> <span class="nb">str</span>
+<a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a>    <span class="n">agent_name</span><span class="p">:</span> <span class="nb">str</span>
+<a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a>    <span class="n">node</span><span class="p">:</span> <span class="nb">str</span>
+<a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a>
+<a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a><span class="k">class</span><span class="w"> </span><span class="nc">AgentTokenEvent</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">):</span>
+<a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a>    <span class="nb">type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;agent.token&quot;</span><span class="p">]</span>
+<a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a>    <span class="n">agent_id</span><span class="p">:</span> <span class="nb">str</span>
+<a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a>    <span class="n">token</span><span class="p">:</span> <span class="nb">str</span>
+<a id="__codelineno-2-22" name="__codelineno-2-22" href="#__codelineno-2-22"></a>
+<a id="__codelineno-2-23" name="__codelineno-2-23" href="#__codelineno-2-23"></a><span class="k">class</span><span class="w"> </span><span class="nc">OutputTokenEvent</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">):</span>
+<a id="__codelineno-2-24" name="__codelineno-2-24" href="#__codelineno-2-24"></a>    <span class="nb">type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;output.token&quot;</span><span class="p">]</span>
+<a id="__codelineno-2-25" name="__codelineno-2-25" href="#__codelineno-2-25"></a>    <span class="n">token</span><span class="p">:</span> <span class="nb">str</span>
+<a id="__codelineno-2-26" name="__codelineno-2-26" href="#__codelineno-2-26"></a>    <span class="n">section</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span>
+<a id="__codelineno-2-27" name="__codelineno-2-27" href="#__codelineno-2-27"></a>
+<a id="__codelineno-2-28" name="__codelineno-2-28" href="#__codelineno-2-28"></a><span class="k">class</span><span class="w"> </span><span class="nc">AgentToolCallEvent</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">):</span>
+<a id="__codelineno-2-29" name="__codelineno-2-29" href="#__codelineno-2-29"></a>    <span class="nb">type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;agent.tool_call&quot;</span><span class="p">]</span>
+<a id="__codelineno-2-30" name="__codelineno-2-30" href="#__codelineno-2-30"></a>    <span class="n">agent_id</span><span class="p">:</span> <span class="nb">str</span>
+<a id="__codelineno-2-31" name="__codelineno-2-31" href="#__codelineno-2-31"></a>    <span class="n">tool_name</span><span class="p">:</span> <span class="nb">str</span>
+<a id="__codelineno-2-32" name="__codelineno-2-32" href="#__codelineno-2-32"></a>    <span class="n">input_preview</span><span class="p">:</span> <span class="nb">str</span>
+<a id="__codelineno-2-33" name="__codelineno-2-33" href="#__codelineno-2-33"></a>
+<a id="__codelineno-2-34" name="__codelineno-2-34" href="#__codelineno-2-34"></a><span class="k">class</span><span class="w"> </span><span class="nc">AgentToolResultEvent</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">):</span>
+<a id="__codelineno-2-35" name="__codelineno-2-35" href="#__codelineno-2-35"></a>    <span class="nb">type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;agent.tool_result&quot;</span><span class="p">]</span>
+<a id="__codelineno-2-36" name="__codelineno-2-36" href="#__codelineno-2-36"></a>    <span class="n">agent_id</span><span class="p">:</span> <span class="nb">str</span>
+<a id="__codelineno-2-37" name="__codelineno-2-37" href="#__codelineno-2-37"></a>    <span class="n">tool_name</span><span class="p">:</span> <span class="nb">str</span>
+<a id="__codelineno-2-38" name="__codelineno-2-38" href="#__codelineno-2-38"></a>    <span class="n">result_summary</span><span class="p">:</span> <span class="nb">str</span>
+<a id="__codelineno-2-39" name="__codelineno-2-39" href="#__codelineno-2-39"></a>
+<a id="__codelineno-2-40" name="__codelineno-2-40" href="#__codelineno-2-40"></a><span class="k">class</span><span class="w"> </span><span class="nc">AgentDoneEvent</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">):</span>
+<a id="__codelineno-2-41" name="__codelineno-2-41" href="#__codelineno-2-41"></a>    <span class="nb">type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;agent.done&quot;</span><span class="p">]</span>
+<a id="__codelineno-2-42" name="__codelineno-2-42" href="#__codelineno-2-42"></a>    <span class="n">agent_id</span><span class="p">:</span> <span class="nb">str</span>
+<a id="__codelineno-2-43" name="__codelineno-2-43" href="#__codelineno-2-43"></a>    <span class="n">node</span><span class="p">:</span> <span class="nb">str</span>
+<a id="__codelineno-2-44" name="__codelineno-2-44" href="#__codelineno-2-44"></a>
+<a id="__codelineno-2-45" name="__codelineno-2-45" href="#__codelineno-2-45"></a><span class="k">class</span><span class="w"> </span><span class="nc">OutputSectionDoneEvent</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">):</span>
+<a id="__codelineno-2-46" name="__codelineno-2-46" href="#__codelineno-2-46"></a>    <span class="nb">type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;output.section_done&quot;</span><span class="p">]</span>
+<a id="__codelineno-2-47" name="__codelineno-2-47" href="#__codelineno-2-47"></a>    <span class="n">section</span><span class="p">:</span> <span class="nb">str</span>
+<a id="__codelineno-2-48" name="__codelineno-2-48" href="#__codelineno-2-48"></a>
+<a id="__codelineno-2-49" name="__codelineno-2-49" href="#__codelineno-2-49"></a><span class="k">class</span><span class="w"> </span><span class="nc">GraphNodeCompleteEvent</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">):</span>
+<a id="__codelineno-2-50" name="__codelineno-2-50" href="#__codelineno-2-50"></a>    <span class="nb">type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;graph.node_complete&quot;</span><span class="p">]</span>
+<a id="__codelineno-2-51" name="__codelineno-2-51" href="#__codelineno-2-51"></a>    <span class="n">node</span><span class="p">:</span> <span class="nb">str</span>
+<a id="__codelineno-2-52" name="__codelineno-2-52" href="#__codelineno-2-52"></a>    <span class="n">step</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span>
+<a id="__codelineno-2-53" name="__codelineno-2-53" href="#__codelineno-2-53"></a>
+<a id="__codelineno-2-54" name="__codelineno-2-54" href="#__codelineno-2-54"></a><span class="n">SseEvent</span><span class="p">:</span> <span class="n">TypeAlias</span> <span class="o">=</span> <span class="p">(</span>
+<a id="__codelineno-2-55" name="__codelineno-2-55" href="#__codelineno-2-55"></a>    <span class="n">AgentSpawnedEvent</span> <span class="o">|</span> <span class="n">AgentTokenEvent</span> <span class="o">|</span> <span class="n">OutputTokenEvent</span> <span class="o">|</span>
+<a id="__codelineno-2-56" name="__codelineno-2-56" href="#__codelineno-2-56"></a>    <span class="n">AgentToolCallEvent</span> <span class="o">|</span> <span class="n">AgentToolResultEvent</span> <span class="o">|</span> <span class="n">AgentDoneEvent</span> <span class="o">|</span>
+<a id="__codelineno-2-57" name="__codelineno-2-57" href="#__codelineno-2-57"></a>    <span class="n">OutputSectionDoneEvent</span> <span class="o">|</span> <span class="n">GraphNodeCompleteEvent</span>
+<a id="__codelineno-2-58" name="__codelineno-2-58" href="#__codelineno-2-58"></a><span class="p">)</span>
+</code></pre></div>
+<hr />
+<h2 id="6-langgrapheventtransformer-specification">6. <code>LangGraphEventTransformer</code> Specification<a class="headerlink" href="#6-langgrapheventtransformer-specification" title="Permanent link">&para;</a></h2>
+<p>The transformer replaces an if/elif chain with a dispatch table injected via DI.
+Each handler is a plain typed function; the transformer class is stateless beyond its
+<code>_handlers</code> dict.</p>
+<h3 id="handler-type">Handler Type<a class="headerlink" href="#handler-type" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">langchain_core.messages</span><span class="w"> </span><span class="kn">import</span> <span class="n">AIMessageChunk</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="n">_EventHandler</span><span class="p">:</span> <span class="n">TypeAlias</span> <span class="o">=</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">StandardStreamEvent</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]],</span> <span class="nb">list</span><span class="p">[</span><span class="n">SseEvent</span><span class="p">]]</span>
+</code></pre></div>
+<h3 id="metadata-helper">Metadata Helper<a class="headerlink" href="#metadata-helper" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">_meta</span><span class="p">(</span><span class="n">event</span><span class="p">:</span> <span class="n">StandardStreamEvent</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LangGraphEventMetadata</span><span class="p">:</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>    <span class="k">return</span> <span class="n">event</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;metadata&quot;</span><span class="p">,</span> <span class="p">{})</span>  <span class="c1"># type: ignore[return-value]</span>
+</code></pre></div>
+<h3 id="individual-handlers">Individual Handlers<a class="headerlink" href="#individual-handlers" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">_handle_stream</span><span class="p">(</span><span class="n">event</span><span class="p">:</span> <span class="n">StandardStreamEvent</span><span class="p">,</span> <span class="n">spawned_agents</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">SseEvent</span><span class="p">]:</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>    <span class="n">meta</span> <span class="o">=</span> <span class="n">_meta</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>    <span class="n">node</span> <span class="o">=</span> <span class="n">meta</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;langgraph_node&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>    <span class="n">agent_id</span> <span class="o">=</span> <span class="n">spawned_agents</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>    <span class="n">chunk</span><span class="p">:</span> <span class="n">AIMessageChunk</span> <span class="o">=</span> <span class="n">event</span><span class="p">[</span><span class="s2">&quot;data&quot;</span><span class="p">][</span><span class="s2">&quot;chunk&quot;</span><span class="p">]</span>   <span class="c1"># Any → typed (valid Pyright)</span>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>    <span class="n">token</span> <span class="o">=</span> <span class="n">chunk</span><span class="o">.</span><span class="n">text</span>                                <span class="c1"># TextAccessor — str subclass</span>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>    <span class="k">if</span> <span class="ow">not</span> <span class="n">token</span><span class="p">:</span>
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>        <span class="k">return</span> <span class="p">[]</span>
+<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>    <span class="k">if</span> <span class="n">agent_id</span><span class="p">:</span>
+<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>        <span class="k">return</span> <span class="p">[</span><span class="n">AgentTokenEvent</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="s2">&quot;agent.token&quot;</span><span class="p">,</span> <span class="n">agent_id</span><span class="o">=</span><span class="n">agent_id</span><span class="p">,</span> <span class="n">token</span><span class="o">=</span><span class="n">token</span><span class="p">)]</span>
+<a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a>    <span class="k">return</span> <span class="p">[</span><span class="n">OutputTokenEvent</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="s2">&quot;output.token&quot;</span><span class="p">,</span> <span class="n">token</span><span class="o">=</span><span class="n">token</span><span class="p">,</span> <span class="n">section</span><span class="o">=</span><span class="n">node</span> <span class="ow">or</span> <span class="kc">None</span><span class="p">)]</span>
+<a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a>
+<a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a>
+<a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a><span class="k">def</span><span class="w"> </span><span class="nf">_handle_tool_start</span><span class="p">(</span><span class="n">event</span><span class="p">:</span> <span class="n">StandardStreamEvent</span><span class="p">,</span> <span class="n">spawned_agents</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">SseEvent</span><span class="p">]:</span>
+<a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a>    <span class="n">meta</span> <span class="o">=</span> <span class="n">_meta</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
+<a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a>    <span class="n">node</span> <span class="o">=</span> <span class="n">meta</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;langgraph_node&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+<a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a>    <span class="n">agent_id</span> <span class="o">=</span> <span class="n">spawned_agents</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+<a id="__codelineno-5-18" name="__codelineno-5-18" href="#__codelineno-5-18"></a>    <span class="k">if</span> <span class="ow">not</span> <span class="n">agent_id</span><span class="p">:</span>
+<a id="__codelineno-5-19" name="__codelineno-5-19" href="#__codelineno-5-19"></a>        <span class="k">return</span> <span class="p">[]</span>
+<a id="__codelineno-5-20" name="__codelineno-5-20" href="#__codelineno-5-20"></a>    <span class="n">tool_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">event</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span>
+<a id="__codelineno-5-21" name="__codelineno-5-21" href="#__codelineno-5-21"></a>    <span class="n">input_preview</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">event</span><span class="p">[</span><span class="s2">&quot;data&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;input&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))[:</span><span class="mi">120</span><span class="p">]</span>
+<a id="__codelineno-5-22" name="__codelineno-5-22" href="#__codelineno-5-22"></a>    <span class="k">return</span> <span class="p">[</span><span class="n">AgentToolCallEvent</span><span class="p">(</span>
+<a id="__codelineno-5-23" name="__codelineno-5-23" href="#__codelineno-5-23"></a>        <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;agent.tool_call&quot;</span><span class="p">,</span> <span class="n">agent_id</span><span class="o">=</span><span class="n">agent_id</span><span class="p">,</span>
+<a id="__codelineno-5-24" name="__codelineno-5-24" href="#__codelineno-5-24"></a>        <span class="n">tool_name</span><span class="o">=</span><span class="n">tool_name</span><span class="p">,</span> <span class="n">input_preview</span><span class="o">=</span><span class="n">input_preview</span><span class="p">,</span>
+<a id="__codelineno-5-25" name="__codelineno-5-25" href="#__codelineno-5-25"></a>    <span class="p">)]</span>
+<a id="__codelineno-5-26" name="__codelineno-5-26" href="#__codelineno-5-26"></a>
+<a id="__codelineno-5-27" name="__codelineno-5-27" href="#__codelineno-5-27"></a>
+<a id="__codelineno-5-28" name="__codelineno-5-28" href="#__codelineno-5-28"></a><span class="k">def</span><span class="w"> </span><span class="nf">_handle_tool_end</span><span class="p">(</span><span class="n">event</span><span class="p">:</span> <span class="n">StandardStreamEvent</span><span class="p">,</span> <span class="n">spawned_agents</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">SseEvent</span><span class="p">]:</span>
+<a id="__codelineno-5-29" name="__codelineno-5-29" href="#__codelineno-5-29"></a>    <span class="n">meta</span> <span class="o">=</span> <span class="n">_meta</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
+<a id="__codelineno-5-30" name="__codelineno-5-30" href="#__codelineno-5-30"></a>    <span class="n">node</span> <span class="o">=</span> <span class="n">meta</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;langgraph_node&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+<a id="__codelineno-5-31" name="__codelineno-5-31" href="#__codelineno-5-31"></a>    <span class="n">agent_id</span> <span class="o">=</span> <span class="n">spawned_agents</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+<a id="__codelineno-5-32" name="__codelineno-5-32" href="#__codelineno-5-32"></a>    <span class="k">if</span> <span class="ow">not</span> <span class="n">agent_id</span><span class="p">:</span>
+<a id="__codelineno-5-33" name="__codelineno-5-33" href="#__codelineno-5-33"></a>        <span class="k">return</span> <span class="p">[]</span>
+<a id="__codelineno-5-34" name="__codelineno-5-34" href="#__codelineno-5-34"></a>    <span class="n">tool_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">event</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span>
+<a id="__codelineno-5-35" name="__codelineno-5-35" href="#__codelineno-5-35"></a>    <span class="n">result_summary</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">event</span><span class="p">[</span><span class="s2">&quot;data&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;output&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))[:</span><span class="mi">120</span><span class="p">]</span>
+<a id="__codelineno-5-36" name="__codelineno-5-36" href="#__codelineno-5-36"></a>    <span class="k">return</span> <span class="p">[</span><span class="n">AgentToolResultEvent</span><span class="p">(</span>
+<a id="__codelineno-5-37" name="__codelineno-5-37" href="#__codelineno-5-37"></a>        <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;agent.tool_result&quot;</span><span class="p">,</span> <span class="n">agent_id</span><span class="o">=</span><span class="n">agent_id</span><span class="p">,</span>
+<a id="__codelineno-5-38" name="__codelineno-5-38" href="#__codelineno-5-38"></a>        <span class="n">tool_name</span><span class="o">=</span><span class="n">tool_name</span><span class="p">,</span> <span class="n">result_summary</span><span class="o">=</span><span class="n">result_summary</span><span class="p">,</span>
+<a id="__codelineno-5-39" name="__codelineno-5-39" href="#__codelineno-5-39"></a>    <span class="p">)]</span>
+<a id="__codelineno-5-40" name="__codelineno-5-40" href="#__codelineno-5-40"></a>
+<a id="__codelineno-5-41" name="__codelineno-5-41" href="#__codelineno-5-41"></a>
+<a id="__codelineno-5-42" name="__codelineno-5-42" href="#__codelineno-5-42"></a><span class="k">def</span><span class="w"> </span><span class="nf">_handle_chain_end</span><span class="p">(</span><span class="n">event</span><span class="p">:</span> <span class="n">StandardStreamEvent</span><span class="p">,</span> <span class="n">spawned_agents</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">SseEvent</span><span class="p">]:</span>
+<a id="__codelineno-5-43" name="__codelineno-5-43" href="#__codelineno-5-43"></a>    <span class="n">meta</span> <span class="o">=</span> <span class="n">_meta</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
+<a id="__codelineno-5-44" name="__codelineno-5-44" href="#__codelineno-5-44"></a>    <span class="n">node</span> <span class="o">=</span> <span class="n">meta</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;langgraph_node&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+<a id="__codelineno-5-45" name="__codelineno-5-45" href="#__codelineno-5-45"></a>    <span class="n">step</span> <span class="o">=</span> <span class="n">meta</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;langgraph_step&quot;</span><span class="p">)</span>
+<a id="__codelineno-5-46" name="__codelineno-5-46" href="#__codelineno-5-46"></a>    <span class="k">return</span> <span class="p">[</span><span class="n">GraphNodeCompleteEvent</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="s2">&quot;graph.node_complete&quot;</span><span class="p">,</span> <span class="n">node</span><span class="o">=</span><span class="n">node</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="n">step</span><span class="p">)]</span>
+</code></pre></div>
+<h3 id="transformer-class">Transformer Class<a class="headerlink" href="#transformer-class" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">LangGraphEventTransformer</span><span class="p">:</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Injected via DI container (see PRD-012). Wire up in the dependency factory.&quot;&quot;&quot;</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">handlers</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">_EventHandler</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_handlers</span> <span class="o">=</span> <span class="n">handlers</span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">transform</span><span class="p">(</span>
+<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>        <span class="bp">self</span><span class="p">,</span>
+<a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>        <span class="n">event</span><span class="p">:</span> <span class="n">StandardStreamEvent</span><span class="p">,</span>
+<a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a>        <span class="n">spawned_agents</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span>
+<a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a>    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">SseEvent</span><span class="p">]:</span>
+<a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a>        <span class="n">handler</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_handlers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">event</span><span class="p">[</span><span class="s2">&quot;event&quot;</span><span class="p">])</span>
+<a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a>        <span class="k">return</span> <span class="n">handler</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">spawned_agents</span><span class="p">)</span> <span class="k">if</span> <span class="n">handler</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">[]</span>
+</code></pre></div>
+<p>DI wire-up (in the container / factory, not in module scope):</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">LangGraphEventTransformer</span><span class="p">(</span><span class="n">handlers</span><span class="o">=</span><span class="p">{</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>    <span class="s2">&quot;on_chat_model_stream&quot;</span><span class="p">:</span> <span class="n">_handle_stream</span><span class="p">,</span>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>    <span class="s2">&quot;on_llm_stream&quot;</span><span class="p">:</span> <span class="n">_handle_stream</span><span class="p">,</span>    <span class="c1"># legacy provider compat — same handler</span>
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>    <span class="s2">&quot;on_tool_start&quot;</span><span class="p">:</span> <span class="n">_handle_tool_start</span><span class="p">,</span>
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>    <span class="s2">&quot;on_tool_end&quot;</span><span class="p">:</span> <span class="n">_handle_tool_end</span><span class="p">,</span>
+<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>    <span class="s2">&quot;on_chain_end&quot;</span><span class="p">:</span> <span class="n">_handle_chain_end</span><span class="p">,</span>
+<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="p">})</span>
+</code></pre></div>
+<p>Zero if/elif. Zero isinstance. Zero reflection. Adding a new event type = add one handler
+function + one entry in the DI wire-up.</p>
+<blockquote>
+<p><strong><code>BaseMessage.text</code>:</strong> <code>AIMessageChunk.text</code> is a <code>TextAccessor</code> (<code>str</code> subclass) that
+handles both <code>str</code> content (OpenAI) and <code>list[dict]</code> content (Anthropic) internally.
+Call <code>.text</code> directly — never inspect <code>.content</code> or <code>.content_blocks</code>.</p>
+</blockquote>
+<h3 id="section-helper-for-writer-tokens">Section Helper for Writer Tokens<a class="headerlink" href="#section-helper-for-writer-tokens" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">_section_from_ns</span><span class="p">(</span><span class="n">checkpoint_ns</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="sd">    Derive the writer RunnableParallel section name from the checkpoint namespace.</span>
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="sd">    Format is typically &quot;writer:uuid4|branch_name:uuid4&quot;.</span>
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="sd">    Returns the branch name if found, else None.</span>
+<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>    <span class="n">known_sections</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;report&quot;</span><span class="p">,</span> <span class="s2">&quot;comment_draft&quot;</span><span class="p">,</span> <span class="s2">&quot;ticket_draft&quot;</span><span class="p">}</span>
+<a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>    <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="n">checkpoint_ns</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;|&quot;</span><span class="p">):</span>
+<a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a>        <span class="n">name</span> <span class="o">=</span> <span class="n">part</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+<a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a>        <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">known_sections</span><span class="p">:</span>
+<a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a>            <span class="k">return</span> <span class="n">name</span>
+<a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a>    <span class="k">return</span> <span class="kc">None</span>
+</code></pre></div>
+<hr />
+<h2 id="7-interrupt-detection-_check_for_interrupt">7. Interrupt Detection: <code>_check_for_interrupt()</code><a class="headerlink" href="#7-interrupt-detection-_check_for_interrupt" title="Permanent link">&para;</a></h2>
+<h3 id="primary-method-recommended">Primary Method (Recommended)<a class="headerlink" href="#primary-method-recommended" title="Permanent link">&para;</a></h3>
+<p>After the <code>astream_events</code> loop exits, call <code>graph.aget_state(config)</code> and check whether
+<code>state.tasks</code> is non-empty. A non-empty <code>tasks</code> list means the graph suspended at an
+<code>interrupt()</code> call — it did not run to completion.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_check_for_interrupt</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">config</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">HumanExchange</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="sd">    Returns the HumanExchange if the graph is suspended at a human_input interrupt,</span>
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="sd">    or None if the graph completed normally.</span>
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>
+<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="sd">    Call this AFTER the astream_events loop exits.</span>
+<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="sd">    human_input_node calls interrupt(state.pending_exchange) — the value is a HumanExchange.</span>
+<a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a>    <span class="n">state</span> <span class="o">=</span> <span class="k">await</span> <span class="n">graph</span><span class="o">.</span><span class="n">aget_state</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+<a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a>    <span class="k">if</span> <span class="ow">not</span> <span class="n">state</span><span class="o">.</span><span class="n">tasks</span><span class="p">:</span>
+<a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a>        <span class="k">return</span> <span class="kc">None</span>
+<a id="__codelineno-9-12" name="__codelineno-9-12" href="#__codelineno-9-12"></a>    <span class="k">return</span> <span class="n">state</span><span class="o">.</span><span class="n">tasks</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">interrupts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">value</span>
+</code></pre></div>
+<h3 id="alternative-method-stream-mode-updates">Alternative Method (Stream-Mode Updates)<a class="headerlink" href="#alternative-method-stream-mode-updates" title="Permanent link">&para;</a></h3>
+<p>If you also need to detect the interrupt during the stream (not just after), add
+<code>stream_mode=["updates"]</code> alongside <code>version="v2"</code> in the <code>astream_events</code> call and check for
+the <code>"__interrupt__"</code> key in update chunks:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="k">async</span> <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">astream_events</span><span class="p">(</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>    <span class="n">initial_state</span><span class="p">,</span>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>    <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">,</span>
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>    <span class="n">version</span><span class="o">=</span><span class="s2">&quot;v2&quot;</span><span class="p">,</span>
+<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>    <span class="n">stream_mode</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;updates&quot;</span><span class="p">],</span>
+<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span class="p">):</span>
+<a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a>    <span class="k">if</span> <span class="s2">&quot;__interrupt__&quot;</span> <span class="ow">in</span> <span class="n">event</span><span class="p">:</span>
+<a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a>        <span class="c1"># Graph is about to suspend</span>
+<a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a>        <span class="n">interrupt_payload</span><span class="p">:</span> <span class="n">HumanExchange</span> <span class="o">=</span> <span class="n">event</span><span class="p">[</span><span class="s2">&quot;__interrupt__&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">value</span>
+</code></pre></div>
+<p>For the ARQ worker pattern in PRD-003, the primary method (post-loop <code>aget_state()</code>) is
+preferred because it is simpler and the <code>astream_events</code> loop terminates naturally when
+<code>interrupt()</code> fires (the graph suspends, the generator exhausts).</p>
+<h3 id="interrupt-payload-structure">Interrupt Payload Structure<a class="headerlink" href="#interrupt-payload-structure" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="c1"># human_input_node calls: interrupt(state.pending_exchange)</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="c1"># state.pending_exchange is a HumanExchange — dot fields throughout:</span>
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="n">state</span><span class="o">.</span><span class="n">tasks</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">interrupts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">value</span>   <span class="c1"># -&gt; HumanExchange</span>
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="c1"># Access: interrupt_payload.question, interrupt_payload.context</span>
+</code></pre></div>
+<hr />
+<h2 id="8-agent-identity-tracking">8. Agent Identity Tracking<a class="headerlink" href="#8-agent-identity-tracking" title="Permanent link">&para;</a></h2>
+<h3 id="problem">Problem<a class="headerlink" href="#problem" title="Permanent link">&para;</a></h3>
+<p><code>on_chat_model_stream</code> and other events identify the currently-executing node via
+<code>metadata["langgraph_node"]</code> (a string like <code>"investigator"</code>). The frontend, however, expects a
+stable <code>agent_id</code> UUID per spawned agent instance — not a node name — so it can match tokens,
+tool calls, and completion events to the same agent card.</p>
+<h3 id="solution">Solution<a class="headerlink" href="#solution" title="Permanent link">&para;</a></h3>
+<p>The worker maintains <code>spawned_agents: dict[str, str]</code> initialized as <code>{}</code> before the
+<code>astream_events</code> loop begins. This dict is passed to <code>transform_langgraph_event()</code> by reference
+and mutated in place.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="n">spawned_agents</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># node_name -&gt; agent_id UUID</span>
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="k">async</span> <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">astream_events</span><span class="p">(</span><span class="n">initial_state</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="s2">&quot;v2&quot;</span><span class="p">):</span>
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>    <span class="k">for</span> <span class="n">sse</span> <span class="ow">in</span> <span class="n">transform_langgraph_event</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">spawned_agents</span><span class="p">):</span>
+<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>        <span class="k">await</span> <span class="n">redis</span><span class="o">.</span><span class="n">publish</span><span class="p">(</span><span class="n">channel</span><span class="p">,</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">sse</span><span class="p">))</span>
+</code></pre></div>
+<p><strong>Every <code>on_chain_start</code> for a worker node:</strong> A new UUID is generated and stored in
+<code>spawned_agents[node]</code>. All subsequent events for that execution (tokens, tool calls, chain_end)
+look up the current UUID via <code>spawned_agents[node]</code>.</p>
+<p><strong>Node called a second time (e.g. <code>investigator</code> redirected back):</strong> Each <code>on_chain_start</code>
+generates a fresh UUID. The old agent card in the UI remains (its <code>agent_id</code> is still valid);
+a new card is created for the new run. This means the UI correctly shows two separate
+investigator cards for two separate investigator runs.</p>
+<hr />
+<h2 id="9-writer-runnableparallel-outputsection_done">9. Writer RunnableParallel → <code>output.section_done</code><a class="headerlink" href="#9-writer-runnableparallel-outputsection_done" title="Permanent link">&para;</a></h2>
+<p>The writer node uses <code>RunnableParallel</code> to produce three output sections concurrently:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="n">writer_chain</span> <span class="o">=</span> <span class="n">RunnableParallel</span><span class="p">(</span>
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>    <span class="n">report</span><span class="o">=</span><span class="n">report_chain</span><span class="p">,</span>
+<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>    <span class="n">comment_draft</span><span class="o">=</span><span class="n">comment_chain</span><span class="p">,</span>
+<a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a>    <span class="n">ticket_draft</span><span class="o">=</span><span class="n">ticket_chain</span><span class="p">,</span>
+<a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a><span class="p">)</span>
+</code></pre></div>
+<h3 id="event-detection">Event Detection<a class="headerlink" href="#event-detection" title="Permanent link">&para;</a></h3>
+<p>Each branch of the <code>RunnableParallel</code> emits an <code>on_chain_end</code> event when it completes. The
+distinguishing fields:</p>
+<ul>
+<li><code>event["event"] == "on_chain_end"</code></li>
+<li><code>event["metadata"]["langgraph_node"] == "writer"</code></li>
+<li><code>event["name"] in {"report", "comment_draft", "ticket_draft"}</code></li>
+</ul>
+<p>This maps to <code>output.section_done { section: event["name"] }</code>.</p>
+<h3 id="token-attribution">Token Attribution<a class="headerlink" href="#token-attribution" title="Permanent link">&para;</a></h3>
+<p>During writer execution, <code>on_chat_model_stream</code> events include <code>langgraph_checkpoint_ns</code>
+identifying which parallel branch is running. The <code>_section_from_ns()</code> helper (§6) parses this
+to set the <code>section</code> field on <code>output.token</code> events, so the frontend can route tokens to the
+correct section panel.</p>
+<p>Checkpoint namespace format for a parallel branch:
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>&quot;writer:550e8400-e29b-41d4-a716-446655440000|report:7c9e6679-7425-40de-944b-e07fc1f90ae7&quot;
+</code></pre></div>
+The <code>_section_from_ns()</code> function splits on <code>|</code>, then splits each segment on <code>:</code> to get the
+name prefix, and matches against the known section names.</p>
+<hr />
+<h2 id="10-full-annotated-run_triage-function">10. Full Annotated <code>run_triage()</code> Function<a class="headerlink" href="#10-full-annotated-run_triage-function" title="Permanent link">&para;</a></h2>
+<h3 id="service-wide-worker-error-handler">Service-Wide Worker Error Handler<a class="headerlink" href="#service-wide-worker-error-handler" title="Permanent link">&para;</a></h3>
+<p>Exception handling for cross-cutting concerns (publishing <code>job.failed</code>, logging) lives in one
+place: a <code>@worker_error_handler</code> decorator applied to every ARQ worker function. No individual
+worker function handles exceptions it cannot recover from. This is the project's
+"service-wide middleware" for worker-layer errors (see PRD-007 §Architecture policy).</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="c1"># worker_middleware.py</span>
+<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>
+<a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="kn">import</span><span class="w"> </span><span class="nn">functools</span>
+<a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a><span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a><span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Coroutine</span>
+<a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span>
+<a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a>
+<a id="__codelineno-15-9" name="__codelineno-15-9" href="#__codelineno-15-9"></a><span class="kn">from</span><span class="w"> </span><span class="nn">redis.asyncio</span><span class="w"> </span><span class="kn">import</span> <span class="n">Redis</span>
+<a id="__codelineno-15-10" name="__codelineno-15-10" href="#__codelineno-15-10"></a>
+<a id="__codelineno-15-11" name="__codelineno-15-11" href="#__codelineno-15-11"></a><span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+<a id="__codelineno-15-12" name="__codelineno-15-12" href="#__codelineno-15-12"></a>
+<a id="__codelineno-15-13" name="__codelineno-15-13" href="#__codelineno-15-13"></a>
+<a id="__codelineno-15-14" name="__codelineno-15-14" href="#__codelineno-15-14"></a><span class="k">def</span><span class="w"> </span><span class="nf">worker_error_handler</span><span class="p">(</span><span class="n">fn</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Coroutine</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="kc">None</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Coroutine</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="kc">None</span><span class="p">]]:</span>
+<a id="__codelineno-15-15" name="__codelineno-15-15" href="#__codelineno-15-15"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Service-wide ARQ worker error handler.</span>
+<a id="__codelineno-15-16" name="__codelineno-15-16" href="#__codelineno-15-16"></a>
+<a id="__codelineno-15-17" name="__codelineno-15-17" href="#__codelineno-15-17"></a><span class="sd">    Publishes job.failed to the Redis SSE channel on any unhandled exception,</span>
+<a id="__codelineno-15-18" name="__codelineno-15-18" href="#__codelineno-15-18"></a><span class="sd">    then re-raises so ARQ records the job as FAILED. Declared once; applied to</span>
+<a id="__codelineno-15-19" name="__codelineno-15-19" href="#__codelineno-15-19"></a><span class="sd">    all worker functions in WorkerSettings. Individual worker functions must not</span>
+<a id="__codelineno-15-20" name="__codelineno-15-20" href="#__codelineno-15-20"></a><span class="sd">    catch exceptions they cannot locally recover from.</span>
+<a id="__codelineno-15-21" name="__codelineno-15-21" href="#__codelineno-15-21"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-15-22" name="__codelineno-15-22" href="#__codelineno-15-22"></a>    <span class="nd">@functools</span><span class="o">.</span><span class="n">wraps</span><span class="p">(</span><span class="n">fn</span><span class="p">)</span>
+<a id="__codelineno-15-23" name="__codelineno-15-23" href="#__codelineno-15-23"></a>    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">wrapper</span><span class="p">(</span><span class="n">ctx</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">job_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="nb">object</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="nb">object</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-15-24" name="__codelineno-15-24" href="#__codelineno-15-24"></a>        <span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-15-25" name="__codelineno-15-25" href="#__codelineno-15-25"></a>            <span class="k">return</span> <span class="k">await</span> <span class="n">fn</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">job_id</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+<a id="__codelineno-15-26" name="__codelineno-15-26" href="#__codelineno-15-26"></a>        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+<a id="__codelineno-15-27" name="__codelineno-15-27" href="#__codelineno-15-27"></a>            <span class="n">redis</span><span class="p">:</span> <span class="n">Redis</span> <span class="o">=</span> <span class="n">ctx</span><span class="p">[</span><span class="s2">&quot;redis&quot;</span><span class="p">]</span>
+<a id="__codelineno-15-28" name="__codelineno-15-28" href="#__codelineno-15-28"></a>            <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">&quot;Worker function </span><span class="si">%s</span><span class="s2"> failed for job </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">fn</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">job_id</span><span class="p">)</span>
+<a id="__codelineno-15-29" name="__codelineno-15-29" href="#__codelineno-15-29"></a>            <span class="k">await</span> <span class="n">redis</span><span class="o">.</span><span class="n">publish</span><span class="p">(</span>
+<a id="__codelineno-15-30" name="__codelineno-15-30" href="#__codelineno-15-30"></a>                <span class="sa">f</span><span class="s2">&quot;jobs:</span><span class="si">{</span><span class="n">job_id</span><span class="si">}</span><span class="s2">:events&quot;</span><span class="p">,</span>
+<a id="__codelineno-15-31" name="__codelineno-15-31" href="#__codelineno-15-31"></a>                <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">({</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;job.failed&quot;</span><span class="p">,</span> <span class="s2">&quot;error&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">exc</span><span class="p">)}),</span>
+<a id="__codelineno-15-32" name="__codelineno-15-32" href="#__codelineno-15-32"></a>            <span class="p">)</span>
+<a id="__codelineno-15-33" name="__codelineno-15-33" href="#__codelineno-15-33"></a>            <span class="k">raise</span>
+<a id="__codelineno-15-34" name="__codelineno-15-34" href="#__codelineno-15-34"></a>
+<a id="__codelineno-15-35" name="__codelineno-15-35" href="#__codelineno-15-35"></a>    <span class="k">return</span> <span class="n">wrapper</span>
+</code></pre></div>
+<h3 id="run_triage-clean-no-exception-handling"><code>run_triage()</code> — Clean, No Exception Handling<a class="headerlink" href="#run_triage-clean-no-exception-handling" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="c1"># worker.py</span>
+<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>
+<a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">timedelta</span>
+<a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a><span class="kn">from</span><span class="w"> </span><span class="nn">uuid</span><span class="w"> </span><span class="kn">import</span> <span class="n">uuid4</span>
+<a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a>
+<a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a><span class="kn">from</span><span class="w"> </span><span class="nn">arq</span><span class="w"> </span><span class="kn">import</span> <span class="n">ArqRedis</span>
+<a id="__codelineno-16-8" name="__codelineno-16-8" href="#__codelineno-16-8"></a><span class="kn">from</span><span class="w"> </span><span class="nn">redis.asyncio</span><span class="w"> </span><span class="kn">import</span> <span class="n">Redis</span>
+<a id="__codelineno-16-9" name="__codelineno-16-9" href="#__codelineno-16-9"></a>
+<a id="__codelineno-16-10" name="__codelineno-16-10" href="#__codelineno-16-10"></a><span class="kn">from</span><span class="w"> </span><span class="nn">.graph</span><span class="w"> </span><span class="kn">import</span> <span class="n">graph</span>
+<a id="__codelineno-16-11" name="__codelineno-16-11" href="#__codelineno-16-11"></a><span class="kn">from</span><span class="w"> </span><span class="nn">.transform</span><span class="w"> </span><span class="kn">import</span> <span class="n">transform_langgraph_event</span><span class="p">,</span> <span class="n">_check_for_interrupt</span>
+<a id="__codelineno-16-12" name="__codelineno-16-12" href="#__codelineno-16-12"></a><span class="kn">from</span><span class="w"> </span><span class="nn">.worker_middleware</span><span class="w"> </span><span class="kn">import</span> <span class="n">worker_error_handler</span>
+<a id="__codelineno-16-13" name="__codelineno-16-13" href="#__codelineno-16-13"></a>
+<a id="__codelineno-16-14" name="__codelineno-16-14" href="#__codelineno-16-14"></a><span class="n">HUMAN_INPUT_TIMEOUT_SECONDS</span> <span class="o">=</span> <span class="mi">1800</span>  <span class="c1"># 30 minutes</span>
+<a id="__codelineno-16-15" name="__codelineno-16-15" href="#__codelineno-16-15"></a>
+<a id="__codelineno-16-16" name="__codelineno-16-16" href="#__codelineno-16-16"></a>
+<a id="__codelineno-16-17" name="__codelineno-16-17" href="#__codelineno-16-17"></a><span class="nd">@worker_error_handler</span>
+<a id="__codelineno-16-18" name="__codelineno-16-18" href="#__codelineno-16-18"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">run_triage</span><span class="p">(</span><span class="n">ctx</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">job_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">initial_state</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-16-19" name="__codelineno-16-19" href="#__codelineno-16-19"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Run the LangGraph triage graph and stream SSE events to Redis Pub/Sub.</span>
+<a id="__codelineno-16-20" name="__codelineno-16-20" href="#__codelineno-16-20"></a>
+<a id="__codelineno-16-21" name="__codelineno-16-21" href="#__codelineno-16-21"></a><span class="sd">    Streams graph execution events, translates them to frontend SSE format,</span>
+<a id="__codelineno-16-22" name="__codelineno-16-22" href="#__codelineno-16-22"></a><span class="sd">    and publishes each to the job&#39;s Redis channel. After the loop, detects</span>
+<a id="__codelineno-16-23" name="__codelineno-16-23" href="#__codelineno-16-23"></a><span class="sd">    whether the graph suspended at a human_input interrupt or completed normally</span>
+<a id="__codelineno-16-24" name="__codelineno-16-24" href="#__codelineno-16-24"></a><span class="sd">    and publishes the appropriate terminal event. Unhandled exceptions are caught</span>
+<a id="__codelineno-16-25" name="__codelineno-16-25" href="#__codelineno-16-25"></a><span class="sd">    and published by the worker_error_handler decorator.</span>
+<a id="__codelineno-16-26" name="__codelineno-16-26" href="#__codelineno-16-26"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-16-27" name="__codelineno-16-27" href="#__codelineno-16-27"></a>    <span class="n">redis</span><span class="p">:</span> <span class="n">Redis</span> <span class="o">=</span> <span class="n">ctx</span><span class="p">[</span><span class="s2">&quot;redis&quot;</span><span class="p">]</span>
+<a id="__codelineno-16-28" name="__codelineno-16-28" href="#__codelineno-16-28"></a>    <span class="n">arq_queue</span><span class="p">:</span> <span class="n">ArqRedis</span> <span class="o">=</span> <span class="n">ctx</span><span class="p">[</span><span class="s2">&quot;arq_queue&quot;</span><span class="p">]</span>
+<a id="__codelineno-16-29" name="__codelineno-16-29" href="#__codelineno-16-29"></a>    <span class="n">config</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;configurable&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;thread_id&quot;</span><span class="p">:</span> <span class="n">job_id</span><span class="p">}}</span>
+<a id="__codelineno-16-30" name="__codelineno-16-30" href="#__codelineno-16-30"></a>    <span class="n">channel</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;jobs:</span><span class="si">{</span><span class="n">job_id</span><span class="si">}</span><span class="s2">:events&quot;</span>
+<a id="__codelineno-16-31" name="__codelineno-16-31" href="#__codelineno-16-31"></a>
+<a id="__codelineno-16-32" name="__codelineno-16-32" href="#__codelineno-16-32"></a>    <span class="n">spawned_agents</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+<a id="__codelineno-16-33" name="__codelineno-16-33" href="#__codelineno-16-33"></a>
+<a id="__codelineno-16-34" name="__codelineno-16-34" href="#__codelineno-16-34"></a>    <span class="k">async</span> <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">astream_events</span><span class="p">(</span><span class="n">initial_state</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="s2">&quot;v2&quot;</span><span class="p">):</span>
+<a id="__codelineno-16-35" name="__codelineno-16-35" href="#__codelineno-16-35"></a>        <span class="k">for</span> <span class="n">sse</span> <span class="ow">in</span> <span class="n">transform_langgraph_event</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">spawned_agents</span><span class="p">):</span>
+<a id="__codelineno-16-36" name="__codelineno-16-36" href="#__codelineno-16-36"></a>            <span class="k">await</span> <span class="n">redis</span><span class="o">.</span><span class="n">publish</span><span class="p">(</span><span class="n">channel</span><span class="p">,</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">sse</span><span class="p">))</span>
+<a id="__codelineno-16-37" name="__codelineno-16-37" href="#__codelineno-16-37"></a>
+<a id="__codelineno-16-38" name="__codelineno-16-38" href="#__codelineno-16-38"></a>    <span class="n">interrupt_payload</span> <span class="o">=</span> <span class="k">await</span> <span class="n">_check_for_interrupt</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">config</span><span class="p">)</span>
+<a id="__codelineno-16-39" name="__codelineno-16-39" href="#__codelineno-16-39"></a>
+<a id="__codelineno-16-40" name="__codelineno-16-40" href="#__codelineno-16-40"></a>    <span class="k">if</span> <span class="n">interrupt_payload</span><span class="p">:</span>
+<a id="__codelineno-16-41" name="__codelineno-16-41" href="#__codelineno-16-41"></a>        <span class="k">await</span> <span class="n">redis</span><span class="o">.</span><span class="n">publish</span><span class="p">(</span><span class="n">channel</span><span class="p">,</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">({</span>
+<a id="__codelineno-16-42" name="__codelineno-16-42" href="#__codelineno-16-42"></a>            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;graph.interrupt&quot;</span><span class="p">,</span>
+<a id="__codelineno-16-43" name="__codelineno-16-43" href="#__codelineno-16-43"></a>            <span class="s2">&quot;question&quot;</span><span class="p">:</span> <span class="n">interrupt_payload</span><span class="o">.</span><span class="n">question</span><span class="p">,</span>
+<a id="__codelineno-16-44" name="__codelineno-16-44" href="#__codelineno-16-44"></a>            <span class="s2">&quot;context&quot;</span><span class="p">:</span> <span class="n">interrupt_payload</span><span class="o">.</span><span class="n">context</span><span class="p">,</span>
+<a id="__codelineno-16-45" name="__codelineno-16-45" href="#__codelineno-16-45"></a>        <span class="p">}))</span>
+<a id="__codelineno-16-46" name="__codelineno-16-46" href="#__codelineno-16-46"></a>        <span class="k">await</span> <span class="n">arq_queue</span><span class="o">.</span><span class="n">enqueue_job</span><span class="p">(</span>
+<a id="__codelineno-16-47" name="__codelineno-16-47" href="#__codelineno-16-47"></a>            <span class="s2">&quot;expire_human_input&quot;</span><span class="p">,</span>
+<a id="__codelineno-16-48" name="__codelineno-16-48" href="#__codelineno-16-48"></a>            <span class="n">job_id</span><span class="p">,</span>
+<a id="__codelineno-16-49" name="__codelineno-16-49" href="#__codelineno-16-49"></a>            <span class="n">_job_id</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;timeout:</span><span class="si">{</span><span class="n">job_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+<a id="__codelineno-16-50" name="__codelineno-16-50" href="#__codelineno-16-50"></a>            <span class="n">_defer_by</span><span class="o">=</span><span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="n">HUMAN_INPUT_TIMEOUT_SECONDS</span><span class="p">),</span>
+<a id="__codelineno-16-51" name="__codelineno-16-51" href="#__codelineno-16-51"></a>        <span class="p">)</span>
+<a id="__codelineno-16-52" name="__codelineno-16-52" href="#__codelineno-16-52"></a>    <span class="k">else</span><span class="p">:</span>
+<a id="__codelineno-16-53" name="__codelineno-16-53" href="#__codelineno-16-53"></a>        <span class="k">await</span> <span class="n">redis</span><span class="o">.</span><span class="n">publish</span><span class="p">(</span><span class="n">channel</span><span class="p">,</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">({</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;job.done&quot;</span><span class="p">}))</span>
+<a id="__codelineno-16-54" name="__codelineno-16-54" href="#__codelineno-16-54"></a>
+<a id="__codelineno-16-55" name="__codelineno-16-55" href="#__codelineno-16-55"></a>
+<a id="__codelineno-16-56" name="__codelineno-16-56" href="#__codelineno-16-56"></a><span class="k">class</span><span class="w"> </span><span class="nc">WorkerSettings</span><span class="p">:</span>
+<a id="__codelineno-16-57" name="__codelineno-16-57" href="#__codelineno-16-57"></a>    <span class="n">functions</span> <span class="o">=</span> <span class="p">[</span><span class="n">run_triage</span><span class="p">]</span>
+<a id="__codelineno-16-58" name="__codelineno-16-58" href="#__codelineno-16-58"></a>    <span class="n">allow_abort_jobs</span> <span class="o">=</span> <span class="kc">True</span>    <span class="c1"># enables Job.abort() cross-worker</span>
+<a id="__codelineno-16-59" name="__codelineno-16-59" href="#__codelineno-16-59"></a>    <span class="n">max_jobs</span> <span class="o">=</span> <span class="mi">10</span>              <span class="c1"># concurrent job cap per worker</span>
+<a id="__codelineno-16-60" name="__codelineno-16-60" href="#__codelineno-16-60"></a>    <span class="n">retry_jobs</span> <span class="o">=</span> <span class="kc">False</span>         <span class="c1"># at-most-once; deduplication at API layer (PRD-006)</span>
+</code></pre></div>
+<hr />
+<h2 id="11-known-issues-gotchas">11. Known Issues &amp; Gotchas<a class="headerlink" href="#11-known-issues-gotchas" title="Permanent link">&para;</a></h2>
+<h3 id="on_llm_stream-vs-on_chat_model_stream"><code>on_llm_stream</code> vs <code>on_chat_model_stream</code><a class="headerlink" href="#on_llm_stream-vs-on_chat_model_stream" title="Permanent link">&para;</a></h3>
+<p>Some providers and older LangChain integrations emit <code>on_llm_stream</code> instead of
+<code>on_chat_model_stream</code>. The transformer checks both:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="k">if</span> <span class="n">ev</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">&quot;on_chat_model_stream&quot;</span><span class="p">,</span> <span class="s2">&quot;on_llm_stream&quot;</span><span class="p">}:</span>
+<a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a>    <span class="o">...</span>
+</code></pre></div>
+<h3 id="nested-runnable-streaming">Nested Runnable Streaming<a class="headerlink" href="#nested-runnable-streaming" title="Permanent link">&para;</a></h3>
+<p>If a worker node uses a sub-chain rather than calling the LLM directly, <code>astream_events</code> may
+not propagate inner events (LangChain issue #6105). Worker agents must be called via <code>httpx</code> to
+LangServe (as specified in PRD-003 §Worker Agent Node Specs), not as nested LangChain chains.
+Nested chain calls inside a graph node will produce incomplete event streams.</p>
+<h3 id="event-deduplication">Event Deduplication<a class="headerlink" href="#event-deduplication" title="Permanent link">&para;</a></h3>
+<p><code>astream_events</code> can emit duplicate token events with different <code>run_id</code> but same content for
+the same generation step. The primary deduplication filter is:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="k">if</span> <span class="ow">not</span> <span class="n">meta</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;langgraph_node&quot;</span><span class="p">):</span>
+<a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a>    <span class="k">return</span> <span class="kc">None</span>  <span class="c1"># drop inner chain events that lack graph context</span>
+</code></pre></div>
+<p>Only process events where <code>metadata["langgraph_node"]</code> is set. Graph-level events always have
+it; inner chain events for the same token may not.</p>
+<h3 id="empty-content-chunks">Empty Content Chunks<a class="headerlink" href="#empty-content-chunks" title="Permanent link">&para;</a></h3>
+<p>Models emit <code>on_chat_model_stream</code> events with empty-string content at the start and end of
+generation (role-only chunks). Drop these:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="n">chunk</span><span class="p">:</span> <span class="n">AIMessageChunk</span> <span class="o">=</span> <span class="n">event</span><span class="p">[</span><span class="s2">&quot;data&quot;</span><span class="p">][</span><span class="s2">&quot;chunk&quot;</span><span class="p">]</span>
+<a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a><span class="n">token</span> <span class="o">=</span> <span class="n">chunk</span><span class="o">.</span><span class="n">text</span>   <span class="c1"># TextAccessor (str subclass) — empty string for role-only chunks</span>
+<a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a><span class="k">if</span> <span class="ow">not</span> <span class="n">token</span><span class="p">:</span>
+<a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a>    <span class="k">return</span> <span class="p">[]</span>
+</code></pre></div>
+<h3 id="multiple-on_chain_start-for-the-same-node">Multiple <code>on_chain_start</code> for the Same Node<a class="headerlink" href="#multiple-on_chain_start-for-the-same-node" title="Permanent link">&para;</a></h3>
+<p>If the supervisor routes to the same worker twice (redirect flow), each <code>on_chain_start</code> fires
+for that node. The current implementation correctly handles this by generating a new UUID each
+time, creating a second agent card. The <code>spawned_agents</code> dict is intentionally overwritten (not
+guarded with <code>if node not in spawned_agents</code>) for this reason.</p>
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.top", "toc.integrate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

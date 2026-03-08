@@ -1,0 +1,3071 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://hardmax71.github.io/agent-ops-dashboard/prd/PRD-004-1-agent-chains/">
+      
+      
+        <link rel="prev" href="../PRD-004-agent-layer/">
+      
+      
+        <link rel="next" href="../PRD-004-2-codebase-index/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.4">
+    
+    
+      
+        <title>Full LCEL Chain Specs — All Five Agents - AgentOps Dashboard</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#prd-004-1-full-lcel-chain-specs-all-five-agents" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="AgentOps Dashboard" class="md-header__button md-logo" aria-label="AgentOps Dashboard" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            AgentOps Dashboard
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Full LCEL Chain Specs — All Five Agents
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="AgentOps Dashboard" class="md-nav__button md-logo" aria-label="AgentOps Dashboard" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    AgentOps Dashboard
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PRDs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    PRDs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-001-master-overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Master Overview
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-002-frontend-ux/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frontend & UX
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_3" id="__nav_2_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frontend Detail
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Frontend Detail
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-002-1-design-system/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Design System & Components
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-002-2-pages-and-wireframes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pages & Wireframes
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-002-3-interactions-and-a11y/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interactions & Accessibility
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-003-langgraph-orchestration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LangGraph Orchestration
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_5" id="__nav_2_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Orchestration Detail
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Orchestration Detail
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-003-1-event-pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Event Pipeline & Worker
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-003-2-supervisor-spec/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Supervisor Prompt & Routing
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-004-agent-layer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agent Layer
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_7" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2_7" id="__nav_2_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agent Layer Detail
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_7_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Agent Layer Detail
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Full LCEL Chain Specs
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Full LCEL Chain Specs
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-purpose-scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Purpose &amp; Scope
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-corrected-standard-pattern" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Corrected Standard Pattern
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Corrected Standard Pattern">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#retry-fallback-composition" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Retry + Fallback Composition
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-agentfindingbase-agentfinding-translation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. AgentFindingBase → AgentFinding Translation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. AgentFindingBase → AgentFinding Translation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#schema-comparison" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Schema Comparison
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#translation-helper" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Translation Helper
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#error-field-handling-in-langgraph-nodes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Error Field Handling in LangGraph Nodes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-investigator-agent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Investigator Agent
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Investigator Agent">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#prompt-template" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prompt Template
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#input-output-models" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Input / Output Models
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lcel-chain" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        LCEL Chain
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#node-level-translation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Node-Level Translation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-web-search-agent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Web Search Agent
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Web Search Agent">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#why-bind_tools-alone-is-not-enough" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why bind_tools Alone Is Not Enough
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#toolnode-pattern-canonical" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ToolNode Pattern (Canonical)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#prompt-templates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prompt Templates
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#node-level-translation_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Node-Level Translation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-codebase-search-agent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Codebase Search Agent
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Codebase Search Agent">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#retriever-import" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Retriever Import
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#prompt-template_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prompt Template
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#input-output-models_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Input / Output Models
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lcel-chain_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        LCEL Chain
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#node-level-translation_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Node-Level Translation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-critic-agent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Critic Agent
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Critic Agent">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#prompt-template_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prompt Template
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#input-output-models_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Input / Output Models
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lcel-chain_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        LCEL Chain
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#node-level-translation_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Node-Level Translation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-writer-agent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Writer Agent
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. Writer Agent">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#sub-chain-specifications" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sub-Chain Specifications
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Sub-Chain Specifications">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#report_chain-triagereport" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        report_chain → TriageReport
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#comment_chain-str-github-markdown" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        comment_chain → str (GitHub markdown)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ticket_chain-dict-raw-json" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ticket_chain → dict (raw JSON)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#merge_writer_outputs-fully-specified" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        merge_writer_outputs — Fully Specified
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lcel-chain-full" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        LCEL Chain (Full)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-with_retry-with_fallbacks-composition-reference" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. .with_retry() + .with_fallbacks() Composition Reference
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="9. .with_retry() + .with_fallbacks() Composition Reference">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#canonical-pattern" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Canonical Pattern
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#execution-sequence" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Execution Sequence
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rules
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-langserve-call-pattern-from-langgraph-nodes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. LangServe Call Pattern from LangGraph Nodes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10. LangServe Call Pattern from LangGraph Nodes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#full-node-pattern" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Full Node Pattern
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#responsejsonoutput-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        response.json()["output"] Structure
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-004-2-codebase-index/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Codebase Vector Index
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-005-langsmith-observability/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LangSmith Observability
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_9" id="__nav_2_9_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LangSmith Detail
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    LangSmith Detail
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-005-1-langsmith-api-spec/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API & Integration Spec
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-006-data-validation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Validation
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-007-developer-tooling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Developer Tooling
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-012-backend-di/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backend & DI
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-008-authentication/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authentication
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_14" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_14" id="__nav_2_14_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Auth Detail
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_14_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_14">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Auth Detail
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-008-1-auth-impl-spec/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Implementation Spec
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-009-documentation-standards/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Documentation Standards
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-010-evaluation-framework/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Evaluation Framework
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-011-metrics-collection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Metrics Collection
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-013-testing-strategy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing Strategy & CI
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Plans
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Plans
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-001-1-goals-and-dod/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Goals & Definition of Done
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../plans/roadmap-v1/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roadmap v1 (precise)
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../plans/roadmap-v2/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roadmap v2 (general)
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--PLANNED"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="prd-004-1-full-lcel-chain-specs-all-five-agents">PRD-004-1 — Full LCEL Chain Specs: All Five Agents<a class="headerlink" href="#prd-004-1-full-lcel-chain-specs-all-five-agents" title="Permanent link">&para;</a></h1>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Document ID</td>
+<td>PRD-004-1</td>
+</tr>
+<tr>
+<td>Version</td>
+<td>1.0</td>
+</tr>
+<tr>
+<td>Status</td>
+<td>DRAFT</td>
+</tr>
+<tr>
+<td>Date</td>
+<td>March 2026</td>
+</tr>
+<tr>
+<td>Parent Doc</td>
+<td><a href="../PRD-004-agent-layer/">PRD-004</a></td>
+</tr>
+<tr>
+<td>Related Docs</td>
+<td><a href="../PRD-003-langgraph-orchestration/">PRD-003</a> (Orchestration)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="1-purpose-scope">1. Purpose &amp; Scope<a class="headerlink" href="#1-purpose-scope" title="Permanent link">&para;</a></h2>
+<p>This document provides complete, buildable LCEL chain specifications for all five agents. It exists because
+PRD-004 leaves five implementation gaps that make the agents impossible to build directly from:</p>
+<ol>
+<li><code>tool_executor</code> in the Web Search agent chain is never defined — this doc provides the correct
+   AIMessage → ToolMessage two-step pattern.</li>
+<li><code>merge_outputs_lambda</code> in the Writer agent is undefined — this doc provides the full merge function
+   with all <code>WriterOutput</code> fields mapped.</li>
+<li><code>AgentFindingBase</code> (PRD-004) and <code>AgentFinding</code> (PRD-003) have incompatible fields — this doc
+   provides a side-by-side comparison and a <code>_to_agent_finding()</code> translation helper.</li>
+<li><code>.with_retry()</code> + <code>.with_fallbacks()</code> composition order is never shown — this doc provides the
+   canonical pattern.</li>
+<li>The standard pattern in PRD-004 uses <code>PydanticOutputParser</code> — this doc replaces it with
+   <code>with_structured_output()</code>, which is what all actual agents use.</li>
+</ol>
+<p><strong>Boundary with PRD-004:</strong> PRD-004 covers architecture decisions, service registry, LangServe setup,
+LangFlow workflow, agent I/O schemas, and the Codebase Vector Index overview. This document covers
+<em>only</em> the detailed internal chain implementations. Do not duplicate architecture decisions here.</p>
+<p><strong>Boundary with PRD-004-2:</strong> Retriever instantiation (<code>get_codebase_retriever</code>) is fully specified in
+<a href="../PRD-004-2-codebase-index/">PRD-004-2</a>. This doc imports it.</p>
+<hr />
+<h2 id="2-corrected-standard-pattern">2. Corrected Standard Pattern<a class="headerlink" href="#2-corrected-standard-pattern" title="Permanent link">&para;</a></h2>
+<p>PRD-004 shows <code>PydanticOutputParser</code> in the standard chain pattern. This is incorrect — all five agents
+use <code>with_structured_output()</code> instead. The corrected pattern:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">langchain_core.prompts</span><span class="w"> </span><span class="kn">import</span> <span class="n">ChatPromptTemplate</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">langchain_openai</span><span class="w"> </span><span class="kn">import</span> <span class="n">ChatOpenAI</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="n">prompt</span> <span class="o">=</span> <span class="n">ChatPromptTemplate</span><span class="o">.</span><span class="n">from_messages</span><span class="p">([</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="p">(</span><span class="s2">&quot;system&quot;</span><span class="p">,</span> <span class="n">AGENT_SYSTEM_PROMPT</span><span class="p">),</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="p">(</span><span class="s2">&quot;human&quot;</span><span class="p">,</span> <span class="n">AGENT_HUMAN_TEMPLATE</span><span class="p">),</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="p">])</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="n">llm</span> <span class="o">=</span> <span class="n">ChatOpenAI</span><span class="p">(</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>    <span class="n">model</span><span class="o">=</span><span class="s2">&quot;gpt-4o&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>    <span class="n">temperature</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>    <span class="n">base_url</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">model_gateway_url</span><span class="p">,</span>  <span class="c1"># e.g. http://litellm:4000</span>
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>    <span class="n">api_key</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">service_token</span><span class="p">,</span>       <span class="c1"># internal token, not the OpenAI key</span>
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="p">)</span>
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span class="n">chain</span> <span class="o">=</span> <span class="n">prompt</span> <span class="o">|</span> <span class="n">llm</span><span class="o">.</span><span class="n">with_structured_output</span><span class="p">(</span><span class="n">AgentOutputSchema</span><span class="p">)</span>
+</code></pre></div>
+<p><code>with_structured_output()</code> uses the model's native function-calling / JSON mode to enforce the schema.
+<code>PydanticOutputParser</code> requires explicit format instructions in the prompt and is fragile with complex
+nested schemas. Do not use <code>PydanticOutputParser</code> anywhere in this project.</p>
+<h3 id="retry-fallback-composition">Retry + Fallback Composition<a class="headerlink" href="#retry-fallback-composition" title="Permanent link">&para;</a></h3>
+<p>Every production chain wraps the core chain with retry and fallback:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">langchain_core.runnables</span><span class="w"> </span><span class="kn">import</span> <span class="n">RunnableWithFallbacks</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">openai</span><span class="w"> </span><span class="kn">import</span> <span class="n">RateLimitError</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="n">primary_chain</span> <span class="o">=</span> <span class="n">prompt</span> <span class="o">|</span> <span class="n">llm</span><span class="o">.</span><span class="n">with_structured_output</span><span class="p">(</span><span class="n">Schema</span><span class="p">)</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="n">fallback_llm</span> <span class="o">=</span> <span class="n">ChatOpenAI</span><span class="p">(</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>    <span class="n">model</span><span class="o">=</span><span class="s2">&quot;gpt-4o-mini&quot;</span><span class="p">,</span>   <span class="c1"># cheaper fallback when primary (gpt-4o) is rate-limited</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>    <span class="n">temperature</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>    <span class="n">base_url</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">model_gateway_url</span><span class="p">,</span>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>    <span class="n">api_key</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">service_token</span><span class="p">,</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="p">)</span>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="n">fallback_chain</span> <span class="o">=</span> <span class="n">prompt</span> <span class="o">|</span> <span class="n">fallback_llm</span><span class="o">.</span><span class="n">with_structured_output</span><span class="p">(</span><span class="n">Schema</span><span class="p">)</span>
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="n">chain</span> <span class="o">=</span> <span class="n">primary_chain</span><span class="o">.</span><span class="n">with_retry</span><span class="p">(</span>
+<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>    <span class="n">stop_after_attempt</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>    <span class="n">retry_if_exception_type</span><span class="o">=</span><span class="p">(</span><span class="n">RateLimitError</span><span class="p">,),</span>  <span class="c1"># only retry on 429, not validation errors</span>
+<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a><span class="p">)</span><span class="o">.</span><span class="n">with_fallbacks</span><span class="p">([</span><span class="n">fallback_chain</span><span class="p">])</span>
+</code></pre></div>
+<p><strong>Composition rule:</strong> <code>.with_retry()</code> wraps the primary chain first. After all retries are exhausted on
+the primary, <code>.with_fallbacks()</code> activates. The fallback itself does not retry — it runs once.</p>
+<p><strong>What to retry:</strong> Only <code>RateLimitError</code> (HTTP 429). Validation errors (<code>ValidationError</code>,
+<code>OutputParserException</code>) indicate a schema mismatch that retrying will not fix — raise immediately.</p>
+<p><strong>Fallback model:</strong> GPT-4o-mini replaces GPT-4o. Same prompt template, same output schema, different
+model. The fallback is not a degraded path — it produces valid output.</p>
+<hr />
+<h2 id="3-agentfindingbase-agentfinding-translation">3. <code>AgentFindingBase</code> → <code>AgentFinding</code> Translation<a class="headerlink" href="#3-agentfindingbase-agentfinding-translation" title="Permanent link">&para;</a></h2>
+<h3 id="schema-comparison">Schema Comparison<a class="headerlink" href="#schema-comparison" title="Permanent link">&para;</a></h3>
+<p>PRD-003 defines <code>AgentFinding</code> (the LangGraph state model). PRD-004 defines <code>AgentFindingBase</code> (the
+common base for all agent outputs). These are different models with incompatible fields:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th><code>AgentFinding</code> (PRD-003, state)</th>
+<th><code>AgentFindingBase</code> (PRD-004, agent output)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>agent_name</code></td>
+<td><code>str</code></td>
+<td><code>str</code></td>
+</tr>
+<tr>
+<td><code>summary</code></td>
+<td><code>str</code></td>
+<td><code>str</code></td>
+</tr>
+<tr>
+<td><code>confidence</code></td>
+<td><code>float</code></td>
+<td><code>float</code></td>
+</tr>
+<tr>
+<td><code>details</code></td>
+<td><code>str</code></td>
+<td><em>(absent)</em></td>
+</tr>
+<tr>
+<td><code>relevant_files</code></td>
+<td><code>list[str]</code></td>
+<td><em>(absent)</em></td>
+</tr>
+<tr>
+<td><code>reasoning</code></td>
+<td><em>(absent)</em></td>
+<td><code>str</code></td>
+</tr>
+<tr>
+<td><code>error</code></td>
+<td><em>(absent)</em></td>
+<td><code>str \| None</code></td>
+</tr>
+</tbody>
+</table>
+<p>Agent-specific subclasses of <code>AgentFindingBase</code> carry additional fields that supply the missing values:</p>
+<table>
+<thead>
+<tr>
+<th>Agent subclass</th>
+<th>Field used for <code>details</code></th>
+<th>Field used for <code>relevant_files</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>InvestigatorFinding</code></td>
+<td><code>hypothesis</code></td>
+<td><code>affected_areas</code> (list of area names)</td>
+</tr>
+<tr>
+<td><code>CodebaseFinding</code></td>
+<td><code>root_cause_location</code></td>
+<td><code>[f.path for f in relevant_files]</code></td>
+</tr>
+<tr>
+<td><code>WebSearchFinding</code></td>
+<td><code>external_root_cause</code></td>
+<td><code>[r.url for r in relevant_results]</code></td>
+</tr>
+<tr>
+<td><code>CritiqueFinding</code></td>
+<td><code>revised_hypothesis</code></td>
+<td><code>gaps</code> (list of gap descriptions)</td>
+</tr>
+<tr>
+<td><code>WriterOutput</code></td>
+<td><code>summary</code></td>
+<td><code>[]</code> (writer does not reference files)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="translation-helper">Translation Helper<a class="headerlink" href="#translation-helper" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseModel</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">AgentFinding</span><span class="p">,</span> <span class="n">AgentFindingBase</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="k">def</span><span class="w"> </span><span class="nf">_to_agent_finding</span><span class="p">(</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>    <span class="n">raw</span><span class="p">:</span> <span class="n">AgentFindingBase</span><span class="p">,</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>    <span class="n">details</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>    <span class="n">relevant_files</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AgentFinding</span><span class="p">:</span>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="sd">    Translate an AgentFindingBase (from a LangServe response) into the</span>
+<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="sd">    AgentFinding that the LangGraph state expects.</span>
+<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>
+<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a><span class="sd">    Args:</span>
+<a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a><span class="sd">        raw: The deserialized AgentFindingBase (or subclass) from the agent.</span>
+<a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a><span class="sd">        details: Agent-specific text describing the finding in detail.</span>
+<a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a><span class="sd">            Sourced from the most descriptive field of the subclass</span>
+<a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a><span class="sd">            (e.g. InvestigatorFinding.hypothesis).</span>
+<a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a><span class="sd">        relevant_files: List of file paths or URL strings associated with</span>
+<a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a><span class="sd">            this finding. Empty list if the agent does not reference files.</span>
+<a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a>
+<a id="__codelineno-2-22" name="__codelineno-2-22" href="#__codelineno-2-22"></a><span class="sd">    Returns:</span>
+<a id="__codelineno-2-23" name="__codelineno-2-23" href="#__codelineno-2-23"></a><span class="sd">        AgentFinding ready for appending to BugTriageState.findings.</span>
+<a id="__codelineno-2-24" name="__codelineno-2-24" href="#__codelineno-2-24"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-2-25" name="__codelineno-2-25" href="#__codelineno-2-25"></a>    <span class="k">return</span> <span class="n">AgentFinding</span><span class="p">(</span>
+<a id="__codelineno-2-26" name="__codelineno-2-26" href="#__codelineno-2-26"></a>        <span class="n">agent_name</span><span class="o">=</span><span class="n">raw</span><span class="o">.</span><span class="n">agent_name</span><span class="p">,</span>
+<a id="__codelineno-2-27" name="__codelineno-2-27" href="#__codelineno-2-27"></a>        <span class="n">summary</span><span class="o">=</span><span class="n">raw</span><span class="o">.</span><span class="n">summary</span><span class="p">,</span>
+<a id="__codelineno-2-28" name="__codelineno-2-28" href="#__codelineno-2-28"></a>        <span class="n">confidence</span><span class="o">=</span><span class="n">raw</span><span class="o">.</span><span class="n">confidence</span><span class="p">,</span>
+<a id="__codelineno-2-29" name="__codelineno-2-29" href="#__codelineno-2-29"></a>        <span class="n">details</span><span class="o">=</span><span class="n">details</span><span class="p">,</span>
+<a id="__codelineno-2-30" name="__codelineno-2-30" href="#__codelineno-2-30"></a>        <span class="n">relevant_files</span><span class="o">=</span><span class="n">relevant_files</span><span class="p">,</span>
+<a id="__codelineno-2-31" name="__codelineno-2-31" href="#__codelineno-2-31"></a>    <span class="p">)</span>
+</code></pre></div>
+<h3 id="error-field-handling-in-langgraph-nodes">Error Field Handling in LangGraph Nodes<a class="headerlink" href="#error-field-handling-in-langgraph-nodes" title="Permanent link">&para;</a></h3>
+<p><code>AgentFindingBase.error</code> has no counterpart in <code>AgentFinding</code>. It is handled <strong>before</strong> translation:
+if the agent sets <code>error</code> to a non-None value, the LangGraph node logs the error and returns early
+without appending a finding. The supervisor then re-routes based on the unchanged findings list.</p>
+<p>Full node pattern (see Section 10 for complete call pattern):</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># Parse first — dot notation throughout; no untyped dict access on the output</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="n">raw</span> <span class="o">=</span> <span class="n">InvestigatorFinding</span><span class="p">(</span><span class="o">**</span><span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="s2">&quot;output&quot;</span><span class="p">])</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="k">if</span> <span class="n">raw</span><span class="o">.</span><span class="n">error</span><span class="p">:</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>    <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;agent=</span><span class="si">%s</span><span class="s2"> error=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">node_name</span><span class="p">,</span> <span class="n">raw</span><span class="o">.</span><span class="n">error</span><span class="p">)</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;current_node&quot;</span><span class="p">:</span> <span class="n">node_name</span><span class="p">,</span> <span class="s2">&quot;iterations&quot;</span><span class="p">:</span> <span class="n">state</span><span class="o">.</span><span class="n">iterations</span> <span class="o">+</span> <span class="mi">1</span><span class="p">}</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>    <span class="c1"># findings NOT appended — supervisor sees no new finding and may retry or escalate</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="n">finding</span> <span class="o">=</span> <span class="n">_to_agent_finding</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="n">details</span><span class="o">=</span><span class="n">raw</span><span class="o">.</span><span class="n">hypothesis</span><span class="p">,</span> <span class="n">relevant_files</span><span class="o">=</span><span class="n">raw</span><span class="o">.</span><span class="n">affected_areas</span><span class="p">)</span>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="k">return</span> <span class="p">{</span><span class="s2">&quot;findings&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">finding</span><span class="p">],</span> <span class="s2">&quot;current_node&quot;</span><span class="p">:</span> <span class="n">node_name</span><span class="p">,</span> <span class="s2">&quot;iterations&quot;</span><span class="p">:</span> <span class="n">state</span><span class="o">.</span><span class="n">iterations</span> <span class="o">+</span> <span class="mi">1</span><span class="p">}</span>
+</code></pre></div>
+<hr />
+<h2 id="4-investigator-agent">4. Investigator Agent<a class="headerlink" href="#4-investigator-agent" title="Permanent link">&para;</a></h2>
+<p><strong>Purpose:</strong> Reads the full GitHub issue and forms an initial hypothesis about the bug.</p>
+<h3 id="prompt-template">Prompt Template<a class="headerlink" href="#prompt-template" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">INVESTIGATOR_SYSTEM_PROMPT</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span><span class="se">\</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="s2">You are an expert software debugger. Your job is to read a GitHub issue report and form an initial,</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="s2">structured hypothesis about the bug.</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="s2">Guidelines:</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="s2">- Be precise about affected areas: name modules, classes, or subsystems, not vague layers.</span>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="s2">- Extract every error message or stack trace verbatim — these are the most valuable signals.</span>
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="s2">- Keywords should be search-ready: short, specific, likely to appear in source code or Stack Overflow.</span>
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="s2">- Confidence should reflect how clearly the issue body points to a root cause. Ambiguous issue = low confidence.</span>
+<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="s2">&quot;&quot;&quot;</span>
+<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a>
+<a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a><span class="n">INVESTIGATOR_HUMAN_TEMPLATE</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span><span class="se">\</span>
+<a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a><span class="s2">## GitHub Issue</span>
+<a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a>
+<a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a><span class="s2">Title: </span><span class="si">{issue_title}</span>
+<a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a>
+<a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a><span class="s2">Body:</span>
+<a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a><span class="si">{issue_body}</span>
+<a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a>
+<a id="__codelineno-4-20" name="__codelineno-4-20" href="#__codelineno-4-20"></a><span class="s2">## Prior Findings</span>
+<a id="__codelineno-4-21" name="__codelineno-4-21" href="#__codelineno-4-21"></a><span class="si">{prior_findings}</span>
+<a id="__codelineno-4-22" name="__codelineno-4-22" href="#__codelineno-4-22"></a>
+<a id="__codelineno-4-23" name="__codelineno-4-23" href="#__codelineno-4-23"></a><span class="s2">Analyze this issue and return a structured hypothesis.</span>
+<a id="__codelineno-4-24" name="__codelineno-4-24" href="#__codelineno-4-24"></a><span class="s2">&quot;&quot;&quot;</span>
+<a id="__codelineno-4-25" name="__codelineno-4-25" href="#__codelineno-4-25"></a>
+<a id="__codelineno-4-26" name="__codelineno-4-26" href="#__codelineno-4-26"></a><span class="n">investigator_prompt</span> <span class="o">=</span> <span class="n">ChatPromptTemplate</span><span class="o">.</span><span class="n">from_messages</span><span class="p">([</span>
+<a id="__codelineno-4-27" name="__codelineno-4-27" href="#__codelineno-4-27"></a>    <span class="p">(</span><span class="s2">&quot;system&quot;</span><span class="p">,</span> <span class="n">INVESTIGATOR_SYSTEM_PROMPT</span><span class="p">),</span>
+<a id="__codelineno-4-28" name="__codelineno-4-28" href="#__codelineno-4-28"></a>    <span class="p">(</span><span class="s2">&quot;human&quot;</span><span class="p">,</span> <span class="n">INVESTIGATOR_HUMAN_TEMPLATE</span><span class="p">),</span>
+<a id="__codelineno-4-29" name="__codelineno-4-29" href="#__codelineno-4-29"></a><span class="p">])</span>
+</code></pre></div>
+<h3 id="input-output-models">Input / Output Models<a class="headerlink" href="#input-output-models" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">InvestigatorInput</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>    <span class="n">issue_title</span><span class="p">:</span> <span class="nb">str</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>    <span class="n">issue_body</span><span class="p">:</span> <span class="nb">str</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>    <span class="n">prior_findings</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="k">class</span><span class="w"> </span><span class="nc">InvestigatorFinding</span><span class="p">(</span><span class="n">AgentFindingBase</span><span class="p">):</span>
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>    <span class="n">hypothesis</span><span class="p">:</span> <span class="nb">str</span>                    <span class="c1"># Concise root-cause hypothesis</span>
+<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>    <span class="n">affected_areas</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>          <span class="c1"># Module / subsystem names</span>
+<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>    <span class="n">keywords_for_search</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>     <span class="c1"># For Codebase Search and Web Search agents</span>
+<a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a>    <span class="n">error_messages</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>          <span class="c1"># Verbatim error strings from the issue body</span>
+</code></pre></div>
+<h3 id="lcel-chain">LCEL Chain<a class="headerlink" href="#lcel-chain" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">llm</span> <span class="o">=</span> <span class="n">ChatOpenAI</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="s2">&quot;gpt-4o-mini&quot;</span><span class="p">,</span> <span class="n">temperature</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span>  <span class="c1"># cheaper model: extraction-only task, no reasoning required</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="n">primary</span> <span class="o">=</span> <span class="n">investigator_prompt</span> <span class="o">|</span> <span class="n">llm</span><span class="o">.</span><span class="n">with_structured_output</span><span class="p">(</span><span class="n">InvestigatorFinding</span><span class="p">)</span>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="n">fallback</span> <span class="o">=</span> <span class="n">investigator_prompt</span> <span class="o">|</span> <span class="n">fallback_llm</span><span class="o">.</span><span class="n">with_structured_output</span><span class="p">(</span><span class="n">InvestigatorFinding</span><span class="p">)</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="n">chain</span> <span class="o">=</span> <span class="n">primary</span><span class="o">.</span><span class="n">with_retry</span><span class="p">(</span>
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>    <span class="n">stop_after_attempt</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>    <span class="n">retry_if_exception_type</span><span class="o">=</span><span class="p">(</span><span class="n">RateLimitError</span><span class="p">,),</span>
+<a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span class="p">)</span><span class="o">.</span><span class="n">with_fallbacks</span><span class="p">([</span><span class="n">fallback</span><span class="p">])</span>
+</code></pre></div>
+<h3 id="node-level-translation">Node-Level Translation<a class="headerlink" href="#node-level-translation" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">details</span> <span class="o">=</span> <span class="n">raw</span><span class="o">.</span><span class="n">hypothesis</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="n">relevant_files</span> <span class="o">=</span> <span class="n">raw</span><span class="o">.</span><span class="n">affected_areas</span>  <span class="c1"># area names used as &quot;relevant files&quot; proxy</span>
+</code></pre></div>
+<hr />
+<h2 id="5-web-search-agent">5. Web Search Agent<a class="headerlink" href="#5-web-search-agent" title="Permanent link">&para;</a></h2>
+<h3 id="why-bind_tools-alone-is-not-enough">Why <code>bind_tools</code> Alone Is Not Enough<a class="headerlink" href="#why-bind_tools-alone-is-not-enough" title="Permanent link">&para;</a></h3>
+<p><code>llm.bind_tools([tavily])</code> tells the LLM about the tool and allows it to <em>request</em> a tool call. But
+calling <code>.invoke()</code> on such a chain returns an <code>AIMessage</code> — not the tool results. The LLM's tool
+call request is embedded in <code>AIMessage.tool_calls</code>. The pipe cannot continue until the tool is
+<em>actually executed</em> and its output is fed back to the LLM as a <code>ToolMessage</code>.</p>
+<p>Without explicit tool execution, <code>tool_executor</code> is undefined — the chain breaks here:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="c1"># BROKEN — tool_executor is never defined; AIMessage cannot be piped directly to a prompt</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="n">chain</span> <span class="o">=</span> <span class="n">web_search_prompt</span> <span class="o">|</span> <span class="n">llm</span><span class="o">.</span><span class="n">bind_tools</span><span class="p">([</span><span class="n">tavily</span><span class="p">])</span> <span class="o">|</span> <span class="n">tool_executor</span> <span class="o">|</span> <span class="n">web_result_prompt</span> <span class="o">|</span> <span class="o">...</span>
+</code></pre></div>
+<h3 id="toolnode-pattern-canonical">ToolNode Pattern (Canonical)<a class="headerlink" href="#toolnode-pattern-canonical" title="Permanent link">&para;</a></h3>
+<p>Replace the custom <code>RunnableLambda</code> executor with <code>ToolNode</code> from <code>langgraph.prebuilt</code>. This
+is required for <code>on_tool_start</code> / <code>on_tool_end</code> events to fire in <code>astream_events</code> v2, which
+the frontend's Live Workspace tool call display depends on (see PRD-003-1 §Event Pipeline).</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="c1"># agentops/agents/web_search.py</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">langchain_tavily</span><span class="w"> </span><span class="kn">import</span> <span class="n">TavilySearch</span>
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">langchain_openai</span><span class="w"> </span><span class="kn">import</span> <span class="n">ChatOpenAI</span>
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">langgraph.prebuilt</span><span class="w"> </span><span class="kn">import</span> <span class="n">ToolNode</span>
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>
+<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="kn">from</span><span class="w"> </span><span class="nn">agentops.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">WebSearchFinding</span><span class="p">,</span> <span class="n">WebSearchState</span>
+<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="kn">from</span><span class="w"> </span><span class="nn">agentops.translation</span><span class="w"> </span><span class="kn">import</span> <span class="n">_to_agent_finding</span>
+<a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a>
+<a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a><span class="c1"># Tool definition — official Tavily package (pip install langchain-tavily)</span>
+<a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a><span class="n">_tavily</span> <span class="o">=</span> <span class="n">TavilySearch</span><span class="p">(</span><span class="n">max_results</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">search_depth</span><span class="o">=</span><span class="s2">&quot;advanced&quot;</span><span class="p">)</span>
+<a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a>
+<a id="__codelineno-9-12" name="__codelineno-9-12" href="#__codelineno-9-12"></a><span class="c1"># LLM with tool bound — produces AIMessage with tool_calls when search is needed</span>
+<a id="__codelineno-9-13" name="__codelineno-9-13" href="#__codelineno-9-13"></a><span class="n">_llm_with_tools</span> <span class="o">=</span> <span class="n">ChatOpenAI</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="s2">&quot;gpt-4o-mini&quot;</span><span class="p">,</span> <span class="n">temperature</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">bind_tools</span><span class="p">([</span><span class="n">_tavily</span><span class="p">])</span>
+<a id="__codelineno-9-14" name="__codelineno-9-14" href="#__codelineno-9-14"></a>
+<a id="__codelineno-9-15" name="__codelineno-9-15" href="#__codelineno-9-15"></a><span class="c1"># Tool executor node — dispatches tool_calls, emits on_tool_start/on_tool_end</span>
+<a id="__codelineno-9-16" name="__codelineno-9-16" href="#__codelineno-9-16"></a><span class="n">_tool_node</span> <span class="o">=</span> <span class="n">ToolNode</span><span class="p">(</span>
+<a id="__codelineno-9-17" name="__codelineno-9-17" href="#__codelineno-9-17"></a>    <span class="n">tools</span><span class="o">=</span><span class="p">[</span><span class="n">_tavily</span><span class="p">],</span>
+<a id="__codelineno-9-18" name="__codelineno-9-18" href="#__codelineno-9-18"></a>    <span class="n">handle_tool_errors</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>   <span class="c1"># returns ToolMessage with error str instead of crashing</span>
+<a id="__codelineno-9-19" name="__codelineno-9-19" href="#__codelineno-9-19"></a><span class="p">)</span>
+<a id="__codelineno-9-20" name="__codelineno-9-20" href="#__codelineno-9-20"></a>
+<a id="__codelineno-9-21" name="__codelineno-9-21" href="#__codelineno-9-21"></a><span class="c1"># Final structured output LLM — separate from tool-calling LLM (cannot chain reliably)</span>
+<a id="__codelineno-9-22" name="__codelineno-9-22" href="#__codelineno-9-22"></a><span class="n">_structured_llm</span> <span class="o">=</span> <span class="n">ChatOpenAI</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="s2">&quot;gpt-4o-mini&quot;</span><span class="p">,</span> <span class="n">temperature</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">with_structured_output</span><span class="p">(</span>
+<a id="__codelineno-9-23" name="__codelineno-9-23" href="#__codelineno-9-23"></a>    <span class="n">WebSearchFinding</span>
+<a id="__codelineno-9-24" name="__codelineno-9-24" href="#__codelineno-9-24"></a><span class="p">)</span>
+<a id="__codelineno-9-25" name="__codelineno-9-25" href="#__codelineno-9-25"></a>
+<a id="__codelineno-9-26" name="__codelineno-9-26" href="#__codelineno-9-26"></a>
+<a id="__codelineno-9-27" name="__codelineno-9-27" href="#__codelineno-9-27"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">web_search_agent_node</span><span class="p">(</span><span class="n">state</span><span class="p">:</span> <span class="n">WebSearchState</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<a id="__codelineno-9-28" name="__codelineno-9-28" href="#__codelineno-9-28"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Web Search agent: calls Tavily, then formats result as WebSearchFinding.&quot;&quot;&quot;</span>
+<a id="__codelineno-9-29" name="__codelineno-9-29" href="#__codelineno-9-29"></a>    <span class="c1"># Step 1: LLM decides what to search for</span>
+<a id="__codelineno-9-30" name="__codelineno-9-30" href="#__codelineno-9-30"></a>    <span class="n">ai_msg</span> <span class="o">=</span> <span class="k">await</span> <span class="n">_llm_with_tools</span><span class="o">.</span><span class="n">ainvoke</span><span class="p">(</span><span class="n">state</span><span class="p">[</span><span class="s2">&quot;messages&quot;</span><span class="p">])</span>
+<a id="__codelineno-9-31" name="__codelineno-9-31" href="#__codelineno-9-31"></a>    <span class="c1"># Step 2: ToolNode executes the Tavily call(s) — emits on_tool_start/on_tool_end</span>
+<a id="__codelineno-9-32" name="__codelineno-9-32" href="#__codelineno-9-32"></a>    <span class="n">tool_result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">_tool_node</span><span class="o">.</span><span class="n">ainvoke</span><span class="p">({</span><span class="s2">&quot;messages&quot;</span><span class="p">:</span> <span class="n">state</span><span class="p">[</span><span class="s2">&quot;messages&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">ai_msg</span><span class="p">]})</span>
+<a id="__codelineno-9-33" name="__codelineno-9-33" href="#__codelineno-9-33"></a>    <span class="c1"># Step 3: Separate structured output LLM synthesizes findings</span>
+<a id="__codelineno-9-34" name="__codelineno-9-34" href="#__codelineno-9-34"></a>    <span class="n">raw</span><span class="p">:</span> <span class="n">WebSearchFinding</span> <span class="o">=</span> <span class="k">await</span> <span class="n">_structured_llm</span><span class="o">.</span><span class="n">ainvoke</span><span class="p">(</span>
+<a id="__codelineno-9-35" name="__codelineno-9-35" href="#__codelineno-9-35"></a>        <span class="n">state</span><span class="p">[</span><span class="s2">&quot;messages&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">ai_msg</span><span class="p">]</span> <span class="o">+</span> <span class="n">tool_result</span><span class="p">[</span><span class="s2">&quot;messages&quot;</span><span class="p">]</span>
+<a id="__codelineno-9-36" name="__codelineno-9-36" href="#__codelineno-9-36"></a>    <span class="p">)</span>
+<a id="__codelineno-9-37" name="__codelineno-9-37" href="#__codelineno-9-37"></a>    <span class="n">finding</span> <span class="o">=</span> <span class="n">_to_agent_finding</span><span class="p">(</span>
+<a id="__codelineno-9-38" name="__codelineno-9-38" href="#__codelineno-9-38"></a>        <span class="n">raw</span><span class="p">,</span>
+<a id="__codelineno-9-39" name="__codelineno-9-39" href="#__codelineno-9-39"></a>        <span class="n">details</span><span class="o">=</span><span class="n">raw</span><span class="o">.</span><span class="n">external_root_cause</span> <span class="ow">or</span> <span class="s2">&quot;No external root cause identified.&quot;</span><span class="p">,</span>
+<a id="__codelineno-9-40" name="__codelineno-9-40" href="#__codelineno-9-40"></a>        <span class="n">relevant_files</span><span class="o">=</span><span class="p">[</span><span class="n">r</span><span class="o">.</span><span class="n">url</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">raw</span><span class="o">.</span><span class="n">relevant_results</span><span class="p">],</span>
+<a id="__codelineno-9-41" name="__codelineno-9-41" href="#__codelineno-9-41"></a>    <span class="p">)</span>
+<a id="__codelineno-9-42" name="__codelineno-9-42" href="#__codelineno-9-42"></a>    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;findings&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">finding</span><span class="p">]}</span>
+</code></pre></div>
+<blockquote>
+<p><strong><code>langchain_tavily</code> vs deprecated community import:</strong>
+<code>langchain_tavily</code> is the official Tavily package (<code>pip install langchain-tavily</code>).
+<code>langchain_community.tools.tavily_search.TavilySearchResults</code> is deprecated and will be
+removed in a future release. Constructor parameters are identical; <code>search_depth</code> accepts
+<code>"basic"</code> | <code>"advanced"</code> | <code>"fast"</code>.</p>
+<p><strong>Why separate LLMs for tool-calling and structured output?</strong>
+<code>llm.bind_tools([tool]).with_structured_output(Schema)</code> cannot be reliably chained — the
+model sees multiple competing function schemas and conflates tool argument fields with output
+schema fields. Use two separate LLM calls: one with <code>bind_tools</code> for the search decision,
+one with <code>with_structured_output</code> for synthesis. The cost is one additional LLM call;
+the benefit is deterministic structured output.</p>
+<p><strong>Why <code>ToolNode</code> instead of <code>RunnableLambda</code>?</strong>
+<code>ToolNode</code> from <code>langgraph.prebuilt</code> is the only pattern that emits <code>on_tool_start</code> /
+<code>on_tool_end</code> events through <code>astream_events</code> v2. A custom <code>RunnableLambda</code> emits only
+<code>on_chain_start</code> / <code>on_chain_end</code>. The frontend's Live Workspace tool call display
+(PRD-002) depends on <code>on_tool_start</code> events. <code>handle_tool_errors=True</code> returns a
+<code>ToolMessage</code> with the error string instead of crashing the graph when Tavily fails.</p>
+</blockquote>
+<h3 id="prompt-templates">Prompt Templates<a class="headerlink" href="#prompt-templates" title="Permanent link">&para;</a></h3>
+<p>The system prompts below structure <code>state["messages"]</code> before the node is called. The
+tool-calling LLM sees <code>WEB_SEARCH_SYSTEM_PROMPT</code>; after tool results are appended the
+structured output LLM sees the full history including <code>WEB_RESULT_SYSTEM_PROMPT</code>:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="n">WEB_SEARCH_SYSTEM_PROMPT</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span><span class="se">\</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="s2">You are a web research assistant specializing in software bugs. Given an issue report,</span>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="s2">formulate precise web search queries to find:</span>
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="s2">1. Known bugs in the libraries or frameworks mentioned</span>
+<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="s2">2. Stack Overflow threads matching the exact error messages</span>
+<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span class="s2">3. GitHub issues in relevant repositories</span>
+<a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a><span class="s2">Use the tavily_search tool to execute your searches.</span>
+<a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a><span class="s2">&quot;&quot;&quot;</span>
+<a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a>
+<a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a><span class="n">WEB_RESULT_SYSTEM_PROMPT</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span><span class="se">\</span>
+<a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a><span class="s2">You are a software bug analyst. Review the web search results below and synthesize findings</span>
+<a id="__codelineno-10-12" name="__codelineno-10-12" href="#__codelineno-10-12"></a><span class="s2">relevant to the bug described. Identify external root causes, known issues, or relevant</span>
+<a id="__codelineno-10-13" name="__codelineno-10-13" href="#__codelineno-10-13"></a><span class="s2">documentation. Return structured output only.</span>
+<a id="__codelineno-10-14" name="__codelineno-10-14" href="#__codelineno-10-14"></a><span class="s2">&quot;&quot;&quot;</span>
+</code></pre></div>
+<h3 id="node-level-translation_1">Node-Level Translation<a class="headerlink" href="#node-level-translation_1" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="n">details</span> <span class="o">=</span> <span class="n">raw</span><span class="o">.</span><span class="n">external_root_cause</span> <span class="ow">or</span> <span class="s2">&quot;No external root cause identified.&quot;</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="n">relevant_files</span> <span class="o">=</span> <span class="p">[</span><span class="n">r</span><span class="o">.</span><span class="n">url</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">raw</span><span class="o">.</span><span class="n">relevant_results</span><span class="p">]</span>
+</code></pre></div>
+<hr />
+<h2 id="6-codebase-search-agent">6. Codebase Search Agent<a class="headerlink" href="#6-codebase-search-agent" title="Permanent link">&para;</a></h2>
+<h3 id="retriever-import">Retriever Import<a class="headerlink" href="#retriever-import" title="Permanent link">&para;</a></h3>
+<p><code>get_codebase_retriever</code> is defined and fully specified in
+<a href="../PRD-004-2-codebase-index/#5-codebase_retriever-instantiation">PRD-004-2</a>. Import it:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">agentops_codebase_index.retriever</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_codebase_retriever</span>
+</code></pre></div>
+<p>It accepts a <code>repository</code> URL string and returns a <code>VectorStoreRetriever</code> for the correct Chroma
+collection.</p>
+<h3 id="prompt-template_1">Prompt Template<a class="headerlink" href="#prompt-template_1" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="n">CODEBASE_SEARCH_SYSTEM_PROMPT</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span><span class="se">\</span>
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="s2">You are a code analysis expert. You have been given relevant code snippets retrieved from</span>
+<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="s2">the repository via semantic search. Your task is to identify which files and code paths are</span>
+<a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="s2">most likely involved in the reported bug, and to pinpoint the root cause location if possible.</span>
+<a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a>
+<a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a><span class="s2">Be specific: name exact file paths, function names, and line regions where possible.</span>
+<a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a><span class="s2">&quot;&quot;&quot;</span>
+<a id="__codelineno-13-8" name="__codelineno-13-8" href="#__codelineno-13-8"></a>
+<a id="__codelineno-13-9" name="__codelineno-13-9" href="#__codelineno-13-9"></a><span class="n">codebase_search_prompt</span> <span class="o">=</span> <span class="n">ChatPromptTemplate</span><span class="o">.</span><span class="n">from_messages</span><span class="p">([</span>
+<a id="__codelineno-13-10" name="__codelineno-13-10" href="#__codelineno-13-10"></a>    <span class="p">(</span><span class="s2">&quot;system&quot;</span><span class="p">,</span> <span class="n">CODEBASE_SEARCH_SYSTEM_PROMPT</span><span class="p">),</span>
+<a id="__codelineno-13-11" name="__codelineno-13-11" href="#__codelineno-13-11"></a>    <span class="p">(</span><span class="s2">&quot;human&quot;</span><span class="p">,</span> <span class="p">(</span>
+<a id="__codelineno-13-12" name="__codelineno-13-12" href="#__codelineno-13-12"></a>        <span class="s2">&quot;Hypothesis: </span><span class="si">{hypothesis}</span><span class="se">\n\n</span><span class="s2">&quot;</span>
+<a id="__codelineno-13-13" name="__codelineno-13-13" href="#__codelineno-13-13"></a>        <span class="s2">&quot;Keywords: </span><span class="si">{keywords}</span><span class="se">\n\n</span><span class="s2">&quot;</span>
+<a id="__codelineno-13-14" name="__codelineno-13-14" href="#__codelineno-13-14"></a>        <span class="s2">&quot;Retrieved code context:</span><span class="se">\n</span><span class="si">{context}</span><span class="s2">&quot;</span>
+<a id="__codelineno-13-15" name="__codelineno-13-15" href="#__codelineno-13-15"></a>    <span class="p">)),</span>
+<a id="__codelineno-13-16" name="__codelineno-13-16" href="#__codelineno-13-16"></a><span class="p">])</span>
+</code></pre></div>
+<h3 id="input-output-models_1">Input / Output Models<a class="headerlink" href="#input-output-models_1" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">CodebaseSearchInput</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>    <span class="n">repository</span><span class="p">:</span> <span class="nb">str</span>
+<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>    <span class="n">keywords</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+<a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a>    <span class="n">hypothesis</span><span class="p">:</span> <span class="nb">str</span>
+<a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a>    <span class="n">affected_areas</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+<a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a>
+<a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a>
+<a id="__codelineno-14-8" name="__codelineno-14-8" href="#__codelineno-14-8"></a><span class="k">class</span><span class="w"> </span><span class="nc">RelevantFile</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<a id="__codelineno-14-9" name="__codelineno-14-9" href="#__codelineno-14-9"></a>    <span class="n">path</span><span class="p">:</span> <span class="nb">str</span>
+<a id="__codelineno-14-10" name="__codelineno-14-10" href="#__codelineno-14-10"></a>    <span class="n">relevance_reason</span><span class="p">:</span> <span class="nb">str</span>
+<a id="__codelineno-14-11" name="__codelineno-14-11" href="#__codelineno-14-11"></a>
+<a id="__codelineno-14-12" name="__codelineno-14-12" href="#__codelineno-14-12"></a>
+<a id="__codelineno-14-13" name="__codelineno-14-13" href="#__codelineno-14-13"></a><span class="k">class</span><span class="w"> </span><span class="nc">CodebaseFinding</span><span class="p">(</span><span class="n">AgentFindingBase</span><span class="p">):</span>
+<a id="__codelineno-14-14" name="__codelineno-14-14" href="#__codelineno-14-14"></a>    <span class="n">relevant_files</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">RelevantFile</span><span class="p">]</span>
+<a id="__codelineno-14-15" name="__codelineno-14-15" href="#__codelineno-14-15"></a>    <span class="n">root_cause_location</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span>
+</code></pre></div>
+<h3 id="lcel-chain_1">LCEL Chain<a class="headerlink" href="#lcel-chain_1" title="Permanent link">&para;</a></h3>
+<p>The <code>RunnableParallel</code> passes the issue context alongside the retrieved code snippets. The retriever
+is instantiated at call time using the <code>repository</code> field from the input:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">langchain_core.runnables</span><span class="w"> </span><span class="kn">import</span> <span class="n">RunnableParallel</span><span class="p">,</span> <span class="n">RunnablePassthrough</span><span class="p">,</span> <span class="n">RunnableLambda</span>
+<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">langchain_core.vectorstores</span><span class="w"> </span><span class="kn">import</span> <span class="n">VectorStoreRetriever</span>
+<a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>
+<a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a>
+<a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a><span class="k">def</span><span class="w"> </span><span class="nf">build_codebase_chain</span><span class="p">(</span><span class="n">retriever</span><span class="p">:</span> <span class="n">VectorStoreRetriever</span><span class="p">):</span>
+<a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Build the RAG chain for a pre-built repository retriever.&quot;&quot;&quot;</span>
+<a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a>    <span class="n">primary</span> <span class="o">=</span> <span class="p">(</span>
+<a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a>        <span class="n">RunnableParallel</span><span class="p">({</span>
+<a id="__codelineno-15-9" name="__codelineno-15-9" href="#__codelineno-15-9"></a>            <span class="s2">&quot;context&quot;</span><span class="p">:</span> <span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="s2">&quot;keywords&quot;</span><span class="p">]))</span> <span class="o">|</span> <span class="n">retriever</span><span class="p">,</span>
+<a id="__codelineno-15-10" name="__codelineno-15-10" href="#__codelineno-15-10"></a>            <span class="s2">&quot;hypothesis&quot;</span><span class="p">:</span> <span class="n">RunnablePassthrough</span><span class="p">()</span> <span class="o">|</span> <span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="s2">&quot;hypothesis&quot;</span><span class="p">]),</span>
+<a id="__codelineno-15-11" name="__codelineno-15-11" href="#__codelineno-15-11"></a>            <span class="s2">&quot;keywords&quot;</span><span class="p">:</span> <span class="n">RunnablePassthrough</span><span class="p">()</span> <span class="o">|</span> <span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="s2">&quot;keywords&quot;</span><span class="p">])),</span>
+<a id="__codelineno-15-12" name="__codelineno-15-12" href="#__codelineno-15-12"></a>        <span class="p">})</span>
+<a id="__codelineno-15-13" name="__codelineno-15-13" href="#__codelineno-15-13"></a>        <span class="o">|</span> <span class="n">codebase_search_prompt</span>
+<a id="__codelineno-15-14" name="__codelineno-15-14" href="#__codelineno-15-14"></a>        <span class="o">|</span> <span class="n">llm</span><span class="o">.</span><span class="n">with_structured_output</span><span class="p">(</span><span class="n">CodebaseFinding</span><span class="p">)</span>
+<a id="__codelineno-15-15" name="__codelineno-15-15" href="#__codelineno-15-15"></a>    <span class="p">)</span>
+<a id="__codelineno-15-16" name="__codelineno-15-16" href="#__codelineno-15-16"></a>    <span class="n">fallback</span> <span class="o">=</span> <span class="p">(</span>
+<a id="__codelineno-15-17" name="__codelineno-15-17" href="#__codelineno-15-17"></a>        <span class="n">RunnableParallel</span><span class="p">({</span>
+<a id="__codelineno-15-18" name="__codelineno-15-18" href="#__codelineno-15-18"></a>            <span class="s2">&quot;context&quot;</span><span class="p">:</span> <span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="s2">&quot;keywords&quot;</span><span class="p">]))</span> <span class="o">|</span> <span class="n">retriever</span><span class="p">,</span>
+<a id="__codelineno-15-19" name="__codelineno-15-19" href="#__codelineno-15-19"></a>            <span class="s2">&quot;hypothesis&quot;</span><span class="p">:</span> <span class="n">RunnablePassthrough</span><span class="p">()</span> <span class="o">|</span> <span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="s2">&quot;hypothesis&quot;</span><span class="p">]),</span>
+<a id="__codelineno-15-20" name="__codelineno-15-20" href="#__codelineno-15-20"></a>            <span class="s2">&quot;keywords&quot;</span><span class="p">:</span> <span class="n">RunnablePassthrough</span><span class="p">()</span> <span class="o">|</span> <span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="s2">&quot;keywords&quot;</span><span class="p">])),</span>
+<a id="__codelineno-15-21" name="__codelineno-15-21" href="#__codelineno-15-21"></a>        <span class="p">})</span>
+<a id="__codelineno-15-22" name="__codelineno-15-22" href="#__codelineno-15-22"></a>        <span class="o">|</span> <span class="n">codebase_search_prompt</span>
+<a id="__codelineno-15-23" name="__codelineno-15-23" href="#__codelineno-15-23"></a>        <span class="o">|</span> <span class="n">fallback_llm</span><span class="o">.</span><span class="n">with_structured_output</span><span class="p">(</span><span class="n">CodebaseFinding</span><span class="p">)</span>
+<a id="__codelineno-15-24" name="__codelineno-15-24" href="#__codelineno-15-24"></a>    <span class="p">)</span>
+<a id="__codelineno-15-25" name="__codelineno-15-25" href="#__codelineno-15-25"></a>    <span class="k">return</span> <span class="n">primary</span><span class="o">.</span><span class="n">with_retry</span><span class="p">(</span>
+<a id="__codelineno-15-26" name="__codelineno-15-26" href="#__codelineno-15-26"></a>        <span class="n">stop_after_attempt</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+<a id="__codelineno-15-27" name="__codelineno-15-27" href="#__codelineno-15-27"></a>        <span class="n">retry_if_exception_type</span><span class="o">=</span><span class="p">(</span><span class="n">RateLimitError</span><span class="p">,),</span>
+<a id="__codelineno-15-28" name="__codelineno-15-28" href="#__codelineno-15-28"></a>    <span class="p">)</span><span class="o">.</span><span class="n">with_fallbacks</span><span class="p">([</span><span class="n">fallback</span><span class="p">])</span>
+</code></pre></div>
+<p>The caller (<code>codebase_search_node</code> in PRD-004-2 §5) calls <code>get_codebase_retriever(state["repository"])</code>
+first, then passes the retriever into <code>build_codebase_chain(retriever)</code>. This keeps collection
+validation (and its exception) outside the chain itself.</p>
+<h3 id="node-level-translation_2">Node-Level Translation<a class="headerlink" href="#node-level-translation_2" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="n">details</span> <span class="o">=</span> <span class="n">raw</span><span class="o">.</span><span class="n">root_cause_location</span> <span class="ow">or</span> <span class="s2">&quot;Root cause location not identified.&quot;</span>
+<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="n">relevant_files</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span><span class="o">.</span><span class="n">path</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">raw</span><span class="o">.</span><span class="n">relevant_files</span><span class="p">]</span>
+</code></pre></div>
+<hr />
+<h2 id="7-critic-agent">7. Critic Agent<a class="headerlink" href="#7-critic-agent" title="Permanent link">&para;</a></h2>
+<p><strong>Purpose:</strong> Challenges the accumulated findings adversarially. Flags gaps, adjusts confidence, and
+decides whether the triage is complete enough to send to the Writer.</p>
+<h3 id="prompt-template_2">Prompt Template<a class="headerlink" href="#prompt-template_2" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="n">CRITIC_SYSTEM_PROMPT</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span><span class="se">\</span>
+<a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="s2">You are an adversarial code review expert. Your job is to challenge the findings produced by</span>
+<a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a><span class="s2">other agents and identify weaknesses, gaps, or overconfident conclusions.</span>
+<a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a>
+<a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a><span class="s2">Evaluation rubric:</span>
+<a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a><span class="s2">- CONFIRMED: The findings are coherent, well-evidenced, and sufficient to write a triage report.</span>
+<a id="__codelineno-17-7" name="__codelineno-17-7" href="#__codelineno-17-7"></a><span class="s2">- UNCERTAIN: The findings are plausible but lack direct code evidence or have unresolved contradictions.</span>
+<a id="__codelineno-17-8" name="__codelineno-17-8" href="#__codelineno-17-8"></a><span class="s2">- CHALLENGED: The findings are speculative, contradictory, or missing key evidence. More investigation needed.</span>
+<a id="__codelineno-17-9" name="__codelineno-17-9" href="#__codelineno-17-9"></a>
+<a id="__codelineno-17-10" name="__codelineno-17-10" href="#__codelineno-17-10"></a><span class="s2">Be strict. A finding is only CONFIRMED if you would be comfortable filing a bug ticket based on it.</span>
+<a id="__codelineno-17-11" name="__codelineno-17-11" href="#__codelineno-17-11"></a><span class="s2">&quot;&quot;&quot;</span>
+<a id="__codelineno-17-12" name="__codelineno-17-12" href="#__codelineno-17-12"></a>
+<a id="__codelineno-17-13" name="__codelineno-17-13" href="#__codelineno-17-13"></a><span class="n">CRITIC_HUMAN_TEMPLATE</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span><span class="se">\</span>
+<a id="__codelineno-17-14" name="__codelineno-17-14" href="#__codelineno-17-14"></a><span class="s2">## Current Hypothesis</span>
+<a id="__codelineno-17-15" name="__codelineno-17-15" href="#__codelineno-17-15"></a><span class="si">{current_hypothesis}</span>
+<a id="__codelineno-17-16" name="__codelineno-17-16" href="#__codelineno-17-16"></a>
+<a id="__codelineno-17-17" name="__codelineno-17-17" href="#__codelineno-17-17"></a><span class="s2">## All Findings So Far</span>
+<a id="__codelineno-17-18" name="__codelineno-17-18" href="#__codelineno-17-18"></a><span class="si">{all_findings}</span>
+<a id="__codelineno-17-19" name="__codelineno-17-19" href="#__codelineno-17-19"></a>
+<a id="__codelineno-17-20" name="__codelineno-17-20" href="#__codelineno-17-20"></a><span class="s2">## Codebase Evidence</span>
+<a id="__codelineno-17-21" name="__codelineno-17-21" href="#__codelineno-17-21"></a><span class="si">{codebase_evidence}</span>
+<a id="__codelineno-17-22" name="__codelineno-17-22" href="#__codelineno-17-22"></a>
+<a id="__codelineno-17-23" name="__codelineno-17-23" href="#__codelineno-17-23"></a><span class="s2">Review the above and return your verdict.</span>
+<a id="__codelineno-17-24" name="__codelineno-17-24" href="#__codelineno-17-24"></a><span class="s2">&quot;&quot;&quot;</span>
+<a id="__codelineno-17-25" name="__codelineno-17-25" href="#__codelineno-17-25"></a>
+<a id="__codelineno-17-26" name="__codelineno-17-26" href="#__codelineno-17-26"></a><span class="n">critic_prompt</span> <span class="o">=</span> <span class="n">ChatPromptTemplate</span><span class="o">.</span><span class="n">from_messages</span><span class="p">([</span>
+<a id="__codelineno-17-27" name="__codelineno-17-27" href="#__codelineno-17-27"></a>    <span class="p">(</span><span class="s2">&quot;system&quot;</span><span class="p">,</span> <span class="n">CRITIC_SYSTEM_PROMPT</span><span class="p">),</span>
+<a id="__codelineno-17-28" name="__codelineno-17-28" href="#__codelineno-17-28"></a>    <span class="p">(</span><span class="s2">&quot;human&quot;</span><span class="p">,</span> <span class="n">CRITIC_HUMAN_TEMPLATE</span><span class="p">),</span>
+<a id="__codelineno-17-29" name="__codelineno-17-29" href="#__codelineno-17-29"></a><span class="p">])</span>
+</code></pre></div>
+<h3 id="input-output-models_2">Input / Output Models<a class="headerlink" href="#input-output-models_2" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">CriticInput</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a>    <span class="n">all_findings</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span>
+<a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a>    <span class="n">current_hypothesis</span><span class="p">:</span> <span class="nb">str</span>
+<a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a>    <span class="n">codebase_evidence</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+<a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a>
+<a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a>
+<a id="__codelineno-18-7" name="__codelineno-18-7" href="#__codelineno-18-7"></a><span class="k">class</span><span class="w"> </span><span class="nc">CriticVerdict</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<a id="__codelineno-18-8" name="__codelineno-18-8" href="#__codelineno-18-8"></a>    <span class="n">verdict</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;APPROVED&quot;</span><span class="p">,</span> <span class="s2">&quot;REJECTED&quot;</span><span class="p">]</span>
+<a id="__codelineno-18-9" name="__codelineno-18-9" href="#__codelineno-18-9"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Binary gate: APPROVED means writer may proceed; REJECTED means re-investigation needed.&quot;&quot;&quot;</span>
+<a id="__codelineno-18-10" name="__codelineno-18-10" href="#__codelineno-18-10"></a>
+<a id="__codelineno-18-11" name="__codelineno-18-11" href="#__codelineno-18-11"></a>    <span class="n">gaps</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span>
+<a id="__codelineno-18-12" name="__codelineno-18-12" href="#__codelineno-18-12"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Specific gaps or unsupported claims. Empty list when verdict is APPROVED.&quot;&quot;&quot;</span>
+<a id="__codelineno-18-13" name="__codelineno-18-13" href="#__codelineno-18-13"></a>
+<a id="__codelineno-18-14" name="__codelineno-18-14" href="#__codelineno-18-14"></a>    <span class="n">required_evidence</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span>
+<a id="__codelineno-18-15" name="__codelineno-18-15" href="#__codelineno-18-15"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;What additional evidence would change verdict to APPROVED. Empty when APPROVED.&quot;&quot;&quot;</span>
+<a id="__codelineno-18-16" name="__codelineno-18-16" href="#__codelineno-18-16"></a>
+<a id="__codelineno-18-17" name="__codelineno-18-17" href="#__codelineno-18-17"></a>    <span class="n">confidence</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">ge</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">le</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+<a id="__codelineno-18-18" name="__codelineno-18-18" href="#__codelineno-18-18"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Critic&#39;s confidence in the verdict (0.0–1.0).&quot;&quot;&quot;</span>
+<a id="__codelineno-18-19" name="__codelineno-18-19" href="#__codelineno-18-19"></a>
+<a id="__codelineno-18-20" name="__codelineno-18-20" href="#__codelineno-18-20"></a>
+<a id="__codelineno-18-21" name="__codelineno-18-21" href="#__codelineno-18-21"></a><span class="k">class</span><span class="w"> </span><span class="nc">CritiqueFinding</span><span class="p">(</span><span class="n">AgentFindingBase</span><span class="p">):</span>
+<a id="__codelineno-18-22" name="__codelineno-18-22" href="#__codelineno-18-22"></a>    <span class="n">verdict</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;CONFIRMED&quot;</span><span class="p">,</span> <span class="s2">&quot;UNCERTAIN&quot;</span><span class="p">,</span> <span class="s2">&quot;CHALLENGED&quot;</span><span class="p">]</span>
+<a id="__codelineno-18-23" name="__codelineno-18-23" href="#__codelineno-18-23"></a>    <span class="n">confidence_adjustment</span><span class="p">:</span> <span class="nb">float</span>   <span class="c1"># delta applied to overall confidence</span>
+<a id="__codelineno-18-24" name="__codelineno-18-24" href="#__codelineno-18-24"></a>    <span class="n">gaps</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>                <span class="c1"># specific gaps identified</span>
+<a id="__codelineno-18-25" name="__codelineno-18-25" href="#__codelineno-18-25"></a>    <span class="n">revised_hypothesis</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span>
+<a id="__codelineno-18-26" name="__codelineno-18-26" href="#__codelineno-18-26"></a>    <span class="n">ready_for_report</span><span class="p">:</span> <span class="nb">bool</span>         <span class="c1"># True only if verdict == CONFIRMED</span>
+</code></pre></div>
+<p><code>CriticVerdict</code> is the binary gate used by the supervisor for routing decisions. It is stored in
+<code>BugTriageState.critic_feedback</code>. <code>CritiqueFinding</code> (stored in <code>findings</code>) carries the full
+adversarial review detail for tracing and report purposes.</p>
+<h3 id="lcel-chain_2">LCEL Chain<a class="headerlink" href="#lcel-chain_2" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="n">primary</span> <span class="o">=</span> <span class="n">critic_prompt</span> <span class="o">|</span> <span class="n">llm</span><span class="o">.</span><span class="n">with_structured_output</span><span class="p">(</span><span class="n">CritiqueFinding</span><span class="p">)</span>
+<a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a><span class="n">fallback</span> <span class="o">=</span> <span class="n">critic_prompt</span> <span class="o">|</span> <span class="n">fallback_llm</span><span class="o">.</span><span class="n">with_structured_output</span><span class="p">(</span><span class="n">CritiqueFinding</span><span class="p">)</span>
+<a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a>
+<a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a><span class="n">chain</span> <span class="o">=</span> <span class="n">primary</span><span class="o">.</span><span class="n">with_retry</span><span class="p">(</span>
+<a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a>    <span class="n">stop_after_attempt</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+<a id="__codelineno-19-6" name="__codelineno-19-6" href="#__codelineno-19-6"></a>    <span class="n">retry_if_exception_type</span><span class="o">=</span><span class="p">(</span><span class="n">RateLimitError</span><span class="p">,),</span>
+<a id="__codelineno-19-7" name="__codelineno-19-7" href="#__codelineno-19-7"></a><span class="p">)</span><span class="o">.</span><span class="n">with_fallbacks</span><span class="p">([</span><span class="n">fallback</span><span class="p">])</span>
+</code></pre></div>
+<h3 id="node-level-translation_3">Node-Level Translation<a class="headerlink" href="#node-level-translation_3" title="Permanent link">&para;</a></h3>
+<p>The critic node must write two state fields: <code>findings</code> (for tracing) and <code>critic_feedback</code> (for
+routing). A deterministic mapper converts <code>CritiqueFinding</code> → <code>CriticVerdict</code> without an LLM call:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">map_critique_to_verdict</span><span class="p">(</span><span class="n">raw</span><span class="p">:</span> <span class="n">CritiqueFinding</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CriticVerdict</span><span class="p">:</span>
+<a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Deterministic mapper: derives the binary CriticVerdict from CritiqueFinding.&quot;&quot;&quot;</span>
+<a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a>    <span class="n">approved</span> <span class="o">=</span> <span class="n">raw</span><span class="o">.</span><span class="n">verdict</span> <span class="o">==</span> <span class="s2">&quot;CONFIRMED&quot;</span> <span class="ow">and</span> <span class="n">raw</span><span class="o">.</span><span class="n">ready_for_report</span>
+<a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a>    <span class="k">return</span> <span class="n">CriticVerdict</span><span class="p">(</span>
+<a id="__codelineno-20-5" name="__codelineno-20-5" href="#__codelineno-20-5"></a>        <span class="n">verdict</span><span class="o">=</span><span class="s2">&quot;APPROVED&quot;</span> <span class="k">if</span> <span class="n">approved</span> <span class="k">else</span> <span class="s2">&quot;REJECTED&quot;</span><span class="p">,</span>
+<a id="__codelineno-20-6" name="__codelineno-20-6" href="#__codelineno-20-6"></a>        <span class="n">gaps</span><span class="o">=</span><span class="p">[]</span> <span class="k">if</span> <span class="n">approved</span> <span class="k">else</span> <span class="n">raw</span><span class="o">.</span><span class="n">gaps</span><span class="p">,</span>
+<a id="__codelineno-20-7" name="__codelineno-20-7" href="#__codelineno-20-7"></a>        <span class="c1"># CritiqueFinding has no separate required_evidence field; raw.gaps is the only</span>
+<a id="__codelineno-20-8" name="__codelineno-20-8" href="#__codelineno-20-8"></a>        <span class="c1"># available signal for what evidence is still missing. Both fields are set to the</span>
+<a id="__codelineno-20-9" name="__codelineno-20-9" href="#__codelineno-20-9"></a>        <span class="c1"># same list intentionally — CriticVerdict.gaps names the problems,</span>
+<a id="__codelineno-20-10" name="__codelineno-20-10" href="#__codelineno-20-10"></a>        <span class="c1"># CriticVerdict.required_evidence names what would resolve them, which is</span>
+<a id="__codelineno-20-11" name="__codelineno-20-11" href="#__codelineno-20-11"></a>        <span class="c1"># the same information when the source model does not distinguish them.</span>
+<a id="__codelineno-20-12" name="__codelineno-20-12" href="#__codelineno-20-12"></a>        <span class="n">required_evidence</span><span class="o">=</span><span class="p">[]</span> <span class="k">if</span> <span class="n">approved</span> <span class="k">else</span> <span class="n">raw</span><span class="o">.</span><span class="n">gaps</span><span class="p">,</span>
+<a id="__codelineno-20-13" name="__codelineno-20-13" href="#__codelineno-20-13"></a>        <span class="n">confidence</span><span class="o">=</span><span class="nb">max</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.5</span> <span class="o">+</span> <span class="n">raw</span><span class="o">.</span><span class="n">confidence_adjustment</span><span class="p">)),</span>
+<a id="__codelineno-20-14" name="__codelineno-20-14" href="#__codelineno-20-14"></a>    <span class="p">)</span>
+<a id="__codelineno-20-15" name="__codelineno-20-15" href="#__codelineno-20-15"></a>
+<a id="__codelineno-20-16" name="__codelineno-20-16" href="#__codelineno-20-16"></a>
+<a id="__codelineno-20-17" name="__codelineno-20-17" href="#__codelineno-20-17"></a><span class="c1"># Inside the critic LangGraph node:</span>
+<a id="__codelineno-20-18" name="__codelineno-20-18" href="#__codelineno-20-18"></a><span class="n">details</span> <span class="o">=</span> <span class="n">raw</span><span class="o">.</span><span class="n">revised_hypothesis</span> <span class="ow">or</span> <span class="sa">f</span><span class="s2">&quot;Verdict: </span><span class="si">{</span><span class="n">raw</span><span class="o">.</span><span class="n">verdict</span><span class="si">}</span><span class="s2">. Gaps: </span><span class="si">{</span><span class="s1">&#39;; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">raw</span><span class="o">.</span><span class="n">gaps</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+<a id="__codelineno-20-19" name="__codelineno-20-19" href="#__codelineno-20-19"></a><span class="n">relevant_files</span> <span class="o">=</span> <span class="n">raw</span><span class="o">.</span><span class="n">gaps</span>  <span class="c1"># gaps used as &quot;relevant files&quot; — they are next investigation targets</span>
+<a id="__codelineno-20-20" name="__codelineno-20-20" href="#__codelineno-20-20"></a><span class="n">finding</span> <span class="o">=</span> <span class="n">_to_agent_finding</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="n">details</span><span class="o">=</span><span class="n">details</span><span class="p">,</span> <span class="n">relevant_files</span><span class="o">=</span><span class="n">relevant_files</span><span class="p">)</span>
+<a id="__codelineno-20-21" name="__codelineno-20-21" href="#__codelineno-20-21"></a><span class="n">critic_verdict</span> <span class="o">=</span> <span class="n">map_critique_to_verdict</span><span class="p">(</span><span class="n">raw</span><span class="p">)</span>
+<a id="__codelineno-20-22" name="__codelineno-20-22" href="#__codelineno-20-22"></a><span class="k">return</span> <span class="p">{</span>
+<a id="__codelineno-20-23" name="__codelineno-20-23" href="#__codelineno-20-23"></a>    <span class="s2">&quot;findings&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">finding</span><span class="p">],</span>
+<a id="__codelineno-20-24" name="__codelineno-20-24" href="#__codelineno-20-24"></a>    <span class="s2">&quot;critic_feedback&quot;</span><span class="p">:</span> <span class="n">critic_verdict</span><span class="p">,</span>
+<a id="__codelineno-20-25" name="__codelineno-20-25" href="#__codelineno-20-25"></a><span class="p">}</span>
+</code></pre></div>
+<hr />
+<h2 id="8-writer-agent">8. Writer Agent<a class="headerlink" href="#8-writer-agent" title="Permanent link">&para;</a></h2>
+<p><strong>Purpose:</strong> Produces the final triage report, GitHub comment draft, and ticket fields from all
+accumulated findings.</p>
+<h3 id="sub-chain-specifications">Sub-Chain Specifications<a class="headerlink" href="#sub-chain-specifications" title="Permanent link">&para;</a></h3>
+<p>The Writer chain uses <code>RunnableParallel</code> to generate three outputs simultaneously:</p>
+<h4 id="report_chain-triagereport"><code>report_chain</code> → <code>TriageReport</code><a class="headerlink" href="#report_chain-triagereport" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="n">REPORT_SYSTEM_PROMPT</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span><span class="se">\</span>
+<a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a><span class="s2">You are a technical writer producing a structured bug triage report. Based on all agent findings,</span>
+<a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a><span class="s2">produce a concise, factual report. Severity levels: CRITICAL, HIGH, MEDIUM, LOW.</span>
+<a id="__codelineno-21-4" name="__codelineno-21-4" href="#__codelineno-21-4"></a><span class="s2">&quot;&quot;&quot;</span>
+<a id="__codelineno-21-5" name="__codelineno-21-5" href="#__codelineno-21-5"></a>
+<a id="__codelineno-21-6" name="__codelineno-21-6" href="#__codelineno-21-6"></a><span class="n">REPORT_HUMAN_TEMPLATE</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span><span class="se">\</span>
+<a id="__codelineno-21-7" name="__codelineno-21-7" href="#__codelineno-21-7"></a><span class="s2">Issue: </span><span class="si">{issue_title}</span><span class="s2"> (</span><span class="si">{issue_url}</span><span class="s2">)</span>
+<a id="__codelineno-21-8" name="__codelineno-21-8" href="#__codelineno-21-8"></a><span class="s2">Repository: </span><span class="si">{repository}</span>
+<a id="__codelineno-21-9" name="__codelineno-21-9" href="#__codelineno-21-9"></a>
+<a id="__codelineno-21-10" name="__codelineno-21-10" href="#__codelineno-21-10"></a><span class="s2">All Findings:</span>
+<a id="__codelineno-21-11" name="__codelineno-21-11" href="#__codelineno-21-11"></a><span class="si">{all_findings}</span>
+<a id="__codelineno-21-12" name="__codelineno-21-12" href="#__codelineno-21-12"></a>
+<a id="__codelineno-21-13" name="__codelineno-21-13" href="#__codelineno-21-13"></a><span class="s2">Human Exchanges:</span>
+<a id="__codelineno-21-14" name="__codelineno-21-14" href="#__codelineno-21-14"></a><span class="si">{human_exchanges}</span>
+<a id="__codelineno-21-15" name="__codelineno-21-15" href="#__codelineno-21-15"></a>
+<a id="__codelineno-21-16" name="__codelineno-21-16" href="#__codelineno-21-16"></a><span class="s2">Produce the triage report.</span>
+<a id="__codelineno-21-17" name="__codelineno-21-17" href="#__codelineno-21-17"></a><span class="s2">&quot;&quot;&quot;</span>
+<a id="__codelineno-21-18" name="__codelineno-21-18" href="#__codelineno-21-18"></a>
+<a id="__codelineno-21-19" name="__codelineno-21-19" href="#__codelineno-21-19"></a><span class="n">report_prompt</span> <span class="o">=</span> <span class="n">ChatPromptTemplate</span><span class="o">.</span><span class="n">from_messages</span><span class="p">([</span>
+<a id="__codelineno-21-20" name="__codelineno-21-20" href="#__codelineno-21-20"></a>    <span class="p">(</span><span class="s2">&quot;system&quot;</span><span class="p">,</span> <span class="n">REPORT_SYSTEM_PROMPT</span><span class="p">),</span>
+<a id="__codelineno-21-21" name="__codelineno-21-21" href="#__codelineno-21-21"></a>    <span class="p">(</span><span class="s2">&quot;human&quot;</span><span class="p">,</span> <span class="n">REPORT_HUMAN_TEMPLATE</span><span class="p">),</span>
+<a id="__codelineno-21-22" name="__codelineno-21-22" href="#__codelineno-21-22"></a><span class="p">])</span>
+<a id="__codelineno-21-23" name="__codelineno-21-23" href="#__codelineno-21-23"></a>
+<a id="__codelineno-21-24" name="__codelineno-21-24" href="#__codelineno-21-24"></a><span class="n">report_chain</span> <span class="o">=</span> <span class="n">report_prompt</span> <span class="o">|</span> <span class="n">llm</span><span class="o">.</span><span class="n">with_structured_output</span><span class="p">(</span><span class="n">TriageReport</span><span class="p">)</span>
+</code></pre></div>
+<h4 id="comment_chain-str-github-markdown"><code>comment_chain</code> → <code>str</code> (GitHub markdown)<a class="headerlink" href="#comment_chain-str-github-markdown" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a><span class="n">COMMENT_SYSTEM_PROMPT</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span><span class="se">\</span>
+<a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a><span class="s2">You are writing a GitHub issue comment on behalf of an automated triage system. The tone should</span>
+<a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a><span class="s2">be professional, concise, and helpful. Include: root cause summary, affected files, next steps.</span>
+<a id="__codelineno-22-4" name="__codelineno-22-4" href="#__codelineno-22-4"></a><span class="s2">Format with markdown headings and code blocks where appropriate.</span>
+<a id="__codelineno-22-5" name="__codelineno-22-5" href="#__codelineno-22-5"></a><span class="s2">&quot;&quot;&quot;</span>
+<a id="__codelineno-22-6" name="__codelineno-22-6" href="#__codelineno-22-6"></a>
+<a id="__codelineno-22-7" name="__codelineno-22-7" href="#__codelineno-22-7"></a><span class="n">comment_prompt</span> <span class="o">=</span> <span class="n">ChatPromptTemplate</span><span class="o">.</span><span class="n">from_messages</span><span class="p">([</span>
+<a id="__codelineno-22-8" name="__codelineno-22-8" href="#__codelineno-22-8"></a>    <span class="p">(</span><span class="s2">&quot;system&quot;</span><span class="p">,</span> <span class="n">COMMENT_SYSTEM_PROMPT</span><span class="p">),</span>
+<a id="__codelineno-22-9" name="__codelineno-22-9" href="#__codelineno-22-9"></a>    <span class="p">(</span><span class="s2">&quot;human&quot;</span><span class="p">,</span> <span class="p">(</span>
+<a id="__codelineno-22-10" name="__codelineno-22-10" href="#__codelineno-22-10"></a>        <span class="s2">&quot;Issue: </span><span class="si">{issue_title}</span><span class="se">\n</span><span class="s2">&quot;</span>
+<a id="__codelineno-22-11" name="__codelineno-22-11" href="#__codelineno-22-11"></a>        <span class="s2">&quot;Repository: </span><span class="si">{repository}</span><span class="se">\n</span><span class="s2">&quot;</span>
+<a id="__codelineno-22-12" name="__codelineno-22-12" href="#__codelineno-22-12"></a>        <span class="s2">&quot;Findings summary: </span><span class="si">{all_findings}</span><span class="se">\n\n</span><span class="s2">&quot;</span>
+<a id="__codelineno-22-13" name="__codelineno-22-13" href="#__codelineno-22-13"></a>        <span class="s2">&quot;Write the GitHub comment.&quot;</span>
+<a id="__codelineno-22-14" name="__codelineno-22-14" href="#__codelineno-22-14"></a>    <span class="p">)),</span>
+<a id="__codelineno-22-15" name="__codelineno-22-15" href="#__codelineno-22-15"></a><span class="p">])</span>
+<a id="__codelineno-22-16" name="__codelineno-22-16" href="#__codelineno-22-16"></a>
+<a id="__codelineno-22-17" name="__codelineno-22-17" href="#__codelineno-22-17"></a><span class="c1"># StrOutputParser returns a plain string, which is what we want for markdown</span>
+<a id="__codelineno-22-18" name="__codelineno-22-18" href="#__codelineno-22-18"></a><span class="kn">from</span><span class="w"> </span><span class="nn">langchain_core.output_parsers</span><span class="w"> </span><span class="kn">import</span> <span class="n">StrOutputParser</span>
+<a id="__codelineno-22-19" name="__codelineno-22-19" href="#__codelineno-22-19"></a><span class="n">comment_chain</span> <span class="o">=</span> <span class="n">comment_prompt</span> <span class="o">|</span> <span class="n">llm</span> <span class="o">|</span> <span class="n">StrOutputParser</span><span class="p">()</span>
+</code></pre></div>
+<h4 id="ticket_chain-dict-raw-json"><code>ticket_chain</code> → <code>dict</code> (raw JSON)<a class="headerlink" href="#ticket_chain-dict-raw-json" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a><span class="n">TICKET_SYSTEM_PROMPT</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span><span class="se">\</span>
+<a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a><span class="s2">You are extracting ticket metadata from a bug triage. Return JSON with these fields:</span>
+<a id="__codelineno-23-3" name="__codelineno-23-3" href="#__codelineno-23-3"></a><span class="s2">- title: concise bug ticket title (string)</span>
+<a id="__codelineno-23-4" name="__codelineno-23-4" href="#__codelineno-23-4"></a><span class="s2">- labels: list of GitHub label strings (e.g. [&quot;bug&quot;, &quot;backend&quot;, &quot;high-priority&quot;])</span>
+<a id="__codelineno-23-5" name="__codelineno-23-5" href="#__codelineno-23-5"></a><span class="s2">- assignee: GitHub username of the most likely owner (string or null)</span>
+<a id="__codelineno-23-6" name="__codelineno-23-6" href="#__codelineno-23-6"></a><span class="s2">- effort: effort estimate as XS, S, M, L, or XL (string)</span>
+<a id="__codelineno-23-7" name="__codelineno-23-7" href="#__codelineno-23-7"></a><span class="s2">&quot;&quot;&quot;</span>
+<a id="__codelineno-23-8" name="__codelineno-23-8" href="#__codelineno-23-8"></a>
+<a id="__codelineno-23-9" name="__codelineno-23-9" href="#__codelineno-23-9"></a><span class="n">ticket_prompt</span> <span class="o">=</span> <span class="n">ChatPromptTemplate</span><span class="o">.</span><span class="n">from_messages</span><span class="p">([</span>
+<a id="__codelineno-23-10" name="__codelineno-23-10" href="#__codelineno-23-10"></a>    <span class="p">(</span><span class="s2">&quot;system&quot;</span><span class="p">,</span> <span class="n">TICKET_SYSTEM_PROMPT</span><span class="p">),</span>
+<a id="__codelineno-23-11" name="__codelineno-23-11" href="#__codelineno-23-11"></a>    <span class="p">(</span><span class="s2">&quot;human&quot;</span><span class="p">,</span> <span class="p">(</span>
+<a id="__codelineno-23-12" name="__codelineno-23-12" href="#__codelineno-23-12"></a>        <span class="s2">&quot;Issue: </span><span class="si">{issue_title}</span><span class="se">\n</span><span class="s2">&quot;</span>
+<a id="__codelineno-23-13" name="__codelineno-23-13" href="#__codelineno-23-13"></a>        <span class="s2">&quot;Repository: </span><span class="si">{repository}</span><span class="se">\n</span><span class="s2">&quot;</span>
+<a id="__codelineno-23-14" name="__codelineno-23-14" href="#__codelineno-23-14"></a>        <span class="s2">&quot;Findings: </span><span class="si">{all_findings}</span><span class="se">\n\n</span><span class="s2">&quot;</span>
+<a id="__codelineno-23-15" name="__codelineno-23-15" href="#__codelineno-23-15"></a>        <span class="s2">&quot;Return the ticket metadata JSON.&quot;</span>
+<a id="__codelineno-23-16" name="__codelineno-23-16" href="#__codelineno-23-16"></a>    <span class="p">)),</span>
+<a id="__codelineno-23-17" name="__codelineno-23-17" href="#__codelineno-23-17"></a><span class="p">])</span>
+<a id="__codelineno-23-18" name="__codelineno-23-18" href="#__codelineno-23-18"></a>
+<a id="__codelineno-23-19" name="__codelineno-23-19" href="#__codelineno-23-19"></a><span class="c1"># JSON mode — model returns a raw dict; no Pydantic schema needed here</span>
+<a id="__codelineno-23-20" name="__codelineno-23-20" href="#__codelineno-23-20"></a><span class="n">ticket_llm</span> <span class="o">=</span> <span class="n">ChatOpenAI</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="s2">&quot;gpt-4o&quot;</span><span class="p">,</span> <span class="n">temperature</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span>
+<a id="__codelineno-23-21" name="__codelineno-23-21" href="#__codelineno-23-21"></a>    <span class="n">response_format</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;json_object&quot;</span><span class="p">}</span>
+<a id="__codelineno-23-22" name="__codelineno-23-22" href="#__codelineno-23-22"></a><span class="p">)</span>
+<a id="__codelineno-23-23" name="__codelineno-23-23" href="#__codelineno-23-23"></a><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<a id="__codelineno-23-24" name="__codelineno-23-24" href="#__codelineno-23-24"></a><span class="kn">from</span><span class="w"> </span><span class="nn">langchain_core.output_parsers</span><span class="w"> </span><span class="kn">import</span> <span class="n">StrOutputParser</span>
+<a id="__codelineno-23-25" name="__codelineno-23-25" href="#__codelineno-23-25"></a><span class="n">ticket_chain</span> <span class="o">=</span> <span class="n">ticket_prompt</span> <span class="o">|</span> <span class="n">ticket_llm</span> <span class="o">|</span> <span class="n">StrOutputParser</span><span class="p">()</span> <span class="o">|</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span>
+</code></pre></div>
+<h3 id="merge_writer_outputs-fully-specified"><code>merge_writer_outputs</code> — Fully Specified<a class="headerlink" href="#merge_writer_outputs-fully-specified" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">langchain_core.runnables</span><span class="w"> </span><span class="kn">import</span> <span class="n">RunnableLambda</span><span class="p">,</span> <span class="n">RunnableParallel</span>
+<a id="__codelineno-24-2" name="__codelineno-24-2" href="#__codelineno-24-2"></a>
+<a id="__codelineno-24-3" name="__codelineno-24-3" href="#__codelineno-24-3"></a>
+<a id="__codelineno-24-4" name="__codelineno-24-4" href="#__codelineno-24-4"></a><span class="k">def</span><span class="w"> </span><span class="nf">merge_writer_outputs</span><span class="p">(</span><span class="n">parallel_output</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">WriterOutput</span><span class="p">:</span>
+<a id="__codelineno-24-5" name="__codelineno-24-5" href="#__codelineno-24-5"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-24-6" name="__codelineno-24-6" href="#__codelineno-24-6"></a><span class="sd">    Merge the three parallel sub-chain outputs into a single WriterOutput.</span>
+<a id="__codelineno-24-7" name="__codelineno-24-7" href="#__codelineno-24-7"></a>
+<a id="__codelineno-24-8" name="__codelineno-24-8" href="#__codelineno-24-8"></a><span class="sd">    parallel_output keys:</span>
+<a id="__codelineno-24-9" name="__codelineno-24-9" href="#__codelineno-24-9"></a><span class="sd">        &quot;report&quot;  → TriageReport (from report_chain)</span>
+<a id="__codelineno-24-10" name="__codelineno-24-10" href="#__codelineno-24-10"></a><span class="sd">        &quot;comment&quot; → str          (from comment_chain, GitHub markdown)</span>
+<a id="__codelineno-24-11" name="__codelineno-24-11" href="#__codelineno-24-11"></a><span class="sd">        &quot;ticket&quot;  → dict         (from ticket_chain, raw JSON fields)</span>
+<a id="__codelineno-24-12" name="__codelineno-24-12" href="#__codelineno-24-12"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-24-13" name="__codelineno-24-13" href="#__codelineno-24-13"></a>    <span class="n">report</span><span class="p">:</span> <span class="n">TriageReport</span> <span class="o">=</span> <span class="n">parallel_output</span><span class="p">[</span><span class="s2">&quot;report&quot;</span><span class="p">]</span>
+<a id="__codelineno-24-14" name="__codelineno-24-14" href="#__codelineno-24-14"></a>    <span class="n">ticket</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="n">parallel_output</span><span class="p">[</span><span class="s2">&quot;ticket&quot;</span><span class="p">]</span>
+<a id="__codelineno-24-15" name="__codelineno-24-15" href="#__codelineno-24-15"></a>
+<a id="__codelineno-24-16" name="__codelineno-24-16" href="#__codelineno-24-16"></a>    <span class="k">return</span> <span class="n">WriterOutput</span><span class="p">(</span>
+<a id="__codelineno-24-17" name="__codelineno-24-17" href="#__codelineno-24-17"></a>        <span class="n">agent_name</span><span class="o">=</span><span class="s2">&quot;writer&quot;</span><span class="p">,</span>
+<a id="__codelineno-24-18" name="__codelineno-24-18" href="#__codelineno-24-18"></a>        <span class="n">summary</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Triage complete: </span><span class="si">{</span><span class="n">report</span><span class="o">.</span><span class="n">severity</span><span class="si">}</span><span class="s2"> severity&quot;</span><span class="p">,</span>
+<a id="__codelineno-24-19" name="__codelineno-24-19" href="#__codelineno-24-19"></a>        <span class="n">confidence</span><span class="o">=</span><span class="n">report</span><span class="o">.</span><span class="n">confidence</span><span class="p">,</span>
+<a id="__codelineno-24-20" name="__codelineno-24-20" href="#__codelineno-24-20"></a>        <span class="n">reasoning</span><span class="o">=</span><span class="s2">&quot;Final report generated from accumulated findings.&quot;</span><span class="p">,</span>
+<a id="__codelineno-24-21" name="__codelineno-24-21" href="#__codelineno-24-21"></a>        <span class="n">error</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+<a id="__codelineno-24-22" name="__codelineno-24-22" href="#__codelineno-24-22"></a>        <span class="n">report</span><span class="o">=</span><span class="n">report</span><span class="p">,</span>
+<a id="__codelineno-24-23" name="__codelineno-24-23" href="#__codelineno-24-23"></a>        <span class="n">github_comment_markdown</span><span class="o">=</span><span class="n">parallel_output</span><span class="p">[</span><span class="s2">&quot;comment&quot;</span><span class="p">],</span>
+<a id="__codelineno-24-24" name="__codelineno-24-24" href="#__codelineno-24-24"></a>        <span class="n">ticket_title</span><span class="o">=</span><span class="n">ticket</span><span class="p">[</span><span class="s2">&quot;title&quot;</span><span class="p">],</span>
+<a id="__codelineno-24-25" name="__codelineno-24-25" href="#__codelineno-24-25"></a>        <span class="n">ticket_labels</span><span class="o">=</span><span class="n">ticket</span><span class="p">[</span><span class="s2">&quot;labels&quot;</span><span class="p">],</span>
+<a id="__codelineno-24-26" name="__codelineno-24-26" href="#__codelineno-24-26"></a>        <span class="n">ticket_assignee_suggestion</span><span class="o">=</span><span class="n">ticket</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;assignee&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+<a id="__codelineno-24-27" name="__codelineno-24-27" href="#__codelineno-24-27"></a>        <span class="n">ticket_effort_estimate</span><span class="o">=</span><span class="n">ticket</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;effort&quot;</span><span class="p">,</span> <span class="s2">&quot;M&quot;</span><span class="p">),</span>
+<a id="__codelineno-24-28" name="__codelineno-24-28" href="#__codelineno-24-28"></a>    <span class="p">)</span>
+<a id="__codelineno-24-29" name="__codelineno-24-29" href="#__codelineno-24-29"></a>
+<a id="__codelineno-24-30" name="__codelineno-24-30" href="#__codelineno-24-30"></a>
+<a id="__codelineno-24-31" name="__codelineno-24-31" href="#__codelineno-24-31"></a><span class="n">chain</span> <span class="o">=</span> <span class="p">(</span>
+<a id="__codelineno-24-32" name="__codelineno-24-32" href="#__codelineno-24-32"></a>    <span class="n">RunnableParallel</span><span class="p">({</span>
+<a id="__codelineno-24-33" name="__codelineno-24-33" href="#__codelineno-24-33"></a>        <span class="s2">&quot;report&quot;</span><span class="p">:</span> <span class="n">report_chain</span><span class="p">,</span>
+<a id="__codelineno-24-34" name="__codelineno-24-34" href="#__codelineno-24-34"></a>        <span class="s2">&quot;comment&quot;</span><span class="p">:</span> <span class="n">comment_chain</span><span class="p">,</span>
+<a id="__codelineno-24-35" name="__codelineno-24-35" href="#__codelineno-24-35"></a>        <span class="s2">&quot;ticket&quot;</span><span class="p">:</span> <span class="n">ticket_chain</span><span class="p">,</span>
+<a id="__codelineno-24-36" name="__codelineno-24-36" href="#__codelineno-24-36"></a>    <span class="p">})</span>
+<a id="__codelineno-24-37" name="__codelineno-24-37" href="#__codelineno-24-37"></a>    <span class="o">|</span> <span class="n">RunnableLambda</span><span class="p">(</span><span class="n">merge_writer_outputs</span><span class="p">)</span>
+<a id="__codelineno-24-38" name="__codelineno-24-38" href="#__codelineno-24-38"></a><span class="p">)</span>
+</code></pre></div>
+<p><strong>Field mapping notes:</strong>
+- <code>report.confidence</code> becomes <code>WriterOutput.confidence</code> — the report's confidence is the final
+  system confidence.
+- <code>ticket.get("assignee") or ""</code> normalises <code>null</code> from the LLM JSON to an empty string.
+- <code>ticket.get("effort", "M")</code> defaults to "M" if the LLM omits the field.
+- <code>WriterOutput</code> extends <code>AgentFindingBase</code>; the <code>reasoning</code> field is set to a static summary
+  string rather than left empty.</p>
+<h3 id="lcel-chain-full">LCEL Chain (Full)<a class="headerlink" href="#lcel-chain-full" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a><span class="n">primary_chain</span> <span class="o">=</span> <span class="p">(</span>
+<a id="__codelineno-25-2" name="__codelineno-25-2" href="#__codelineno-25-2"></a>    <span class="n">RunnableParallel</span><span class="p">({</span>
+<a id="__codelineno-25-3" name="__codelineno-25-3" href="#__codelineno-25-3"></a>        <span class="s2">&quot;report&quot;</span><span class="p">:</span> <span class="n">report_chain</span><span class="p">,</span>
+<a id="__codelineno-25-4" name="__codelineno-25-4" href="#__codelineno-25-4"></a>        <span class="s2">&quot;comment&quot;</span><span class="p">:</span> <span class="n">comment_chain</span><span class="p">,</span>
+<a id="__codelineno-25-5" name="__codelineno-25-5" href="#__codelineno-25-5"></a>        <span class="s2">&quot;ticket&quot;</span><span class="p">:</span> <span class="n">ticket_chain</span><span class="p">,</span>
+<a id="__codelineno-25-6" name="__codelineno-25-6" href="#__codelineno-25-6"></a>    <span class="p">})</span>
+<a id="__codelineno-25-7" name="__codelineno-25-7" href="#__codelineno-25-7"></a>    <span class="o">|</span> <span class="n">RunnableLambda</span><span class="p">(</span><span class="n">merge_writer_outputs</span><span class="p">)</span>
+<a id="__codelineno-25-8" name="__codelineno-25-8" href="#__codelineno-25-8"></a><span class="p">)</span>
+<a id="__codelineno-25-9" name="__codelineno-25-9" href="#__codelineno-25-9"></a>
+<a id="__codelineno-25-10" name="__codelineno-25-10" href="#__codelineno-25-10"></a><span class="c1"># Fallback uses same structure with fallback LLMs in each sub-chain</span>
+<a id="__codelineno-25-11" name="__codelineno-25-11" href="#__codelineno-25-11"></a><span class="n">fallback_report_chain</span> <span class="o">=</span> <span class="n">report_prompt</span> <span class="o">|</span> <span class="n">fallback_llm</span><span class="o">.</span><span class="n">with_structured_output</span><span class="p">(</span><span class="n">TriageReport</span><span class="p">)</span>
+<a id="__codelineno-25-12" name="__codelineno-25-12" href="#__codelineno-25-12"></a><span class="n">fallback_comment_chain</span> <span class="o">=</span> <span class="n">comment_prompt</span> <span class="o">|</span> <span class="n">fallback_llm</span> <span class="o">|</span> <span class="n">StrOutputParser</span><span class="p">()</span>
+<a id="__codelineno-25-13" name="__codelineno-25-13" href="#__codelineno-25-13"></a><span class="n">fallback_ticket_chain</span> <span class="o">=</span> <span class="n">ticket_prompt</span> <span class="o">|</span> <span class="n">fallback_ticket_llm</span> <span class="o">|</span> <span class="n">StrOutputParser</span><span class="p">()</span> <span class="o">|</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span>
+<a id="__codelineno-25-14" name="__codelineno-25-14" href="#__codelineno-25-14"></a>
+<a id="__codelineno-25-15" name="__codelineno-25-15" href="#__codelineno-25-15"></a><span class="n">fallback_chain</span> <span class="o">=</span> <span class="p">(</span>
+<a id="__codelineno-25-16" name="__codelineno-25-16" href="#__codelineno-25-16"></a>    <span class="n">RunnableParallel</span><span class="p">({</span>
+<a id="__codelineno-25-17" name="__codelineno-25-17" href="#__codelineno-25-17"></a>        <span class="s2">&quot;report&quot;</span><span class="p">:</span> <span class="n">fallback_report_chain</span><span class="p">,</span>
+<a id="__codelineno-25-18" name="__codelineno-25-18" href="#__codelineno-25-18"></a>        <span class="s2">&quot;comment&quot;</span><span class="p">:</span> <span class="n">fallback_comment_chain</span><span class="p">,</span>
+<a id="__codelineno-25-19" name="__codelineno-25-19" href="#__codelineno-25-19"></a>        <span class="s2">&quot;ticket&quot;</span><span class="p">:</span> <span class="n">fallback_ticket_chain</span><span class="p">,</span>
+<a id="__codelineno-25-20" name="__codelineno-25-20" href="#__codelineno-25-20"></a>    <span class="p">})</span>
+<a id="__codelineno-25-21" name="__codelineno-25-21" href="#__codelineno-25-21"></a>    <span class="o">|</span> <span class="n">RunnableLambda</span><span class="p">(</span><span class="n">merge_writer_outputs</span><span class="p">)</span>
+<a id="__codelineno-25-22" name="__codelineno-25-22" href="#__codelineno-25-22"></a><span class="p">)</span>
+<a id="__codelineno-25-23" name="__codelineno-25-23" href="#__codelineno-25-23"></a>
+<a id="__codelineno-25-24" name="__codelineno-25-24" href="#__codelineno-25-24"></a><span class="n">chain</span> <span class="o">=</span> <span class="n">primary_chain</span><span class="o">.</span><span class="n">with_retry</span><span class="p">(</span>
+<a id="__codelineno-25-25" name="__codelineno-25-25" href="#__codelineno-25-25"></a>    <span class="n">stop_after_attempt</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+<a id="__codelineno-25-26" name="__codelineno-25-26" href="#__codelineno-25-26"></a>    <span class="n">retry_if_exception_type</span><span class="o">=</span><span class="p">(</span><span class="n">RateLimitError</span><span class="p">,),</span>
+<a id="__codelineno-25-27" name="__codelineno-25-27" href="#__codelineno-25-27"></a><span class="p">)</span><span class="o">.</span><span class="n">with_fallbacks</span><span class="p">([</span><span class="n">fallback_chain</span><span class="p">])</span>
+</code></pre></div>
+<hr />
+<h2 id="9-with_retry-with_fallbacks-composition-reference">9. <code>.with_retry()</code> + <code>.with_fallbacks()</code> Composition Reference<a class="headerlink" href="#9-with_retry-with_fallbacks-composition-reference" title="Permanent link">&para;</a></h2>
+<p>This section consolidates the rules from the individual agents above.</p>
+<h3 id="canonical-pattern">Canonical Pattern<a class="headerlink" href="#canonical-pattern" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a><span class="n">chain</span> <span class="o">=</span> <span class="n">primary_chain</span><span class="o">.</span><span class="n">with_retry</span><span class="p">(</span>
+<a id="__codelineno-26-2" name="__codelineno-26-2" href="#__codelineno-26-2"></a>    <span class="n">stop_after_attempt</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+<a id="__codelineno-26-3" name="__codelineno-26-3" href="#__codelineno-26-3"></a>    <span class="n">retry_if_exception_type</span><span class="o">=</span><span class="p">(</span><span class="n">RateLimitError</span><span class="p">,),</span>
+<a id="__codelineno-26-4" name="__codelineno-26-4" href="#__codelineno-26-4"></a><span class="p">)</span><span class="o">.</span><span class="n">with_fallbacks</span><span class="p">([</span><span class="n">fallback_chain</span><span class="p">])</span>
+</code></pre></div>
+<h3 id="execution-sequence">Execution Sequence<a class="headerlink" href="#execution-sequence" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a>Attempt 1: primary_chain
+<a id="__codelineno-27-2" name="__codelineno-27-2" href="#__codelineno-27-2"></a>    → RateLimitError → wait (exponential backoff, managed by with_retry)
+<a id="__codelineno-27-3" name="__codelineno-27-3" href="#__codelineno-27-3"></a>Attempt 2: primary_chain
+<a id="__codelineno-27-4" name="__codelineno-27-4" href="#__codelineno-27-4"></a>    → RateLimitError → wait
+<a id="__codelineno-27-5" name="__codelineno-27-5" href="#__codelineno-27-5"></a>Attempt 3: primary_chain
+<a id="__codelineno-27-6" name="__codelineno-27-6" href="#__codelineno-27-6"></a>    → RateLimitError → with_retry exhausted → with_fallbacks activates
+<a id="__codelineno-27-7" name="__codelineno-27-7" href="#__codelineno-27-7"></a>Attempt 4: fallback_chain (runs once, no retry on fallback)
+<a id="__codelineno-27-8" name="__codelineno-27-8" href="#__codelineno-27-8"></a>    → success → return output
+<a id="__codelineno-27-9" name="__codelineno-27-9" href="#__codelineno-27-9"></a>    → exception → propagated to caller (node sets error field)
+</code></pre></div>
+<h3 id="rules">Rules<a class="headerlink" href="#rules" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Rule</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Retry only on 429</td>
+<td><code>retry_if_exception_type=(RateLimitError,)</code> — validation errors are not retried</td>
+</tr>
+<tr>
+<td>Max 3 attempts</td>
+<td><code>stop_after_attempt=3</code> — primary tries once + two retries</td>
+</tr>
+<tr>
+<td>Fallback model</td>
+<td>GPT-4o-mini replaces GPT-4o; same prompt + schema</td>
+</tr>
+<tr>
+<td>Fallback runs once</td>
+<td>No <code>.with_retry()</code> on the fallback chain</td>
+</tr>
+<tr>
+<td>Wrap before fallback</td>
+<td><code>.with_retry()</code> must be called before <code>.with_fallbacks()</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="10-langserve-call-pattern-from-langgraph-nodes">10. LangServe Call Pattern from LangGraph Nodes<a class="headerlink" href="#10-langserve-call-pattern-from-langgraph-nodes" title="Permanent link">&para;</a></h2>
+<p>LangGraph nodes call LangServe over HTTP using <code>httpx</code> (as specified in PRD-003). After receiving
+the response, the node translates the output to <code>AgentFinding</code> using <code>_to_agent_finding()</code>.</p>
+<h3 id="full-node-pattern">Full Node Pattern<a class="headerlink" href="#full-node-pattern" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">httpx</span>
+<a id="__codelineno-28-2" name="__codelineno-28-2" href="#__codelineno-28-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<a id="__codelineno-28-3" name="__codelineno-28-3" href="#__codelineno-28-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">.translation</span><span class="w"> </span><span class="kn">import</span> <span class="n">_to_agent_finding</span>
+<a id="__codelineno-28-4" name="__codelineno-28-4" href="#__codelineno-28-4"></a>
+<a id="__codelineno-28-5" name="__codelineno-28-5" href="#__codelineno-28-5"></a><span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+<a id="__codelineno-28-6" name="__codelineno-28-6" href="#__codelineno-28-6"></a>
+<a id="__codelineno-28-7" name="__codelineno-28-7" href="#__codelineno-28-7"></a>
+<a id="__codelineno-28-8" name="__codelineno-28-8" href="#__codelineno-28-8"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">investigator_node</span><span class="p">(</span><span class="n">state</span><span class="p">:</span> <span class="n">BugTriageState</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<a id="__codelineno-28-9" name="__codelineno-28-9" href="#__codelineno-28-9"></a>    <span class="n">node_name</span> <span class="o">=</span> <span class="s2">&quot;investigator&quot;</span>
+<a id="__codelineno-28-10" name="__codelineno-28-10" href="#__codelineno-28-10"></a>
+<a id="__codelineno-28-11" name="__codelineno-28-11" href="#__codelineno-28-11"></a>    <span class="k">async</span> <span class="k">with</span> <span class="n">httpx</span><span class="o">.</span><span class="n">AsyncClient</span><span class="p">()</span> <span class="k">as</span> <span class="n">client</span><span class="p">:</span>
+<a id="__codelineno-28-12" name="__codelineno-28-12" href="#__codelineno-28-12"></a>        <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="n">client</span><span class="o">.</span><span class="n">post</span><span class="p">(</span>
+<a id="__codelineno-28-13" name="__codelineno-28-13" href="#__codelineno-28-13"></a>            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">settings</span><span class="o">.</span><span class="n">investigator_url</span><span class="si">}</span><span class="s2">/agents/investigator/invoke&quot;</span><span class="p">,</span>
+<a id="__codelineno-28-14" name="__codelineno-28-14" href="#__codelineno-28-14"></a>            <span class="n">json</span><span class="o">=</span><span class="p">{</span>
+<a id="__codelineno-28-15" name="__codelineno-28-15" href="#__codelineno-28-15"></a>                <span class="s2">&quot;input&quot;</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-28-16" name="__codelineno-28-16" href="#__codelineno-28-16"></a>                    <span class="s2">&quot;issue_title&quot;</span><span class="p">:</span> <span class="n">state</span><span class="o">.</span><span class="n">issue_title</span><span class="p">,</span>
+<a id="__codelineno-28-17" name="__codelineno-28-17" href="#__codelineno-28-17"></a>                    <span class="s2">&quot;issue_body&quot;</span><span class="p">:</span> <span class="n">state</span><span class="o">.</span><span class="n">issue_body</span><span class="p">,</span>
+<a id="__codelineno-28-18" name="__codelineno-28-18" href="#__codelineno-28-18"></a>                    <span class="s2">&quot;prior_findings&quot;</span><span class="p">:</span> <span class="n">state</span><span class="o">.</span><span class="n">findings</span><span class="p">,</span>
+<a id="__codelineno-28-19" name="__codelineno-28-19" href="#__codelineno-28-19"></a>                <span class="p">}</span>
+<a id="__codelineno-28-20" name="__codelineno-28-20" href="#__codelineno-28-20"></a>            <span class="p">},</span>
+<a id="__codelineno-28-21" name="__codelineno-28-21" href="#__codelineno-28-21"></a>            <span class="n">timeout</span><span class="o">=</span><span class="mf">60.0</span><span class="p">,</span>
+<a id="__codelineno-28-22" name="__codelineno-28-22" href="#__codelineno-28-22"></a>        <span class="p">)</span>
+<a id="__codelineno-28-23" name="__codelineno-28-23" href="#__codelineno-28-23"></a>    <span class="n">response</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
+<a id="__codelineno-28-24" name="__codelineno-28-24" href="#__codelineno-28-24"></a>
+<a id="__codelineno-28-25" name="__codelineno-28-25" href="#__codelineno-28-25"></a>    <span class="c1"># Parse first — typed from here on; no dict access on the output</span>
+<a id="__codelineno-28-26" name="__codelineno-28-26" href="#__codelineno-28-26"></a>    <span class="n">raw</span> <span class="o">=</span> <span class="n">InvestigatorFinding</span><span class="p">(</span><span class="o">**</span><span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="s2">&quot;output&quot;</span><span class="p">])</span>
+<a id="__codelineno-28-27" name="__codelineno-28-27" href="#__codelineno-28-27"></a>
+<a id="__codelineno-28-28" name="__codelineno-28-28" href="#__codelineno-28-28"></a>    <span class="c1"># Error field check: if the agent set error, do not append a finding</span>
+<a id="__codelineno-28-29" name="__codelineno-28-29" href="#__codelineno-28-29"></a>    <span class="k">if</span> <span class="n">raw</span><span class="o">.</span><span class="n">error</span><span class="p">:</span>
+<a id="__codelineno-28-30" name="__codelineno-28-30" href="#__codelineno-28-30"></a>        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;agent=</span><span class="si">%s</span><span class="s2"> error=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">node_name</span><span class="p">,</span> <span class="n">raw</span><span class="o">.</span><span class="n">error</span><span class="p">)</span>
+<a id="__codelineno-28-31" name="__codelineno-28-31" href="#__codelineno-28-31"></a>        <span class="k">return</span> <span class="p">{</span>
+<a id="__codelineno-28-32" name="__codelineno-28-32" href="#__codelineno-28-32"></a>            <span class="s2">&quot;current_node&quot;</span><span class="p">:</span> <span class="n">node_name</span><span class="p">,</span>
+<a id="__codelineno-28-33" name="__codelineno-28-33" href="#__codelineno-28-33"></a>            <span class="s2">&quot;iterations&quot;</span><span class="p">:</span> <span class="n">state</span><span class="o">.</span><span class="n">iterations</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+<a id="__codelineno-28-34" name="__codelineno-28-34" href="#__codelineno-28-34"></a>            <span class="c1"># findings NOT appended — supervisor sees no new finding and may retry or escalate</span>
+<a id="__codelineno-28-35" name="__codelineno-28-35" href="#__codelineno-28-35"></a>        <span class="p">}</span>
+<a id="__codelineno-28-36" name="__codelineno-28-36" href="#__codelineno-28-36"></a>
+<a id="__codelineno-28-37" name="__codelineno-28-37" href="#__codelineno-28-37"></a>    <span class="n">finding</span> <span class="o">=</span> <span class="n">_to_agent_finding</span><span class="p">(</span>
+<a id="__codelineno-28-38" name="__codelineno-28-38" href="#__codelineno-28-38"></a>        <span class="n">raw</span><span class="o">=</span><span class="n">raw</span><span class="p">,</span>
+<a id="__codelineno-28-39" name="__codelineno-28-39" href="#__codelineno-28-39"></a>        <span class="n">details</span><span class="o">=</span><span class="n">raw</span><span class="o">.</span><span class="n">hypothesis</span><span class="p">,</span>
+<a id="__codelineno-28-40" name="__codelineno-28-40" href="#__codelineno-28-40"></a>        <span class="n">relevant_files</span><span class="o">=</span><span class="n">raw</span><span class="o">.</span><span class="n">affected_areas</span><span class="p">,</span>
+<a id="__codelineno-28-41" name="__codelineno-28-41" href="#__codelineno-28-41"></a>    <span class="p">)</span>
+<a id="__codelineno-28-42" name="__codelineno-28-42" href="#__codelineno-28-42"></a>
+<a id="__codelineno-28-43" name="__codelineno-28-43" href="#__codelineno-28-43"></a>    <span class="k">return</span> <span class="p">{</span>
+<a id="__codelineno-28-44" name="__codelineno-28-44" href="#__codelineno-28-44"></a>        <span class="s2">&quot;findings&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">finding</span><span class="p">],</span>
+<a id="__codelineno-28-45" name="__codelineno-28-45" href="#__codelineno-28-45"></a>        <span class="s2">&quot;current_node&quot;</span><span class="p">:</span> <span class="n">node_name</span><span class="p">,</span>
+<a id="__codelineno-28-46" name="__codelineno-28-46" href="#__codelineno-28-46"></a>        <span class="s2">&quot;iterations&quot;</span><span class="p">:</span> <span class="n">state</span><span class="o">.</span><span class="n">iterations</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+<a id="__codelineno-28-47" name="__codelineno-28-47" href="#__codelineno-28-47"></a>    <span class="p">}</span>
+</code></pre></div>
+<h3 id="responsejsonoutput-structure"><code>response.json()["output"]</code> Structure<a class="headerlink" href="#responsejsonoutput-structure" title="Permanent link">&para;</a></h3>
+<p>LangServe wraps the chain's return value in an <code>output</code> key:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a><span class="p">{</span>
+<a id="__codelineno-29-2" name="__codelineno-29-2" href="#__codelineno-29-2"></a><span class="w">  </span><span class="nt">&quot;output&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-29-3" name="__codelineno-29-3" href="#__codelineno-29-3"></a><span class="w">    </span><span class="nt">&quot;agent_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;investigator&quot;</span><span class="p">,</span>
+<a id="__codelineno-29-4" name="__codelineno-29-4" href="#__codelineno-29-4"></a><span class="w">    </span><span class="nt">&quot;summary&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;JWT token expiry check uses server-local time instead of UTC&quot;</span><span class="p">,</span>
+<a id="__codelineno-29-5" name="__codelineno-29-5" href="#__codelineno-29-5"></a><span class="w">    </span><span class="nt">&quot;confidence&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.75</span><span class="p">,</span>
+<a id="__codelineno-29-6" name="__codelineno-29-6" href="#__codelineno-29-6"></a><span class="w">    </span><span class="nt">&quot;reasoning&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;The issue body clearly describes a timezone-related token expiry bug.&quot;</span><span class="p">,</span>
+<a id="__codelineno-29-7" name="__codelineno-29-7" href="#__codelineno-29-7"></a><span class="w">    </span><span class="nt">&quot;error&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
+<a id="__codelineno-29-8" name="__codelineno-29-8" href="#__codelineno-29-8"></a><span class="w">    </span><span class="nt">&quot;hypothesis&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;...&quot;</span><span class="p">,</span>
+<a id="__codelineno-29-9" name="__codelineno-29-9" href="#__codelineno-29-9"></a><span class="w">    </span><span class="nt">&quot;affected_areas&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;auth&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;token_validator&quot;</span><span class="p">],</span>
+<a id="__codelineno-29-10" name="__codelineno-29-10" href="#__codelineno-29-10"></a><span class="w">    </span><span class="nt">&quot;keywords_for_search&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;jwt&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;expiry&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;utc&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;timezone&quot;</span><span class="p">],</span>
+<a id="__codelineno-29-11" name="__codelineno-29-11" href="#__codelineno-29-11"></a><span class="w">    </span><span class="nt">&quot;error_messages&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;TokenExpiredError: token has expired&quot;</span><span class="p">]</span>
+<a id="__codelineno-29-12" name="__codelineno-29-12" href="#__codelineno-29-12"></a><span class="w">  </span><span class="p">}</span>
+<a id="__codelineno-29-13" name="__codelineno-29-13" href="#__codelineno-29-13"></a><span class="p">}</span>
+</code></pre></div>
+<p>The <code>output</code> dict is deserialized directly into the agent-specific Pydantic model (e.g.
+<code>InvestigatorFinding(**output)</code>). Translation to <code>AgentFinding</code> happens after this step.</p>
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.top", "toc.integrate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

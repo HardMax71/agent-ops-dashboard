@@ -1,0 +1,80 @@
+site_name: AgentOps Dashboard
+site_url: https://hardmax71.github.io/agent-ops-dashboard/
+docs_dir: .
+site_dir: ../site
+
+nav:
+  - Overview: index.md
+  - PRDs:
+      - Master Overview: prd/PRD-001-master-overview.md
+      - Frontend & UX: prd/PRD-002-frontend-ux.md
+      - Frontend Detail:
+          - Design System & Components: prd/PRD-002-1-design-system.md
+          - Pages & Wireframes: prd/PRD-002-2-pages-and-wireframes.md
+          - Interactions & Accessibility: prd/PRD-002-3-interactions-and-a11y.md
+      - LangGraph Orchestration: prd/PRD-003-langgraph-orchestration.md
+      - Orchestration Detail:
+          - Event Pipeline & Worker: prd/PRD-003-1-event-pipeline.md
+          - Supervisor Prompt & Routing: prd/PRD-003-2-supervisor-spec.md
+      - Agent Layer: prd/PRD-004-agent-layer.md
+      - Agent Layer Detail:
+          - Full LCEL Chain Specs: prd/PRD-004-1-agent-chains.md
+          - Codebase Vector Index: prd/PRD-004-2-codebase-index.md
+      - LangSmith Observability: prd/PRD-005-langsmith-observability.md
+      - LangSmith Detail:
+          - API & Integration Spec: prd/PRD-005-1-langsmith-api-spec.md
+      - Data Validation: prd/PRD-006-data-validation.md
+      - Developer Tooling: prd/PRD-007-developer-tooling.md
+      - Backend & DI: prd/PRD-012-backend-di.md
+      - Authentication: prd/PRD-008-authentication.md
+      - Auth Detail:
+          - Implementation Spec: prd/PRD-008-1-auth-impl-spec.md
+      - Documentation Standards: prd/PRD-009-documentation-standards.md
+      - Evaluation Framework: prd/PRD-010-evaluation-framework.md
+      - Metrics Collection: prd/PRD-011-metrics-collection.md
+      - Testing Strategy & CI: prd/PRD-013-testing-strategy.md
+  - Plans:
+      - Goals & Definition of Done: prd/PRD-001-1-goals-and-dod.md
+      - Roadmap v1 (precise): plans/roadmap-v1.md
+      - Roadmap v2 (general): plans/roadmap-v2.md
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.sections
+    - navigation.top
+    - toc.integrate
+
+plugins:
+  - search
+  - macros
+
+markdown_extensions:
+  - tables
+  - admonition
+  - toc:
+      permalink: true
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.details
+extra_css:
+  - stylesheets/extra.css

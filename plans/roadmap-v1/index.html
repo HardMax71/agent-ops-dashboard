@@ -1,0 +1,2466 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://hardmax71.github.io/agent-ops-dashboard/plans/roadmap-v1/">
+      
+      
+        <link rel="prev" href="../../prd/PRD-001-1-goals-and-dod/">
+      
+      
+        <link rel="next" href="../roadmap-v2/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.4">
+    
+    
+      
+        <title>Release Roadmap v1 (Precise) - AgentOps Dashboard</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#roadmap-v1-precise-delivery-plan" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="AgentOps Dashboard" class="md-header__button md-logo" aria-label="AgentOps Dashboard" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            AgentOps Dashboard
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Release Roadmap v1 (Precise)
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="AgentOps Dashboard" class="md-nav__button md-logo" aria-label="AgentOps Dashboard" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    AgentOps Dashboard
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PRDs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    PRDs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../prd/PRD-001-master-overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Master Overview
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../prd/PRD-002-frontend-ux/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frontend & UX
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_3" id="__nav_2_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frontend Detail
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Frontend Detail
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../prd/PRD-002-1-design-system/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Design System & Components
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../prd/PRD-002-2-pages-and-wireframes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pages & Wireframes
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../prd/PRD-002-3-interactions-and-a11y/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interactions & Accessibility
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../prd/PRD-003-langgraph-orchestration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LangGraph Orchestration
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_5" id="__nav_2_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Orchestration Detail
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Orchestration Detail
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../prd/PRD-003-1-event-pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Event Pipeline & Worker
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../prd/PRD-003-2-supervisor-spec/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Supervisor Prompt & Routing
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../prd/PRD-004-agent-layer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agent Layer
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_7" id="__nav_2_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agent Layer Detail
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Agent Layer Detail
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../prd/PRD-004-1-agent-chains/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Full LCEL Chain Specs
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../prd/PRD-004-2-codebase-index/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Codebase Vector Index
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../prd/PRD-005-langsmith-observability/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LangSmith Observability
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_9" id="__nav_2_9_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LangSmith Detail
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    LangSmith Detail
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../prd/PRD-005-1-langsmith-api-spec/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API & Integration Spec
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../prd/PRD-006-data-validation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Validation
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../prd/PRD-007-developer-tooling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Developer Tooling
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../prd/PRD-012-backend-di/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backend & DI
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../prd/PRD-008-authentication/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authentication
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_14" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_14" id="__nav_2_14_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Auth Detail
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_14_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_14">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Auth Detail
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../prd/PRD-008-1-auth-impl-spec/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Implementation Spec
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../prd/PRD-009-documentation-standards/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Documentation Standards
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../prd/PRD-010-evaluation-framework/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Evaluation Framework
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../prd/PRD-011-metrics-collection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Metrics Collection
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../prd/PRD-013-testing-strategy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing Strategy & CI
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Plans
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Plans
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../prd/PRD-001-1-goals-and-dod/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Goals & Definition of Done
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roadmap v1 (precise)
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roadmap v1 (precise)
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#phase-1-core-loop" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 1 — Core Loop
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Phase 1 — Core Loop">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#deliverables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deliverables
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#acceptance-criteria" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Acceptance Criteria
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#exit-gate-phase-1-phase-2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Exit Gate (Phase 1 → Phase 2)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#phase-2-multi-agent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 2 — Multi-Agent
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Phase 2 — Multi-Agent">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#deliverables_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deliverables
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#acceptance-criteria_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Acceptance Criteria
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#exit-gate-phase-2-phase-3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Exit Gate (Phase 2 → Phase 3)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#phase-3-human-in-the-loop" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 3 — Human-in-the-Loop
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Phase 3 — Human-in-the-Loop">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#deliverables_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deliverables
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#acceptance-criteria_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Acceptance Criteria
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#exit-gate-phase-3-phase-4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Exit Gate (Phase 3 → Phase 4)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#phase-4-backend-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 4 — Backend API
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Phase 4 — Backend API">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#deliverables_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deliverables
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#acceptance-criteria_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Acceptance Criteria
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#exit-gate-phase-4-phase-5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Exit Gate (Phase 4 → Phase 5)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#phase-5-react-ui" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 5 — React UI
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Phase 5 — React UI">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#deliverables_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deliverables
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#acceptance-criteria_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Acceptance Criteria
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#exit-gate-phase-5-phase-6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Exit Gate (Phase 5 → Phase 6)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#phase-6-polish" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 6 — Polish
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Phase 6 — Polish">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#deliverables_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deliverables
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#acceptance-criteria_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Acceptance Criteria
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#exit-gate-phase-6-v10-release" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Exit Gate (Phase 6 = v1.0 Release)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../roadmap-v2/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roadmap v2 (general)
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--PLANNED"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="roadmap-v1-precise-delivery-plan">Roadmap v1 — Precise Delivery Plan<a class="headerlink" href="#roadmap-v1-precise-delivery-plan" title="Permanent link">&para;</a></h1>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Version</td>
+<td>v1.0</td>
+</tr>
+<tr>
+<td>Status</td>
+<td>DRAFT</td>
+</tr>
+<tr>
+<td>Date</td>
+<td>March 2026</td>
+</tr>
+<tr>
+<td>Parent</td>
+<td><a href="../../prd/PRD-001-master-overview/">PRD-001 Master Overview</a></td>
+</tr>
+</tbody>
+</table>
+<p>This document is the authoritative, week-precise delivery plan for AgentOps Dashboard v1.0.
+Each phase lists concrete deliverables, binary acceptance criteria per deliverable, and an <strong>exit gate</strong> —
+the set of conditions that must all pass before the next phase begins.</p>
+<hr />
+<h2 id="phase-1-core-loop">Phase 1 — Core Loop<a class="headerlink" href="#phase-1-core-loop" title="Permanent link">&para;</a></h2>
+<p><strong>Target: Weeks 1–3</strong></p>
+<h3 id="deliverables">Deliverables<a class="headerlink" href="#deliverables" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>D1.1</strong> Project scaffolding</li>
+<li><code>pyproject.toml</code> with <code>uv</code> workspace, <code>ruff</code>, <code>ty</code>, <code>pytest</code> configured</li>
+<li>Docker Compose file with placeholder services</li>
+<li>GitHub Actions CI running lint + test on push</li>
+<li>
+<p><code>README.md</code> with quickstart skeleton</p>
+</li>
+<li>
+<p><strong>D1.2</strong> Single Investigator LCEL chain</p>
+</li>
+<li><code>InvestigatorChain</code>: <code>ChatPromptTemplate | ChatOpenAI.with_structured_output(InvestigatorOutput)</code></li>
+<li>Output model: <code>InvestigatorOutput(summary: str, hypotheses: list[str], files_to_check: list[str])</code></li>
+<li>
+<p>Unit tests covering happy path and malformed LLM output fallback</p>
+</li>
+<li>
+<p><strong>D1.3</strong> LangGraph skeleton (single-agent)</p>
+</li>
+<li><code>StateGraph</code> with nodes: <code>supervisor</code>, <code>investigator</code>, <code>writer</code>, <code>END</code></li>
+<li><code>AgentState</code> TypedDict with: <code>issue_url</code>, <code>messages</code>, <code>agent_outputs</code>, <code>status</code></li>
+<li>Supervisor routing logic (stub: always routes to investigator then writer)</li>
+<li>
+<p>SQLite checkpointer configured</p>
+</li>
+<li>
+<p><strong>D1.4</strong> LangSmith tracing active</p>
+</li>
+<li><code>LANGCHAIN_TRACING_V2=true</code> in <code>.env.example</code></li>
+<li>Every chain call produces a trace with project name <code>agent-ops-v1</code></li>
+<li>
+<p>Trace has named spans for prompt, LLM call, and parser</p>
+</li>
+<li>
+<p><strong>D1.5</strong> Minimal FastAPI job endpoint</p>
+</li>
+<li><code>POST /jobs</code> — creates a job record (SQLite), enqueues via ARQ, returns <code>{id, status}</code></li>
+<li><code>GET /jobs/{id}</code> — returns job record with current status</li>
+<li>Pydantic v2 request model: <code>CreateJobRequest(issue_url: HttpUrl)</code></li>
+</ul>
+<h3 id="acceptance-criteria">Acceptance Criteria<a class="headerlink" href="#acceptance-criteria" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Deliverable</th>
+<th>Criterion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>D1.1</td>
+<td><code>ruff check .</code> exits 0; <code>pytest</code> passes; <code>docker compose up</code> starts without error</td>
+</tr>
+<tr>
+<td>D1.2</td>
+<td><code>pytest tests/unit/test_investigator_chain.py</code> passes all cases including output validation</td>
+</tr>
+<tr>
+<td>D1.3</td>
+<td>Running <code>python -m src.graph.run --issue-url &lt;url&gt;</code> completes and prints <code>AgentState.agent_outputs</code></td>
+</tr>
+<tr>
+<td>D1.4</td>
+<td>LangSmith UI shows a trace with ≥3 nested spans after running D1.3</td>
+</tr>
+<tr>
+<td>D1.5</td>
+<td><code>curl -X POST /jobs -d '{"issue_url":"..."}'</code> returns <code>200</code> with <code>id</code> and <code>status: queued</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="exit-gate-phase-1-phase-2">Exit Gate (Phase 1 → Phase 2)<a class="headerlink" href="#exit-gate-phase-1-phase-2" title="Permanent link">&para;</a></h3>
+<p>All of the following must be true:</p>
+<ul>
+<li>[ ] D1.1–D1.5 acceptance criteria all pass</li>
+<li>[ ] A real GitHub issue (not a fixture) produces a non-empty <code>InvestigatorOutput</code></li>
+<li>[ ] LangSmith trace is visible for the real-issue run</li>
+<li>[ ] CI is green on <code>main</code></li>
+</ul>
+<hr />
+<h2 id="phase-2-multi-agent">Phase 2 — Multi-Agent<a class="headerlink" href="#phase-2-multi-agent" title="Permanent link">&para;</a></h2>
+<p><strong>Target: Weeks 4–5</strong></p>
+<h3 id="deliverables_1">Deliverables<a class="headerlink" href="#deliverables_1" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>D2.1</strong> Full agent suite (5 LCEL chains)</li>
+<li><code>CodebaseSearchChain</code>: semantic search over embedded repo (Chroma + <code>text-embedding-3-small</code>)</li>
+<li><code>WebSearchChain</code>: Tavily API tool integrated into LCEL chain</li>
+<li><code>CriticChain</code>: reviews prior agent outputs, outputs <code>CriticOutput(issues: list[str], verdict: Literal["pass","revise"])</code></li>
+<li>
+<p><code>WriterChain</code>: produces <code>WriterOutput(severity, root_cause, relevant_files, draft_comment, ticket_draft)</code></p>
+</li>
+<li>
+<p><strong>D2.2</strong> LangServe endpoints (one per chain)</p>
+</li>
+<li><code>POST /agents/investigator/invoke</code></li>
+<li><code>POST /agents/codebase-search/invoke</code></li>
+<li><code>POST /agents/web-search/invoke</code></li>
+<li><code>POST /agents/critic/invoke</code></li>
+<li><code>POST /agents/writer/invoke</code></li>
+<li>Each endpoint has <code>/health</code> returning <code>200 {"status": "ok"}</code></li>
+<li>
+<p>Each agent service has its own <code>Dockerfile</code> and entry in <code>docker-compose.yml</code></p>
+</li>
+<li>
+<p><strong>D2.3</strong> Supervisor routing logic (full)</p>
+</li>
+<li>Supervisor reads <code>AgentState</code> and decides next agent via LLM-powered routing</li>
+<li>Routing respects dependency order: investigator and codebase-search before critic; critic before writer</li>
+<li>
+<p><code>max_iterations</code> guard: terminates after 10 supervisor decisions</p>
+</li>
+<li>
+<p><strong>D2.4</strong> Shared state flowing through all nodes</p>
+</li>
+<li><code>AgentState</code> carries accumulated <code>agent_outputs</code> across all nodes</li>
+<li>Each worker reads relevant prior outputs from state before calling its chain</li>
+<li>Final writer node has access to all prior outputs</li>
+</ul>
+<h3 id="acceptance-criteria_1">Acceptance Criteria<a class="headerlink" href="#acceptance-criteria_1" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Deliverable</th>
+<th>Criterion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>D2.1</td>
+<td><code>pytest tests/unit/test_*_chain.py</code> passes for all 5 chains</td>
+</tr>
+<tr>
+<td>D2.2</td>
+<td><code>curl /agents/investigator/health</code> → 200; <code>curl /agents/writer/invoke</code> with fixture input → valid <code>WriterOutput</code> JSON</td>
+</tr>
+<tr>
+<td>D2.3</td>
+<td>Running the full graph on a fixture issue routes through ≥3 distinct agents before reaching writer</td>
+</tr>
+<tr>
+<td>D2.4</td>
+<td><code>WriterOutput.relevant_files</code> contains files identified by <code>CodebaseSearchChain</code> in the same run</td>
+</tr>
+</tbody>
+</table>
+<h3 id="exit-gate-phase-2-phase-3">Exit Gate (Phase 2 → Phase 3)<a class="headerlink" href="#exit-gate-phase-2-phase-3" title="Permanent link">&para;</a></h3>
+<p>All of the following must be true:</p>
+<ul>
+<li>[ ] D2.1–D2.4 acceptance criteria all pass</li>
+<li>[ ] Full 5-agent run completes end-to-end in &lt; 3 minutes on a real GitHub issue</li>
+<li>[ ] LangSmith trace shows all 5 agent spans under the supervisor span</li>
+<li>[ ] All 5 Docker services start cleanly via <code>docker compose up</code></li>
+<li>[ ] CI green on <code>main</code></li>
+</ul>
+<hr />
+<h2 id="phase-3-human-in-the-loop">Phase 3 — Human-in-the-Loop<a class="headerlink" href="#phase-3-human-in-the-loop" title="Permanent link">&para;</a></h2>
+<p><strong>Target: Week 6</strong></p>
+<h3 id="deliverables_2">Deliverables<a class="headerlink" href="#deliverables_2" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>D3.1</strong> <code>interrupt()</code> nodes in LangGraph</li>
+<li><code>human_input</code> node added to the graph with <code>interrupt_before</code> configuration</li>
+<li>Supervisor can route to <code>human_input</code> when confidence is below threshold</li>
+<li>
+<p>Interrupt stores the question in <code>AgentState.pending_question</code></p>
+</li>
+<li>
+<p><strong>D3.2</strong> Job control endpoints</p>
+</li>
+<li><code>POST /jobs/{id}/answer</code> — injects user answer and calls <code>graph.update_state()</code> to resume</li>
+<li><code>POST /jobs/{id}/pause</code> — sets Redis flag checked by worker before each node</li>
+<li><code>POST /jobs/{id}/resume</code> — clears pause flag</li>
+<li><code>POST /jobs/{id}/redirect</code> — injects instruction into supervisor's next routing context</li>
+<li>
+<p><code>POST /jobs/{id}/kill</code> — calls <code>Job.abort()</code> on the ARQ job, sets status <code>cancelled</code></p>
+</li>
+<li>
+<p><strong>D3.3</strong> Checkpoint persistence (Postgres)</p>
+</li>
+<li>Migrate checkpointer from SQLite to Postgres for production durability</li>
+<li><code>AsyncPostgresSaver</code> configured in graph builder</li>
+<li>
+<p>Graph state survives a worker process restart mid-job</p>
+</li>
+<li>
+<p><strong>D3.4</strong> Timeout handling</p>
+</li>
+<li>Jobs in <code>waiting</code> status for &gt; 10 minutes automatically transition to <code>timed_out</code></li>
+<li>ARQ scheduled task runs every minute to enforce timeout</li>
+</ul>
+<h3 id="acceptance-criteria_2">Acceptance Criteria<a class="headerlink" href="#acceptance-criteria_2" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Deliverable</th>
+<th>Criterion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>D3.1</td>
+<td>Running fixture <code>FIXTURE_HITL</code> issue causes job status to reach <code>waiting</code> with non-empty <code>pending_question</code></td>
+</tr>
+<tr>
+<td>D3.2</td>
+<td><code>pytest tests/integration/test_job_control.py</code> passes all 5 control action tests</td>
+</tr>
+<tr>
+<td>D3.3</td>
+<td>Killing and restarting the worker mid-job, then calling <code>/resume</code>, completes the job successfully</td>
+</tr>
+<tr>
+<td>D3.4</td>
+<td>A job left in <code>waiting</code> for 10+ minutes (mocked clock) transitions to <code>timed_out</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="exit-gate-phase-3-phase-4">Exit Gate (Phase 3 → Phase 4)<a class="headerlink" href="#exit-gate-phase-3-phase-4" title="Permanent link">&para;</a></h3>
+<p>All of the following must be true:</p>
+<ul>
+<li>[ ] D3.1–D3.4 acceptance criteria all pass</li>
+<li>[ ] A human-in-the-loop round-trip (question → answer → completion) works on a real issue</li>
+<li>[ ] Pause → resume preserves all agent outputs accumulated before the pause</li>
+<li>[ ] Kill leaves no orphaned ARQ jobs (confirmed via ARQ dashboard or <code>arq.inspect</code>)</li>
+</ul>
+<hr />
+<h2 id="phase-4-backend-api">Phase 4 — Backend API<a class="headerlink" href="#phase-4-backend-api" title="Permanent link">&para;</a></h2>
+<p><strong>Target: Weeks 7–8</strong></p>
+<h3 id="deliverables_3">Deliverables<a class="headerlink" href="#deliverables_3" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>D4.1</strong> SSE streaming endpoint</li>
+<li><code>GET /jobs/{id}/stream</code> returns <code>Content-Type: text/event-stream</code></li>
+<li>Events: <code>{"type": "agent_output", "agent": "...", "chunk": "..."}</code> and <code>{"type": "status_change", "status": "..."}</code></li>
+<li>Redis Pub/Sub used for fanout (worker publishes → API subscribes → SSE to client)</li>
+<li>
+<p>Connection drops reconnect within ~2 s; <strong>missed events are not replayed</strong> — Pub/Sub has no history (gapless resume via <code>Last-Event-ID</code> is a v2 concern requiring Redis Streams or a DB-backed event log)</p>
+</li>
+<li>
+<p><strong>D4.2</strong> Job persistence layer</p>
+</li>
+<li>Postgres table <code>jobs</code>: <code>id</code>, <code>issue_url</code>, <code>status</code>, <code>created_at</code>, <code>updated_at</code>, <code>output</code>, <code>langsmith_url</code></li>
+<li>SQLAlchemy async ORM models</li>
+<li>
+<p>Alembic migrations for schema</p>
+</li>
+<li>
+<p><strong>D4.3</strong> GitHub API integration</p>
+</li>
+<li><code>GET /repos/{owner}/{repo}/issues/{number}</code> called on job creation to fetch issue body, labels, author</li>
+<li>Issue data stored in <code>AgentState.issue_context</code></li>
+<li>
+<p>GitHub OAuth token passed via <code>Authorization: Bearer</code> header on API calls</p>
+</li>
+<li>
+<p><strong>D4.4</strong> API hardening</p>
+</li>
+<li>Rate limiting: max 10 concurrent jobs per user</li>
+<li>Input validation: <code>issue_url</code> must match <code>github.com/{owner}/{repo}/issues/{number}</code> pattern</li>
+<li>OpenAPI docs auto-generated and accessible at <code>/docs</code></li>
+<li>All endpoints return structured error responses <code>{"error": {"code": ..., "message": ...}}</code></li>
+</ul>
+<h3 id="acceptance-criteria_3">Acceptance Criteria<a class="headerlink" href="#acceptance-criteria_3" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Deliverable</th>
+<th>Criterion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>D4.1</td>
+<td><code>curl -N /jobs/{id}/stream</code> outputs ≥5 SSE events during a real job run; connection drop reconnects within 2 s and stream resumes from the live position (no historical replay)</td>
+</tr>
+<tr>
+<td>D4.2</td>
+<td><code>alembic upgrade head</code> runs cleanly; job survives an API server restart (fetched from Postgres)</td>
+</tr>
+<tr>
+<td>D4.3</td>
+<td>Job state contains <code>issue_context.body</code> and <code>issue_context.labels</code> populated from the real GitHub API</td>
+</tr>
+<tr>
+<td>D4.4</td>
+<td><code>curl -X POST /jobs -d '{"issue_url":"https://not-github.com/x"}'</code> returns <code>422</code>; <code>/docs</code> loads without error</td>
+</tr>
+</tbody>
+</table>
+<h3 id="exit-gate-phase-4-phase-5">Exit Gate (Phase 4 → Phase 5)<a class="headerlink" href="#exit-gate-phase-4-phase-5" title="Permanent link">&para;</a></h3>
+<p>All of the following must be true:</p>
+<ul>
+<li>[ ] D4.1–D4.4 acceptance criteria all pass</li>
+<li>[ ] <code>pytest tests/integration/test_api.py</code> fully green</li>
+<li>[ ] SSE stream tested with a real browser <code>EventSource</code> connection (manual check)</li>
+<li>[ ] Alembic migration is idempotent (<code>upgrade head</code> run twice produces no error)</li>
+</ul>
+<hr />
+<h2 id="phase-5-react-ui">Phase 5 — React UI<a class="headerlink" href="#phase-5-react-ui" title="Permanent link">&para;</a></h2>
+<p><strong>Target: Weeks 9–11</strong></p>
+<h3 id="deliverables_4">Deliverables<a class="headerlink" href="#deliverables_4" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>D5.1</strong> Job queue panel (Jira-style)</li>
+<li>Left sidebar: list of job cards with <code>issue_url</code> title, status badge, creation time</li>
+<li>Status badge colors: grey (Queued), blue (Running), amber (Waiting), purple (Paused), green (Done), red (Cancelled), dark-red (Timed Out)</li>
+<li>
+<p>"New Job" button opens a modal with <code>issue_url</code> input and Submit</p>
+</li>
+<li>
+<p><strong>D5.2</strong> Live workspace panel</p>
+</li>
+<li>Center panel opens when a job card is selected</li>
+<li>Streaming agent output rendered in real time via <code>EventSource</code></li>
+<li>Per-agent section headers with agent name and status indicator</li>
+<li>
+<p>Auto-scrolls to latest output; user can scroll up to read history</p>
+</li>
+<li>
+<p><strong>D5.3</strong> Question cards (human-in-the-loop UI)</p>
+</li>
+<li>When job status is <code>waiting</code>, a question card appears above the workspace</li>
+<li>Card shows the agent's question and a free-text answer input</li>
+<li>Submitting the answer calls <code>POST /jobs/{id}/answer</code> and dismisses the card</li>
+<li>
+<p>Card is visually distinct (amber border, "Agent needs your input" label)</p>
+</li>
+<li>
+<p><strong>D5.4</strong> Output panel</p>
+</li>
+<li>Right panel shows the final <code>WriterOutput</code> when job status is <code>done</code></li>
+<li>Fields: Severity badge, Root Cause, Relevant Files (file links), Draft Comment (editable), Ticket Draft (editable)</li>
+<li>
+<p>"Post to GitHub" button (calls write-back endpoint — stubbed in Phase 5, live in Phase 6)</p>
+</li>
+<li>
+<p><strong>D5.5</strong> Agent control bar</p>
+</li>
+<li>Appears at the top of the workspace when a job is <code>running</code> or <code>paused</code></li>
+<li>Buttons: Pause / Resume, Redirect (opens text input), Kill</li>
+<li>Each button calls the respective control endpoint and updates the UI state</li>
+</ul>
+<h3 id="acceptance-criteria_4">Acceptance Criteria<a class="headerlink" href="#acceptance-criteria_4" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Deliverable</th>
+<th>Criterion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>D5.1</td>
+<td>Submitting a job via the UI creates a card that appears in the queue without page refresh</td>
+</tr>
+<tr>
+<td>D5.2</td>
+<td>Agent output chunks appear in the workspace &lt; 2s after backend emits them (measure with browser DevTools)</td>
+</tr>
+<tr>
+<td>D5.3</td>
+<td>Question card appears when job reaches <code>waiting</code>; submitting answer causes card to disappear and job to resume</td>
+</tr>
+<tr>
+<td>D5.4</td>
+<td>Output panel renders all 5 fields when job reaches <code>done</code>; edits to Draft Comment persist in component state</td>
+</tr>
+<tr>
+<td>D5.5</td>
+<td>Clicking Pause → badge changes to <code>paused</code>; clicking Resume → badge returns to <code>running</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="exit-gate-phase-5-phase-6">Exit Gate (Phase 5 → Phase 6)<a class="headerlink" href="#exit-gate-phase-5-phase-6" title="Permanent link">&para;</a></h3>
+<p>All of the following must be true:</p>
+<ul>
+<li>[ ] D5.1–D5.5 acceptance criteria all pass</li>
+<li>[ ] Playwright E2E tests pass: <code>npx playwright test tests/e2e/</code></li>
+<li>[ ] UI tested in Chrome and Firefox (latest versions)</li>
+<li>[ ] Lighthouse accessibility score ≥ 80 on the main dashboard page</li>
+<li>[ ] No console errors during a full job lifecycle in the browser</li>
+</ul>
+<hr />
+<h2 id="phase-6-polish">Phase 6 — Polish<a class="headerlink" href="#phase-6-polish" title="Permanent link">&para;</a></h2>
+<p><strong>Target: Weeks 12–13</strong></p>
+<h3 id="deliverables_5">Deliverables<a class="headerlink" href="#deliverables_5" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>D6.1</strong> GitHub write-back</li>
+<li>"Post to GitHub" button calls <code>POST /jobs/{id}/publish</code></li>
+<li>Backend calls <code>POST /repos/{owner}/{repo}/issues/{number}/comments</code> with <code>draft_comment</code></li>
+<li>Backend calls <code>PATCH /repos/{owner}/{repo}/issues/{number}</code> to add severity label</li>
+<li>
+<p>Result URL is stored on the job and displayed in the output panel</p>
+</li>
+<li>
+<p><strong>D6.2</strong> LangSmith evaluation suite</p>
+</li>
+<li>Eval dataset <code>bug_triage_v1</code> created in LangSmith with ≥ 10 reference examples</li>
+<li>Evaluator script <code>scripts/run_evals.py</code> runs the full graph on dataset and submits results</li>
+<li>Metrics tracked: <code>helpfulness</code> (LLM judge, 1–5), <code>file_relevance</code> (overlap with reference), <code>severity_match</code> (exact match)</li>
+<li>
+<p>Eval results visible in LangSmith Experiments tab</p>
+</li>
+<li>
+<p><strong>D6.3</strong> Codebase vector index</p>
+</li>
+<li>On job creation, if repo not already indexed: clone repo, chunk Python files, embed with <code>text-embedding-3-small</code>, store in Chroma</li>
+<li>Index stored persistently in <code>data/chroma/{owner}-{repo}/</code></li>
+<li><code>CodebaseSearchChain</code> queries the index with <code>k=5</code> results</li>
+<li>
+<p>Re-indexing triggered if repo has new commits since last index (checked via GitHub API)</p>
+</li>
+<li>
+<p><strong>D6.4</strong> LangFlow configuration UI</p>
+</li>
+<li>LangFlow running as a Docker service at <code>/langflow</code></li>
+<li>Flow files for all 5 agents checked into <code>langflow/flows/</code></li>
+<li>Dashboard "Configure Agents" nav item opens the LangFlow UI</li>
+<li>Non-technical user can change the system prompt of any agent and save (flow re-exported to <code>langflow/flows/</code>)</li>
+</ul>
+<h3 id="acceptance-criteria_5">Acceptance Criteria<a class="headerlink" href="#acceptance-criteria_5" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Deliverable</th>
+<th>Criterion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>D6.1</td>
+<td>Clicking "Post to GitHub" on a completed job creates a real comment on the GitHub issue (verified manually on a test repo)</td>
+</tr>
+<tr>
+<td>D6.2</td>
+<td><code>python scripts/run_evals.py --dataset bug_triage_v1</code> exits 0 and prints an aggregate <code>helpfulness</code> score ≥ 4.0 / 5.0</td>
+</tr>
+<tr>
+<td>D6.3</td>
+<td>Second job on the same repo uses cached index (confirmed: no re-clone in logs); <code>CodebaseSearchChain</code> returns ≥1 relevant file for a known fixture issue</td>
+</tr>
+<tr>
+<td>D6.4</td>
+<td>LangFlow UI accessible at <code>/langflow</code>; modifying a system prompt in LangFlow and running the graph produces output reflecting the change</td>
+</tr>
+</tbody>
+</table>
+<h3 id="exit-gate-phase-6-v10-release">Exit Gate (Phase 6 = v1.0 Release)<a class="headerlink" href="#exit-gate-phase-6-v10-release" title="Permanent link">&para;</a></h3>
+<p>All of the following must be true:</p>
+<ul>
+<li>[ ] D6.1–D6.4 acceptance criteria all pass</li>
+<li>[ ] All Phase 1–5 exit gates remain satisfied (run full regression)</li>
+<li>[ ] <code>mkdocs build</code> exits 0 with no warnings</li>
+<li>[ ] <code>docker compose up</code> starts all services in &lt; 60 seconds on a fresh clone with only <code>.env</code> configured</li>
+<li>[ ] LangSmith eval score ≥ 4.0 / 5.0 on <code>bug_triage_v1</code> dataset</li>
+<li>[ ] README is complete with architecture diagram, quickstart, and links to deployed docs</li>
+<li>[ ] All PRD documents published and linked from the MkDocs nav</li>
+</ul>
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.top", "toc.integrate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

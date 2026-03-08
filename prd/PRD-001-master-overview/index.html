@@ -1,0 +1,2474 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://hardmax71.github.io/agent-ops-dashboard/prd/PRD-001-master-overview/">
+      
+      
+        <link rel="prev" href="../..">
+      
+      
+        <link rel="next" href="../PRD-002-frontend-ux/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.4">
+    
+    
+      
+        <title>Master Overview - AgentOps Dashboard</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#prd-001-agentops-dashboard" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="AgentOps Dashboard" class="md-header__button md-logo" aria-label="AgentOps Dashboard" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            AgentOps Dashboard
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Master Overview
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="AgentOps Dashboard" class="md-nav__button md-logo" aria-label="AgentOps Dashboard" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    AgentOps Dashboard
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PRDs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    PRDs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Master Overview
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Master Overview
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#executive-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Executive Summary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#problem-statement" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Problem Statement
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Problem Statement">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-multi-agent-visibility-gap" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The Multi-Agent Visibility Gap
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-software-dev-triage-pain-point" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The Software Dev Triage Pain Point
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#goals-and-non-goals" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Goals and Non-Goals
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Goals and Non-Goals">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#goals-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Goals (summary)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#non-goals-v10-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Non-Goals (v1.0, summary)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#user-personas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        User Personas
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#product-overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Product Overview
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Product Overview">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-it-is" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What It Is
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-jira-analogy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The Jira Analogy
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#langchain-ecosystem-map" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        LangChain Ecosystem Map
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#high-level-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        High-Level Architecture
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#feature-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Feature Summary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#success-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Success Metrics
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#release-roadmap" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Release Roadmap
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Release Roadmap">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#v1-phase-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1 Phase Summary
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#risks-and-mitigations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Risks and Mitigations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#assumptions-constraints-dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Assumptions, Constraints, Dependencies
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Assumptions, Constraints, Dependencies">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#assumptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Assumptions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#constraints" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Constraints
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#external-dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        External Dependencies
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-002-frontend-ux/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frontend & UX
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_3" id="__nav_2_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frontend Detail
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Frontend Detail
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-002-1-design-system/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Design System & Components
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-002-2-pages-and-wireframes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pages & Wireframes
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-002-3-interactions-and-a11y/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interactions & Accessibility
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-003-langgraph-orchestration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LangGraph Orchestration
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_5" id="__nav_2_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Orchestration Detail
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Orchestration Detail
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-003-1-event-pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Event Pipeline & Worker
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-003-2-supervisor-spec/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Supervisor Prompt & Routing
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-004-agent-layer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agent Layer
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_7" id="__nav_2_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agent Layer Detail
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Agent Layer Detail
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-004-1-agent-chains/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Full LCEL Chain Specs
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-004-2-codebase-index/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Codebase Vector Index
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-005-langsmith-observability/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LangSmith Observability
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_9" id="__nav_2_9_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LangSmith Detail
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    LangSmith Detail
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-005-1-langsmith-api-spec/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API & Integration Spec
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-006-data-validation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Validation
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-007-developer-tooling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Developer Tooling
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-012-backend-di/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backend & DI
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-008-authentication/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authentication
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_14" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_14" id="__nav_2_14_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Auth Detail
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_14_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_14">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Auth Detail
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-008-1-auth-impl-spec/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Implementation Spec
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-009-documentation-standards/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Documentation Standards
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-010-evaluation-framework/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Evaluation Framework
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-011-metrics-collection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Metrics Collection
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-013-testing-strategy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing Strategy & CI
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Plans
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Plans
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-001-1-goals-and-dod/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Goals & Definition of Done
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../plans/roadmap-v1/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roadmap v1 (precise)
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../plans/roadmap-v2/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roadmap v2 (general)
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--PLANNED"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="prd-001-agentops-dashboard">PRD-001 — AgentOps Dashboard<a class="headerlink" href="#prd-001-agentops-dashboard" title="Permanent link">&para;</a></h1>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Document ID</td>
+<td>PRD-001</td>
+</tr>
+<tr>
+<td>Version</td>
+<td>1.0</td>
+</tr>
+<tr>
+<td>Status</td>
+<td>DRAFT</td>
+</tr>
+<tr>
+<td>Date</td>
+<td>March 2026</td>
+</tr>
+<tr>
+<td>Author</td>
+<td>Product &amp; Engineering Team</td>
+</tr>
+<tr>
+<td>Related Docs</td>
+<td><a href="../PRD-002-frontend-ux/">PRD-002</a>, <a href="../PRD-003-langgraph-orchestration/">PRD-003</a>, <a href="../PRD-004-agent-layer/">PRD-004</a>, <a href="../PRD-005-langsmith-observability/">PRD-005</a>, <a href="../PRD-006-data-validation/">PRD-006</a>, <a href="../PRD-007-developer-tooling/">PRD-007</a>, <a href="../PRD-008-authentication/">PRD-008</a>, <a href="../PRD-009-documentation-standards/">PRD-009</a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="executive-summary">Executive Summary<a class="headerlink" href="#executive-summary" title="Permanent link">&para;</a></h2>
+<p>AgentOps Dashboard is a developer-facing platform for orchestrating, supervising, and debugging multi-agent AI workflows
+for software development tasks. The product combines the full LangChain ecosystem — <strong>LangChain, LCEL, LangGraph,
+LangSmith, LangServe, and LangFlow</strong> — into a coherent, production-grade system fronted by a <strong>Jira-inspired user
+interface</strong>.</p>
+<p>The core insight driving this product is that multi-agent AI systems today suffer from a critical UX gap: models are
+capable enough to do real work, but there is no intuitive interface for a developer to supervise, steer, and trust a
+coordinated team of AI agents. AgentOps Dashboard fills this gap.</p>
+<blockquote>
+<p><strong>Elevator Pitch:</strong> AgentOps Dashboard is Jira for AI agents. Submit a GitHub issue, and watch a team of specialized
+AI agents investigate, reason, debate, and produce a full triage report — while you retain full control to pause,
+redirect, or override any agent at any moment. Agents can also stop and ask <em>you</em> questions when they need more context,
+just like a junior developer would.</p>
+</blockquote>
+<hr />
+<h2 id="problem-statement">Problem Statement<a class="headerlink" href="#problem-statement" title="Permanent link">&para;</a></h2>
+<h3 id="the-multi-agent-visibility-gap">The Multi-Agent Visibility Gap<a class="headerlink" href="#the-multi-agent-visibility-gap" title="Permanent link">&para;</a></h3>
+<p>Modern LLM agents are capable of autonomous reasoning, tool use, and multi-step planning. However, when multiple agents
+collaborate on a complex task, developers currently face:</p>
+<ul>
+<li>No real-time visibility into what each agent is doing and why</li>
+<li>No ability to intervene mid-task when an agent heads in the wrong direction</li>
+<li>No standardized way to evaluate whether agent outputs are correct or improving over time</li>
+<li>No clean separation between agent logic (what agents do) and orchestration logic (how they coordinate)</li>
+<li>No human-friendly interface — everything lives in terminal logs or raw LangSmith traces</li>
+</ul>
+<h3 id="the-software-dev-triage-pain-point">The Software Dev Triage Pain Point<a class="headerlink" href="#the-software-dev-triage-pain-point" title="Permanent link">&para;</a></h3>
+<p>Bug triage is a high-value, time-consuming workflow with clear AI ROI. A typical senior engineer spends 30–45 minutes
+per complex issue: reading the issue, searching the codebase, checking similar past bugs, forming a hypothesis, and
+writing up findings. This is exactly the kind of structured, multi-step, tool-heavy workflow that multi-agent systems
+excel at — but only if a human can trust and steer the process.</p>
+<hr />
+<h2 id="goals-and-non-goals">Goals and Non-Goals<a class="headerlink" href="#goals-and-non-goals" title="Permanent link">&para;</a></h2>
+<blockquote>
+<p>Full goal definitions, Definition of Done criteria, and verification steps are in
+<strong><a href="../PRD-001-1-goals-and-dod/">PRD-001-1 — Goals &amp; Definition of Done</a></strong>.</p>
+</blockquote>
+<h3 id="goals-summary">Goals (summary)<a class="headerlink" href="#goals-summary" title="Permanent link">&para;</a></h3>
+<ol>
+<li>Working multi-agent <strong>bug triage system</strong> (full LangX stack)</li>
+<li><strong>Jira-inspired real-time dashboard</strong> (streaming tickets)</li>
+<li><strong>Bidirectional human-in-the-loop</strong> (agent questions block graph)</li>
+<li><strong>Pause / redirect / kill</strong> any agent mid-execution</li>
+<li><strong>LangSmith</strong> instrumentation (tracing, eval, cost)</li>
+<li><strong>LangFlow</strong> as visual prototyping layer</li>
+<li><strong>LangServe</strong> microservice deployment per agent chain</li>
+<li>Portfolio-grade <strong>production quality</strong></li>
+</ol>
+<h3 id="non-goals-v10-summary">Non-Goals (v1.0, summary)<a class="headerlink" href="#non-goals-v10-summary" title="Permanent link">&para;</a></h3>
+<p>See <a href="../PRD-001-1-goals-and-dod/#non-goals-v10">PRD-001-1 Non-Goals</a> for the full list.
+Items deferred to v2 include: non-GitHub trackers, non-software domains, self-hosted LLMs,
+multi-user sessions, and a mobile interface.</p>
+<hr />
+<h2 id="user-personas">User Personas<a class="headerlink" href="#user-personas" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Persona</th>
+<th>Role</th>
+<th>Primary Goal</th>
+<th>Key Pain Point</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Alex</strong></td>
+<td>Senior Backend Engineer</td>
+<td>Triage incoming GitHub bugs faster without losing context</td>
+<td>Spends 30+ min per issue reading the codebase before forming a hypothesis</td>
+</tr>
+<tr>
+<td><strong>Jordan</strong></td>
+<td>Engineering Manager</td>
+<td>Monitor AI agent quality and cost across team repos</td>
+<td>Black-box AI feels untrustworthy — no visibility into agent reasoning</td>
+</tr>
+<tr>
+<td><strong>Sam</strong></td>
+<td>ML/AI Engineer</td>
+<td>Iterate on agent prompts and chains quickly</td>
+<td>Edit code → redeploy → re-test cycle is too slow for prompt iteration</td>
+</tr>
+<tr>
+<td><strong>Taylor</strong></td>
+<td>Tech Lead</td>
+<td>Configure agent behavior per repo without touching internals</td>
+<td>Every AI tool requires bespoke integration work</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="product-overview">Product Overview<a class="headerlink" href="#product-overview" title="Permanent link">&para;</a></h2>
+<h3 id="what-it-is">What It Is<a class="headerlink" href="#what-it-is" title="Permanent link">&para;</a></h3>
+<p>AgentOps Dashboard is a web application with a Python/FastAPI backend and a React frontend. Users connect a GitHub
+repository, submit an issue URL, and the system:</p>
+<ol>
+<li>Spins up a <strong>LangGraph supervisor agent</strong> that decomposes the triage task</li>
+<li>Spawns specialized <strong>worker agents</strong> (Investigator, Codebase Searcher, Web Searcher, Critic, Writer) — each backed by
+   a <strong>LangServe</strong> endpoint containing an <strong>LCEL</strong> chain</li>
+<li>Streams real-time state updates to the frontend via <strong>Server-Sent Events</strong></li>
+<li>Pauses whenever an agent needs human input, surfacing a question card in the UI</li>
+<li>Produces a final structured output: severity rating, root cause, relevant files, a drafted GitHub comment, and a
+   ticket draft — all editable before posting</li>
+</ol>
+<h3 id="the-jira-analogy">The Jira Analogy<a class="headerlink" href="#the-jira-analogy" title="Permanent link">&para;</a></h3>
+<p>The product is intentionally modeled after Jira's mental model:</p>
+<table>
+<thead>
+<tr>
+<th>Jira Concept</th>
+<th>AgentOps Equivalent</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Project</td>
+<td>GitHub Repository</td>
+</tr>
+<tr>
+<td>Issue / Ticket</td>
+<td>Triage Job (submitted GitHub issue)</td>
+</tr>
+<tr>
+<td>Assignee</td>
+<td>Active Agent</td>
+</tr>
+<tr>
+<td>Status column</td>
+<td>Agent execution state (Queued / Running / Waiting / Done)</td>
+</tr>
+<tr>
+<td>Comments thread</td>
+<td>Agent reasoning + question/answer exchanges</td>
+</tr>
+<tr>
+<td>Labels</td>
+<td>Severity, root cause category, affected modules</td>
+</tr>
+<tr>
+<td>Workflow transitions</td>
+<td>LangGraph node transitions</td>
+</tr>
+<tr>
+<td>Activity log</td>
+<td>LangSmith trace (linked from each job)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="langchain-ecosystem-map">LangChain Ecosystem Map<a class="headerlink" href="#langchain-ecosystem-map" title="Permanent link">&para;</a></h2>
+<p>Every tool in the LangX ecosystem plays a specific, non-forced role in this product.</p>
+<table>
+<thead>
+<tr>
+<th>Tool</th>
+<th>Layer</th>
+<th>Exact Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>LangChain + LCEL</strong></td>
+<td>Micro (agent internals)</td>
+<td>Each worker agent is an LCEL chain: <code>prompt \| llm \| output_parser</code>. Handles streaming, async, parallel execution, and structured output parsing.</td>
+</tr>
+<tr>
+<td><strong>LangFlow</strong></td>
+<td>Prototyping</td>
+<td>Visual canvas used to design and test each agent's LCEL chain before it's committed to code. Also serves as the agent configuration UI for non-technical users.</td>
+</tr>
+<tr>
+<td><strong>LangServe</strong></td>
+<td>Deployment</td>
+<td>Each finalized agent chain is deployed as an independent HTTP endpoint (<code>POST /agents/investigator/invoke</code>). The LangGraph supervisor calls these endpoints as tools — clean microservice separation.</td>
+</tr>
+<tr>
+<td><strong>LangGraph</strong></td>
+<td>Macro (orchestration)</td>
+<td>Supervisor pattern: manages which agent runs next, handles shared state flowing through all nodes, implements <code>interrupt()</code> for human-in-the-loop pauses, and persists state via checkpointing.</td>
+</tr>
+<tr>
+<td><strong>LangSmith</strong></td>
+<td>Observability</td>
+<td>Instruments all layers automatically. Traces LCEL chain internals, LangGraph node transitions, and cross-agent job traces. Provides eval datasets, A/B prompt testing, and a "View in LangSmith" deep-link from every job in the UI.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="high-level-architecture">High-Level Architecture<a class="headerlink" href="#high-level-architecture" title="Permanent link">&para;</a></h2>
+<pre class="mermaid"><code>flowchart TD
+    GH(["GitHub Issue URL"])
+
+    subgraph BE["FastAPI Backend"]
+        JOBS["POST /jobs — creates LangGraph thread"]
+        STREAM["GET /jobs/{id}/stream — SSE state diffs"]
+        ANSWER["POST /jobs/{id}/answer — resume after human input"]
+    end
+
+    subgraph ORCH["LangGraph Orchestration Layer"]
+        SUP["supervisor"]
+        WORKERS["investigator | codebase_search\nweb_search | critic | human_input"]
+        WR["writer"]
+        CP[("Checkpointer — SQLite / Postgres")]
+        SUP --&gt;|routes to| WORKERS
+        WORKERS --&gt;|returns to| SUP
+        SUP --&gt;|when done| WR
+    end
+
+    subgraph SVC["LangServe Agent Microservices"]
+        S1["/agents/investigator — LCEL"]
+        S2["/agents/codebase-search — LCEL + RAG"]
+        S3["/agents/web-search — LCEL + Tavily"]
+        S4["/agents/critic — LCEL"]
+        S5["/agents/writer — LCEL"]
+    end
+
+    subgraph OBS["LangSmith (auto-instrumented)"]
+        direction LR
+        T["Traces"] --- E["Evals"] --- D["Dashboard"]
+    end
+
+    subgraph FE["React Frontend — Jira-style"]
+        direction LR
+        JQ["Job queue"] --- LW["Live workspace"] --- OP["Output panel"]
+    end
+
+    GH --&gt; BE
+    BE --&gt; ORCH
+    ORCH --&gt;|"HTTP calls"| SVC
+    BE -.-&gt;|instruments| OBS
+    ORCH -.-&gt;|instruments| OBS
+    SVC -.-&gt;|instruments| OBS
+    BE --&gt;|"SSE stream"| FE</code></pre>
+<hr />
+<h2 id="feature-summary">Feature Summary<a class="headerlink" href="#feature-summary" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>Priority</th>
+<th>PRD Reference</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Job queue with Jira-style ticket cards</td>
+<td>P0</td>
+<td><a href="../PRD-002-frontend-ux/">PRD-002</a></td>
+</tr>
+<tr>
+<td>Real-time streaming agent output in workspace</td>
+<td>P0</td>
+<td><a href="../PRD-002-frontend-ux/">PRD-002</a></td>
+</tr>
+<tr>
+<td>Agent question cards (human-in-the-loop)</td>
+<td>P0</td>
+<td><a href="../PRD-003-langgraph-orchestration/">PRD-003</a></td>
+</tr>
+<tr>
+<td>Pause / redirect / kill agent mid-execution</td>
+<td>P0</td>
+<td><a href="../PRD-003-langgraph-orchestration/">PRD-003</a></td>
+</tr>
+<tr>
+<td>Supervisor + 5 worker agents (LangGraph)</td>
+<td>P0</td>
+<td><a href="../PRD-003-langgraph-orchestration/">PRD-003</a></td>
+</tr>
+<tr>
+<td>LCEL agent chains deployed via LangServe</td>
+<td>P0</td>
+<td><a href="../PRD-004-agent-layer/">PRD-004</a></td>
+</tr>
+<tr>
+<td>LangFlow canvas for agent prototyping</td>
+<td>P1</td>
+<td><a href="../PRD-004-agent-layer/">PRD-004</a></td>
+</tr>
+<tr>
+<td>LangSmith trace deep-link per job</td>
+<td>P0</td>
+<td><a href="../PRD-005-langsmith-observability/">PRD-005</a></td>
+</tr>
+<tr>
+<td>Eval dataset + quality scoring</td>
+<td>P1</td>
+<td><a href="../PRD-005-langsmith-observability/">PRD-005</a></td>
+</tr>
+<tr>
+<td>GitHub write-back (comment + label)</td>
+<td>P1</td>
+<td><a href="../PRD-002-frontend-ux/">PRD-002</a></td>
+</tr>
+<tr>
+<td>Codebase vector index (semantic search)</td>
+<td>P1</td>
+<td><a href="../PRD-004-agent-layer/">PRD-004</a></td>
+</tr>
+<tr>
+<td>Agent configuration UI (model, prompt, endpoint)</td>
+<td>P2</td>
+<td><a href="../PRD-004-agent-layer/">PRD-004</a></td>
+</tr>
+<tr>
+<td>Cost and latency analytics dashboard</td>
+<td>P2</td>
+<td><a href="../PRD-005-langsmith-observability/">PRD-005</a></td>
+</tr>
+<tr>
+<td>Input validation (issue_url, Pydantic v2)</td>
+<td>P0</td>
+<td><a href="../PRD-006-data-validation/">PRD-006</a></td>
+</tr>
+<tr>
+<td>Python tooling (uv / ruff / ty / pyproject.toml)</td>
+<td>P0</td>
+<td><a href="../PRD-007-developer-tooling/">PRD-007</a></td>
+</tr>
+<tr>
+<td>Authentication &amp; authorization (GitHub OAuth, JWT)</td>
+<td>P0</td>
+<td><a href="../PRD-008-authentication/">PRD-008</a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="success-metrics">Success Metrics<a class="headerlink" href="#success-metrics" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Target (v1.0)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>End-to-end triage time (agent)</td>
+<td>&lt; 3 minutes per issue</td>
+</tr>
+<tr>
+<td>Human triage agreement rate</td>
+<td>≥ 70% match with human-written triage on eval dataset</td>
+</tr>
+<tr>
+<td>LangSmith eval score (helpfulness)</td>
+<td>≥ 4.0 / 5.0</td>
+</tr>
+<tr>
+<td>Agent question relevance (human rating)</td>
+<td>≥ 80% of agent-asked questions rated "useful"</td>
+</tr>
+<tr>
+<td>Time-to-first streaming output in UI</td>
+<td>&lt; 5 seconds from job submission</td>
+</tr>
+<tr>
+<td>System uptime</td>
+<td>≥ 99% during active sessions</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="release-roadmap">Release Roadmap<a class="headerlink" href="#release-roadmap" title="Permanent link">&para;</a></h2>
+<p>Detailed roadmaps are maintained in the <strong>Plans</strong> section:</p>
+<ul>
+<li><strong><a href="../../plans/roadmap-v1/">Roadmap v1 (precise)</a></strong> — Week-by-week delivery plan with per-phase deliverables,
+  acceptance criteria, and exit gates for all 6 phases (Weeks 1–13).</li>
+<li><strong><a href="../../plans/roadmap-v2/">Roadmap v2 (general)</a></strong> — High-level backlog of post-v1 themes: multi-tracker support,
+  non-software domains, self-hosted LLMs, multi-user sessions, mobile, expanded evals, and a plugin system.</li>
+</ul>
+<h3 id="v1-phase-summary">v1 Phase Summary<a class="headerlink" href="#v1-phase-summary" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Phase</th>
+<th>Scope</th>
+<th>Target</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Phase 1</strong> — Core Loop</td>
+<td>Single investigator agent, LangGraph basics, LCEL chains, LangSmith tracing</td>
+<td>Weeks 1–3</td>
+</tr>
+<tr>
+<td><strong>Phase 2</strong> — Multi-Agent</td>
+<td>Supervisor + all 5 worker agents, LangServe endpoints, shared state</td>
+<td>Weeks 4–5</td>
+</tr>
+<tr>
+<td><strong>Phase 3</strong> — Human-in-the-Loop</td>
+<td><code>interrupt()</code> nodes, pause/kill/redirect, checkpointing</td>
+<td>Week 6</td>
+</tr>
+<tr>
+<td><strong>Phase 4</strong> — Backend API</td>
+<td>FastAPI + SSE streaming, job persistence, answer endpoint</td>
+<td>Weeks 7–8</td>
+</tr>
+<tr>
+<td><strong>Phase 5</strong> — React UI</td>
+<td>Jira-style dashboard, live workspace, question cards, output panel</td>
+<td>Weeks 9–11</td>
+</tr>
+<tr>
+<td><strong>Phase 6</strong> — Polish</td>
+<td>GitHub write-back, LangSmith evals, codebase vector index, LangFlow config UI</td>
+<td>Weeks 12–13</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="risks-and-mitigations">Risks and Mitigations<a class="headerlink" href="#risks-and-mitigations" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Risk</th>
+<th>Likelihood</th>
+<th>Impact</th>
+<th>Mitigation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Supervisor agent makes poor routing decisions</td>
+<td>Medium</td>
+<td>High</td>
+<td>LangSmith evals + prompt iteration via LangFlow before production</td>
+</tr>
+<tr>
+<td>Agent asks irrelevant or too many questions</td>
+<td>Medium</td>
+<td>Medium</td>
+<td>Calibrate supervisor's question threshold in system prompt; rate-limit to 2 questions per job in v1</td>
+</tr>
+<tr>
+<td>Codebase search returns irrelevant results on large repos</td>
+<td>High</td>
+<td>Medium</td>
+<td>Use semantic vector search (Chroma + embeddings) rather than keyword search</td>
+</tr>
+<tr>
+<td>LangGraph state explosion on long jobs</td>
+<td>Low</td>
+<td>High</td>
+<td>Set max node execution limits; add job timeout at 10 minutes</td>
+</tr>
+<tr>
+<td>LangServe endpoint latency degrades overall job time</td>
+<td>Medium</td>
+<td>Medium</td>
+<td>Add per-agent timeout of 60s; supervisor retries once before escalating to human</td>
+</tr>
+<tr>
+<td>Cost overruns from GPT-4 calls</td>
+<td>Medium</td>
+<td>Medium</td>
+<td>Default to GPT-4o-mini; allow model override per agent in config</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="assumptions-constraints-dependencies">Assumptions, Constraints, Dependencies<a class="headerlink" href="#assumptions-constraints-dependencies" title="Permanent link">&para;</a></h2>
+<h3 id="assumptions">Assumptions<a class="headerlink" href="#assumptions" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Users have a GitHub account and are comfortable with GitHub issues/PRs</li>
+<li>The target repository is accessible via the GitHub REST API (public or authenticated private)</li>
+<li>Users have an OpenAI or Anthropic API key</li>
+<li>LangSmith account is available (free tier is sufficient for v1)</li>
+</ul>
+<h3 id="constraints">Constraints<a class="headerlink" href="#constraints" title="Permanent link">&para;</a></h3>
+<ul>
+<li>v1.0 supports only Python-based repositories for codebase analysis</li>
+<li>Maximum job execution time: 10 minutes</li>
+<li>Maximum codebase size for vector indexing: 500MB</li>
+<li>Human-in-the-loop question limit per job: 2 questions (to prevent over-reliance on user)</li>
+</ul>
+<h3 id="external-dependencies">External Dependencies<a class="headerlink" href="#external-dependencies" title="Permanent link">&para;</a></h3>
+<ul>
+<li>GitHub REST API — for reading issues, PRs, and writing comments</li>
+<li>OpenAI / Anthropic API — LLM inference</li>
+<li>Tavily API — web search tool for the Web Search agent</li>
+<li>LangSmith API — observability and evaluation</li>
+<li>LangChain, LangGraph, LangServe, LangFlow — open-source packages (MIT licensed)</li>
+<li><strong>Redis</strong> — job queue (ARQ), Pub/Sub event bus for SSE fanout, and job status storage</li>
+<li><strong>ARQ</strong> — async Redis queue for distributed LangGraph job execution across worker processes; provides <code>Job.abort()</code> for cross-process kill, built-in status tracking, and automatic requeue on worker crash</li>
+</ul>
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.top", "toc.integrate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

@@ -1,0 +1,2680 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://hardmax71.github.io/agent-ops-dashboard/prd/PRD-002-3-interactions-and-a11y/">
+      
+      
+        <link rel="prev" href="../PRD-002-2-pages-and-wireframes/">
+      
+      
+        <link rel="next" href="../PRD-003-langgraph-orchestration/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.4">
+    
+    
+      
+        <title>Interaction Flows, State Machines & Accessibility - AgentOps Dashboard</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#prd-002-3-interactions-flows-accessibility" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="AgentOps Dashboard" class="md-header__button md-logo" aria-label="AgentOps Dashboard" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            AgentOps Dashboard
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Interaction Flows, State Machines & Accessibility
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="AgentOps Dashboard" class="md-nav__button md-logo" aria-label="AgentOps Dashboard" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    AgentOps Dashboard
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PRDs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    PRDs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-001-master-overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Master Overview
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-002-frontend-ux/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frontend & UX
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2_3" id="__nav_2_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frontend Detail
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Frontend Detail
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-002-1-design-system/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Design System & Components
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-002-2-pages-and-wireframes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pages & Wireframes
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interactions & Accessibility
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interactions & Accessibility
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-job-lifecycle-state-machine" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Job Lifecycle State Machine
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-modal-new-job" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Modal: New Job
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Modal: New Job">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#wireframe" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Wireframe
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#field-validation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Field Validation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#submit-sequence" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Submit Sequence
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#modal-states" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Modal States
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keyboard-behavior" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Keyboard Behavior
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-modal-redirect-agent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Modal: Redirect Agent
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Modal: Redirect Agent">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#wireframe_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Wireframe
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#submit-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Submit Flow
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-modal-kill-confirmation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Modal: Kill Confirmation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Modal: Kill Confirmation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#wireframe_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Wireframe
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#confirm-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Confirm Flow
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-hitl-answer-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. HITL Answer Flow
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. HITL Answer Flow">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#edge-cases" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Edge Cases
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-sse-reconnect-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. SSE Reconnect Flow
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-github-write-back-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. GitHub Write-Back Flow
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. GitHub Write-Back Flow">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#step-by-step" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step-by-Step
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sequence-diagram" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sequence Diagram
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#error-handling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Error Handling
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-keyboard-shortcuts-navigation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Keyboard Shortcuts &amp; Navigation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. Keyboard Shortcuts &amp; Navigation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#global-shortcuts-when-no-modal-is-open" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Global Shortcuts (when no modal is open)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tab-order-by-section" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tab Order by Section
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#focus-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Focus Management
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-aria-accessibility-map" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. ARIA &amp; Accessibility Map
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-animation-specs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Animation Specs
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-003-langgraph-orchestration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LangGraph Orchestration
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_5" id="__nav_2_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Orchestration Detail
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Orchestration Detail
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-003-1-event-pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Event Pipeline & Worker
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-003-2-supervisor-spec/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Supervisor Prompt & Routing
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-004-agent-layer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agent Layer
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_7" id="__nav_2_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agent Layer Detail
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Agent Layer Detail
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-004-1-agent-chains/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Full LCEL Chain Specs
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-004-2-codebase-index/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Codebase Vector Index
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-005-langsmith-observability/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LangSmith Observability
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_9" id="__nav_2_9_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LangSmith Detail
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    LangSmith Detail
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-005-1-langsmith-api-spec/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API & Integration Spec
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-006-data-validation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Validation
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-007-developer-tooling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Developer Tooling
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-012-backend-di/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backend & DI
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-008-authentication/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authentication
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_14" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_14" id="__nav_2_14_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Auth Detail
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_14_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_14">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Auth Detail
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-008-1-auth-impl-spec/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Implementation Spec
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-009-documentation-standards/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Documentation Standards
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-010-evaluation-framework/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Evaluation Framework
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-011-metrics-collection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Metrics Collection
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-013-testing-strategy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing Strategy & CI
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Plans
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Plans
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-001-1-goals-and-dod/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Goals & Definition of Done
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../plans/roadmap-v1/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roadmap v1 (precise)
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../plans/roadmap-v2/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roadmap v2 (general)
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--PLANNED"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="prd-002-3-interactions-flows-accessibility">PRD-002-3 — Interactions, Flows &amp; Accessibility<a class="headerlink" href="#prd-002-3-interactions-flows-accessibility" title="Permanent link">&para;</a></h1>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Document ID</td>
+<td>PRD-002-3</td>
+</tr>
+<tr>
+<td>Version</td>
+<td>1.0</td>
+</tr>
+<tr>
+<td>Status</td>
+<td>DRAFT</td>
+</tr>
+<tr>
+<td>Date</td>
+<td>March 2026</td>
+</tr>
+<tr>
+<td>Parent Doc</td>
+<td><a href="../PRD-002-frontend-ux/">PRD-002</a></td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Part of:</strong> <a href="../PRD-002-1-design-system/">PRD-002-1 Design System</a> ·
+<a href="../PRD-002-2-pages-and-wireframes/">PRD-002-2 Pages &amp; Wireframes</a></p>
+</blockquote>
+<hr />
+<h2 id="1-job-lifecycle-state-machine">1. Job Lifecycle State Machine<a class="headerlink" href="#1-job-lifecycle-state-machine" title="Permanent link">&para;</a></h2>
+<pre class="mermaid"><code>stateDiagram-v2
+    [*] --&gt; QUEUED : job created (POST /jobs 200)
+
+    QUEUED --&gt; RUNNING : job.started SSE
+    RUNNING --&gt; PAUSING : POST /jobs/{id}/pause 200
+    PAUSING --&gt; WAITING : graph.paused SSE
+    PAUSING --&gt; RUNNING : graph.resumed SSE
+    RUNNING --&gt; WAITING : graph.interrupt SSE
+    WAITING --&gt; RUNNING : POST /jobs/{id}/answer 200 + graph.resumed SSE
+    RUNNING --&gt; DONE : job.done SSE
+    RUNNING --&gt; FAILED : job.failed SSE
+    RUNNING --&gt; CANCELLED : POST /jobs/{id}/kill 200
+
+    DONE --&gt; [*]
+    FAILED --&gt; [*]
+    CANCELLED --&gt; [*]</code></pre>
+<p><strong>Terminal states:</strong> <code>DONE</code>, <code>FAILED</code>, <code>CANCELLED</code>.</p>
+<p><strong>Notes:</strong></p>
+<ul>
+<li><code>PAUSING</code> is a client-side-only optimistic state, set immediately on <code>POST /pause</code> 200 response.</li>
+<li><code>PAUSING → WAITING</code> occurs when the graph reaches the next supervisor boundary and emits <code>graph.paused</code>.</li>
+<li><code>PAUSING → RUNNING</code> occurs when pause is cancelled before the boundary (e.g., via <code>graph.resumed</code> if
+  the backend discards the pause flag — v1 edge case).</li>
+<li><code>WAITING → RUNNING</code> requires <strong>both</strong> a 200 from <code>POST /answer</code> and the subsequent <code>graph.resumed</code> SSE.
+  The transition is only applied once the SSE arrives; the 200 alone just moves the UI to a "sending…" state.</li>
+</ul>
+<hr />
+<h2 id="2-modal-new-job">2. Modal: New Job<a class="headerlink" href="#2-modal-new-job" title="Permanent link">&para;</a></h2>
+<h3 id="wireframe">Wireframe<a class="headerlink" href="#wireframe" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>╔════════════════════════════════════════════════════╗
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>║  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░  ║  ← blur backdrop
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>║  ┌────────────────────────────────────────────┐    ║
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>║  │  New Job                               [✕] │    ║
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>║  ├────────────────────────────────────────────┤    ║
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>║  │                                            │    ║
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>║  │  GitHub Issue URL *                        │    ║
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>║  │  ┌──────────────────────────────────────┐  │    ║
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>║  │  │ https://github.com/owner/repo/       │  │    ║
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>║  │  │ issues/123                           │  │    ║
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>║  │  └──────────────────────────────────────┘  │    ║
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>║  │                                            │    ║
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>║  │  Supervisor Notes  (optional)              │    ║
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>║  │  ┌──────────────────────────────────────┐  │    ║
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>║  │  │ Any context for the supervisor…      │  │    ║
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>║  │  │                                      │  │    ║
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>║  │  └──────────────────────────────────────┘  │    ║
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>║  │  max 500 chars                             │    ║
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>║  │                                            │    ║
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>║  │             [Cancel]  [Submit Job]         │    ║
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>║  └────────────────────────────────────────────┘    ║
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>╚════════════════════════════════════════════════════╝
+</code></pre></div>
+<h3 id="field-validation">Field Validation<a class="headerlink" href="#field-validation" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Condition</th>
+<th>Error message</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>issue_url</td>
+<td>Empty on submit</td>
+<td><code>"Required"</code></td>
+</tr>
+<tr>
+<td>issue_url</td>
+<td>Not a GitHub issue URL</td>
+<td><code>"Must be a GitHub issue URL (github.com/owner/repo/issues/N)"</code></td>
+</tr>
+<tr>
+<td>issue_url</td>
+<td>Network error</td>
+<td>Inline error banner: <code>"Failed to submit. Check your connection."</code></td>
+</tr>
+<tr>
+<td>notes</td>
+<td>&gt; 500 chars</td>
+<td>Textarea border turns red; submit button disabled</td>
+</tr>
+</tbody>
+</table>
+<p>Validation runs on blur for <code>issue_url</code> and live (on change) for the <code>notes</code> char count.</p>
+<h3 id="submit-sequence">Submit Sequence<a class="headerlink" href="#submit-sequence" title="Permanent link">&para;</a></h3>
+<pre class="mermaid"><code>sequenceDiagram
+    participant U as User
+    participant M as NewJobModal
+    participant API as POST /jobs
+    participant Q as Job Queue
+
+    U-&gt;&gt;M: Clicks "Submit Job"
+    M-&gt;&gt;M: Validate fields
+    M-&gt;&gt;API: POST /jobs { issue_url, supervisor_notes }
+    M-&gt;&gt;M: Enter submitting state (spinner)
+    API--&gt;&gt;M: 200 { job_id, status: "queued" }
+    M-&gt;&gt;M: Close modal
+    M-&gt;&gt;Q: Job card appears in sidebar (QUEUED)
+    Note over Q: SSE stream opens for job_id</code></pre>
+<p><strong>On error (non-200):</strong> Modal stays open. Inline error banner appears above the action buttons. Submit button returns to idle.</p>
+<h3 id="modal-states">Modal States<a class="headerlink" href="#modal-states" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>State</th>
+<th>Submit button</th>
+<th>Fields</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>idle</td>
+<td>"Submit Job" enabled</td>
+<td>Editable</td>
+</tr>
+<tr>
+<td>submitting</td>
+<td>Spinner + disabled</td>
+<td>Read-only</td>
+</tr>
+<tr>
+<td>error</td>
+<td>"Submit Job" enabled</td>
+<td>Editable</td>
+</tr>
+</tbody>
+</table>
+<h3 id="keyboard-behavior">Keyboard Behavior<a class="headerlink" href="#keyboard-behavior" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Tab</td>
+<td>URL input → Notes textarea → Submit → Cancel</td>
+</tr>
+<tr>
+<td>Enter</td>
+<td>Submits form (when focus on URL or Submit)</td>
+</tr>
+<tr>
+<td>Escape</td>
+<td>Closes modal (calls <code>onClose</code>)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="3-modal-redirect-agent">3. Modal: Redirect Agent<a class="headerlink" href="#3-modal-redirect-agent" title="Permanent link">&para;</a></h2>
+<h3 id="wireframe_1">Wireframe<a class="headerlink" href="#wireframe_1" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>┌────────────────────────────────────────────────┐
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>│  Redirect Supervisor                       [✕] │
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>├────────────────────────────────────────────────┤
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>│                                                │
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>│  New instruction for the supervisor agent:     │
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>│  ┌──────────────────────────────────────────┐  │
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>│  │ Focus only on the auth module and skip   │  │
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>│  │ the database layer investigation.        │  │
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>│  │                                          │  │
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>│  └──────────────────────────────────────────┘  │
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>│                                    147 / 500   │  ← live char counter
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>│                                                │
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>│                  [Cancel]  [Redirect]          │
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>└────────────────────────────────────────────────┘
+</code></pre></div>
+<ul>
+<li>Textarea: max 500 chars. Live counter shown bottom-right of textarea: <code>"{n} / 500"</code>.</li>
+<li>Counter turns red when &gt; 500 chars.</li>
+</ul>
+<h3 id="submit-flow">Submit Flow<a class="headerlink" href="#submit-flow" title="Permanent link">&para;</a></h3>
+<p>On <code>[Redirect]</code> click:</p>
+<ol>
+<li><code>POST /jobs/{id}/redirect</code> with <code>{ instruction: string }</code></li>
+<li>On 200: modal closes + toast <code>"Instruction sent"</code> (info variant) + job status remains RUNNING.</li>
+<li>On 422 / 500: modal stays open + inline error banner below textarea. "Redirect" button returns to idle.</li>
+</ol>
+<hr />
+<h2 id="4-modal-kill-confirmation">4. Modal: Kill Confirmation<a class="headerlink" href="#4-modal-kill-confirmation" title="Permanent link">&para;</a></h2>
+<h3 id="wireframe_2">Wireframe<a class="headerlink" href="#wireframe_2" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>┌────────────────────────────────────────────────┐
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>│  Kill Job?                                 [✕] │
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>├────────────────────────────────────────────────┤
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>│                                                │
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>│       ⚠                                        │
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>│                                                │
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>│       Kill this job?                           │
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>│                                                │
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>│       All agent execution will stop            │
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>│       immediately. This cannot be undone.      │
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>│                                                │
+<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>│               [Cancel]  [Kill Job]             │
+<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>│                                                │
+<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>└────────────────────────────────────────────────┘
+</code></pre></div>
+<p>"Kill Job" button is <code>destructive</code> variant (red).</p>
+<p><strong>Important:</strong> The Enter key does <strong>NOT</strong> submit this modal. The user must click "Kill Job" with the mouse or Space/Enter when the button has explicit keyboard focus. This prevents accidental destruction by rapid keyboard navigation.</p>
+<h3 id="confirm-flow">Confirm Flow<a class="headerlink" href="#confirm-flow" title="Permanent link">&para;</a></h3>
+<p>On <code>[Kill Job]</code> click:</p>
+<ol>
+<li><code>POST /jobs/{id}/kill</code></li>
+<li>On 200: modal closes + job status → <code>CANCELLED</code> + control bar hidden.</li>
+<li>On error: modal stays open + inline error. Button returns to idle.</li>
+</ol>
+<hr />
+<h2 id="5-hitl-answer-flow">5. HITL Answer Flow<a class="headerlink" href="#5-hitl-answer-flow" title="Permanent link">&para;</a></h2>
+<pre class="mermaid"><code>sequenceDiagram
+    participant SSE as SSE Stream
+    participant UI as Dashboard UI
+    participant U as User
+    participant API as POST /jobs/{id}/answer
+
+    SSE-&gt;&gt;UI: graph.interrupt { question, context }
+    UI-&gt;&gt;UI: Show QuestionCard (amber, pinned)
+    UI-&gt;&gt;UI: Set job status → WAITING
+    U-&gt;&gt;UI: Types answer in textarea
+    U-&gt;&gt;UI: Clicks "Continue →"
+    UI-&gt;&gt;API: POST /jobs/{id}/answer { answer }
+    UI-&gt;&gt;UI: QuestionCard enters spinner state ("Sending…")
+    API--&gt;&gt;UI: 200
+    SSE-&gt;&gt;UI: graph.resumed {}
+    UI-&gt;&gt;UI: QuestionCard fades out
+    UI-&gt;&gt;UI: Set job status → RUNNING
+    UI-&gt;&gt;UI: AgentCards resume streaming</code></pre>
+<h3 id="edge-cases">Edge Cases<a class="headerlink" href="#edge-cases" title="Permanent link">&para;</a></h3>
+<p><strong>POST /answer fails:</strong></p>
+<ul>
+<li>QuestionCard shows inline error below the textarea: <code>"Failed to send. Please try again."</code></li>
+<li>"Continue →" button returns to idle state.</li>
+<li>Textarea remains editable. User can retry.</li>
+</ul>
+<p><strong>HITL timeout (10 minutes with no answer):</strong></p>
+<ul>
+<li><code>job.failed</code> SSE arrives with <code>reason: "hitl_timeout"</code>.</li>
+<li>QuestionCard is replaced with an error state card:</li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>┌───────────────────────────────────────────────┐  ← red border
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>│  ✕  Session timed out.                        │
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>│                                               │
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>│  Restart the job to try again.                │
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>└───────────────────────────────────────────────┘
+</code></pre></div>
+<hr />
+<h2 id="6-sse-reconnect-flow">6. SSE Reconnect Flow<a class="headerlink" href="#6-sse-reconnect-flow" title="Permanent link">&para;</a></h2>
+<pre class="mermaid"><code>sequenceDiagram
+    participant B as Browser EventSource
+    participant UI as Dashboard UI
+    participant API as GET /stream
+
+    B-&gt;&gt;B: Connection drops
+    UI-&gt;&gt;UI: Show "Reconnecting…" indicator in workspace header
+    B-&gt;&gt;B: Wait 2 seconds (browser default retry)
+    B-&gt;&gt;API: GET /jobs/{id}/stream (Last-Event-ID: {last_id})
+    API--&gt;&gt;B: 200 — new SSE stream opened
+    B-&gt;&gt;UI: Stream continues
+    UI-&gt;&gt;UI: Hide "Reconnecting…" indicator
+
+    note over UI: v1: events emitted during disconnect are lost silently</code></pre>
+<p><strong>During disconnect:</strong> A subtle <code>"Reconnecting…"</code> label appears in the workspace header (replaces connection status pill or appears below the workspace title). Color: <code>--color-text-muted</code>.</p>
+<p><strong>After reconnect:</strong> Indicator disappears, stream continues from the current state.</p>
+<p><strong>Edge case — 401 on reconnect:</strong></p>
+<ul>
+<li><code>EventSource</code> receives 401 response.</li>
+<li>Frontend closes the <code>EventSource</code> and redirects to <code>/login</code>.</li>
+<li>This follows the token expiry handling described in PRD-008.</li>
+</ul>
+<hr />
+<h2 id="7-github-write-back-flow">7. GitHub Write-Back Flow<a class="headerlink" href="#7-github-write-back-flow" title="Permanent link">&para;</a></h2>
+<h3 id="step-by-step">Step-by-Step<a class="headerlink" href="#step-by-step" title="Permanent link">&para;</a></h3>
+<ol>
+<li>Job completes; Writer agent streams output to Zone 3.</li>
+<li>User reviews the GitHub comment draft in the textarea (editable).</li>
+<li>User optionally edits the comment text.</li>
+<li>User clicks <strong>"Post Comment to GitHub"</strong>.</li>
+<li>Frontend calls <code>POST /jobs/{id}/post-comment</code> with <code>{ comment: string }</code>.</li>
+<li>Button enters loading state (<code>"⟳ Posting…"</code>, disabled).</li>
+<li>Backend calls GitHub API using stored OAuth token.</li>
+<li>Backend returns <code>{ comment_url: string }</code>.</li>
+<li>Button replaced with <code>"✓ Posted · View on GitHub →"</code> (external link).</li>
+</ol>
+<h3 id="sequence-diagram">Sequence Diagram<a class="headerlink" href="#sequence-diagram" title="Permanent link">&para;</a></h3>
+<pre class="mermaid"><code>sequenceDiagram
+    participant U as User
+    participant UI as Output Panel
+    participant API as POST /post-comment
+    participant GH as GitHub API
+
+    U-&gt;&gt;UI: Reviews + optionally edits comment
+    U-&gt;&gt;UI: Clicks "Post Comment to GitHub"
+    UI-&gt;&gt;API: POST /jobs/{id}/post-comment { comment }
+    UI-&gt;&gt;UI: Button → "⟳ Posting…" (disabled)
+    API-&gt;&gt;GH: POST /repos/{owner}/{repo}/issues/{n}/comments
+    GH--&gt;&gt;API: 201 { html_url }
+    API--&gt;&gt;UI: 200 { comment_url }
+    UI-&gt;&gt;UI: Button → "✓ Posted · View on GitHub →"</code></pre>
+<h3 id="error-handling">Error Handling<a class="headerlink" href="#error-handling" title="Permanent link">&para;</a></h3>
+<p>If <code>POST /post-comment</code> returns a non-200:</p>
+<ul>
+<li>Button returns to idle (<code>"Post Comment to GitHub"</code>).</li>
+<li>Toast notification: <code>"Failed to post. Check GitHub connection."</code> (error variant).</li>
+<li>Comment textarea remains editable; user can retry.</li>
+</ul>
+<hr />
+<h2 id="8-keyboard-shortcuts-navigation">8. Keyboard Shortcuts &amp; Navigation<a class="headerlink" href="#8-keyboard-shortcuts-navigation" title="Permanent link">&para;</a></h2>
+<h3 id="global-shortcuts-when-no-modal-is-open">Global Shortcuts (when no modal is open)<a class="headerlink" href="#global-shortcuts-when-no-modal-is-open" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>N</code></td>
+<td>Open New Job modal</td>
+</tr>
+<tr>
+<td><code>Escape</code></td>
+<td>Close open modal or dropdown</td>
+</tr>
+<tr>
+<td><code>P</code></td>
+<td>Pause / Resume active job (if one selected and RUNNING or PAUSING)</td>
+</tr>
+<tr>
+<td><code>K</code></td>
+<td>Open Kill Confirmation modal (if active job selected)</td>
+</tr>
+<tr>
+<td><code>↑</code> / <code>↓</code></td>
+<td>Navigate job list (moves focus and selection)</td>
+</tr>
+<tr>
+<td><code>Enter</code></td>
+<td>Select focused job card (loads in workspace)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="tab-order-by-section">Tab Order by Section<a class="headerlink" href="#tab-order-by-section" title="Permanent link">&para;</a></h3>
+<p><strong>Login page:</strong></p>
+<ol>
+<li>"Continue with GitHub" button</li>
+</ol>
+<p><strong>Dashboard — Zone 1 (Job Sidebar):</strong></p>
+<ol>
+<li>Status filter dropdown</li>
+<li>Repo filter dropdown</li>
+<li>Sort toggle</li>
+<li>"+ New Job" button</li>
+<li>Job cards (top to bottom)</li>
+</ol>
+<p><strong>Dashboard — Zone 2 (Workspace), Running state:</strong></p>
+<ol>
+<li>Redirect button</li>
+<li>Pause / Resume button</li>
+<li>Kill button</li>
+</ol>
+<p><strong>Dashboard — Zone 2 (Workspace), HITL state:</strong></p>
+<ol>
+<li>QuestionCard textarea</li>
+<li>"Continue →" button</li>
+</ol>
+<p><strong>Dashboard — Zone 3 (Output Panel), Done state:</strong></p>
+<ol>
+<li>GitHub Comment textarea</li>
+<li>Preview tab toggle</li>
+<li>"Post Comment" button</li>
+<li>"Create Issue" button</li>
+<li>"Copy Report" button</li>
+<li>"View in LangSmith" link</li>
+</ol>
+<p><strong>Settings page:</strong></p>
+<ol>
+<li>"Disconnect GitHub" / "Connect GitHub" button</li>
+<li>"Log out" button</li>
+</ol>
+<h3 id="focus-management">Focus Management<a class="headerlink" href="#focus-management" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Event</th>
+<th>Focus behavior</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Modal opens</td>
+<td>Focus moves to the first focusable element inside the modal</td>
+</tr>
+<tr>
+<td>Modal closes</td>
+<td>Focus returns to the element that triggered the modal</td>
+</tr>
+<tr>
+<td>Job card selected via keyboard</td>
+<td>Focus moves to the Redirect button in the workspace header</td>
+</tr>
+<tr>
+<td>QuestionCard appears</td>
+<td>Focus moves to the QuestionCard textarea (<code>aria-live="assertive"</code> announces)</td>
+</tr>
+<tr>
+<td>QuestionCard dismissed</td>
+<td>Focus returns to the workspace header</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="9-aria-accessibility-map">9. ARIA &amp; Accessibility Map<a class="headerlink" href="#9-aria-accessibility-map" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Role</th>
+<th>aria-label / aria-labelledby</th>
+<th>aria-live</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Job Queue Sidebar list</td>
+<td><code>list</code></td>
+<td><code>aria-label="Job queue"</code></td>
+<td>—</td>
+<td></td>
+</tr>
+<tr>
+<td>Job card</td>
+<td><code>listitem</code></td>
+<td><code>aria-label="{status}: {issue title}"</code></td>
+<td>—</td>
+<td>Status must be in label, not just color</td>
+</tr>
+<tr>
+<td>Selected job card</td>
+<td><code>listitem</code></td>
+<td>+ <code>aria-selected="true"</code></td>
+<td>—</td>
+<td></td>
+</tr>
+<tr>
+<td>Live workspace</td>
+<td><code>region</code></td>
+<td><code>aria-label="Live workspace"</code></td>
+<td><code>polite</code></td>
+<td>Agent output tokens appended to this region</td>
+</tr>
+<tr>
+<td>Agent card text</td>
+<td>—</td>
+<td>—</td>
+<td>inherited</td>
+<td>Tokens appended to parent live region; rate-throttled (max 1 announce/500ms)</td>
+</tr>
+<tr>
+<td>QuestionCard</td>
+<td><code>alertdialog</code></td>
+<td><code>aria-labelledby="question-title"</code></td>
+<td><code>assertive</code></td>
+<td>Urgent — interrupts current announcement</td>
+</tr>
+<tr>
+<td>QuestionCard textarea</td>
+<td><code>textbox</code></td>
+<td><code>aria-label="Your answer"</code></td>
+<td>—</td>
+<td><code>aria-required="true"</code></td>
+</tr>
+<tr>
+<td>StatusBadge</td>
+<td>—</td>
+<td><code>aria-label="{STATUS}"</code></td>
+<td>—</td>
+<td>Color alone is not sufficient for a11y</td>
+</tr>
+<tr>
+<td>Execution timeline</td>
+<td><code>list</code></td>
+<td><code>aria-label="Execution timeline"</code></td>
+<td><code>polite</code></td>
+<td>Node state changes announced</td>
+</tr>
+<tr>
+<td>Timeline node</td>
+<td><code>listitem</code></td>
+<td><code>aria-label="{node_name}: {state}"</code></td>
+<td>—</td>
+<td></td>
+</tr>
+<tr>
+<td>Modal (all)</td>
+<td><code>dialog</code></td>
+<td><code>aria-modal="true"</code> + <code>aria-labelledby</code></td>
+<td>—</td>
+<td>Focus trapped while open</td>
+</tr>
+<tr>
+<td>Kill modal</td>
+<td><code>alertdialog</code></td>
+<td><code>aria-describedby="kill-warning-text"</code></td>
+<td>—</td>
+<td><code>id="kill-warning-text"</code> on the destructive subtext</td>
+</tr>
+<tr>
+<td>Output Panel</td>
+<td><code>region</code></td>
+<td><code>aria-label="Output panel"</code></td>
+<td><code>polite</code></td>
+<td>Section content updates announced</td>
+</tr>
+<tr>
+<td>Toast container</td>
+<td><code>log</code></td>
+<td><code>aria-label="Notifications"</code></td>
+<td><code>polite</code></td>
+<td>Each toast appended as a <code>listitem</code></td>
+</tr>
+<tr>
+<td>Error toast</td>
+<td>—</td>
+<td>—</td>
+<td><code>assertive</code></td>
+<td>Override for error severity</td>
+</tr>
+<tr>
+<td>Topbar connection pill</td>
+<td><code>status</code></td>
+<td><code>aria-label="Connection status: {state}"</code></td>
+<td><code>polite</code></td>
+<td>Announced on status change</td>
+</tr>
+<tr>
+<td>Avatar dropdown</td>
+<td><code>menu</code></td>
+<td><code>aria-label="User menu"</code></td>
+<td>—</td>
+<td><code>menuitem</code> role for each item</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="10-animation-specs">10. Animation Specs<a class="headerlink" href="#10-animation-specs" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Trigger</th>
+<th>Duration</th>
+<th>Easing</th>
+<th>CSS Property Animated</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>card-appear</td>
+<td>Job card added to list</td>
+<td>200ms</td>
+<td>ease-out</td>
+<td><code>opacity</code> 0→1, <code>translateY</code> 8px→0</td>
+<td>Triggered on mount</td>
+</tr>
+<tr>
+<td>agent-spawn</td>
+<td><code>agent.spawned</code> SSE</td>
+<td>300ms</td>
+<td>ease-out</td>
+<td><code>opacity</code> 0→1, <code>translateY</code> 12px→0</td>
+<td>AgentCard entrance</td>
+</tr>
+<tr>
+<td>question-pulse</td>
+<td>QuestionCard rendered</td>
+<td>2s</td>
+<td>ease-in-out</td>
+<td><code>box-shadow</code> amber glow (infinite)</td>
+<td>Stops when QuestionCard is dismissed</td>
+</tr>
+<tr>
+<td>status-pulse</td>
+<td>RUNNING or WAITING badge</td>
+<td>1.5s</td>
+<td>ease-in-out</td>
+<td><code>opacity</code> 0.5→1 (infinite)</td>
+<td>On dot element only</td>
+</tr>
+<tr>
+<td>skeleton-shimmer</td>
+<td>SkeletonBlock mounted</td>
+<td>1.5s</td>
+<td>linear</td>
+<td><code>background-position</code> (infinite)</td>
+<td>Gradient sweep left-to-right</td>
+</tr>
+<tr>
+<td>stream-cursor</td>
+<td>AgentCard in running state</td>
+<td>0.7s</td>
+<td>step-start</td>
+<td><code>opacity</code> 1→0 (infinite)</td>
+<td>Cursor <code>▌</code> blink effect</td>
+</tr>
+<tr>
+<td>modal-in</td>
+<td>Modal opened</td>
+<td>150ms</td>
+<td>ease-out</td>
+<td><code>opacity</code> + <code>scale</code> 0.96→1</td>
+<td>Backdrop fades simultaneously</td>
+</tr>
+<tr>
+<td>toast-in</td>
+<td>Toast shown</td>
+<td>250ms</td>
+<td>spring</td>
+<td><code>translateY</code> + <code>opacity</code></td>
+<td>Slides up from bottom-right</td>
+</tr>
+<tr>
+<td>card-remove</td>
+<td>Job card removed from list</td>
+<td>150ms</td>
+<td>ease-in</td>
+<td><code>opacity</code> 1→0, <code>translateY</code> 0→-4px</td>
+<td>Before DOM removal</td>
+</tr>
+<tr>
+<td>question-fade-out</td>
+<td>QuestionCard dismissed</td>
+<td>200ms</td>
+<td>ease-in</td>
+<td><code>opacity</code> 1→0, <code>translateY</code> 0→-8px</td>
+<td>After <code>graph.resumed</code> SSE</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Reduced motion:</strong> All animations respect <code>prefers-reduced-motion: reduce</code>. When set, durations drop to ≤ 1ms (effectively instant). Infinite animations (pulse, shimmer, cursor) are disabled entirely — replaced with static visual state.</p>
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.top", "toc.integrate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

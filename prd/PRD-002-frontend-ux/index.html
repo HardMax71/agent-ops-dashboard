@@ -1,0 +1,2719 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://hardmax71.github.io/agent-ops-dashboard/prd/PRD-002-frontend-ux/">
+      
+      
+        <link rel="prev" href="../PRD-001-master-overview/">
+      
+      
+        <link rel="next" href="../PRD-002-1-design-system/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.4">
+    
+    
+      
+        <title>Frontend & UX - AgentOps Dashboard</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#prd-002-frontend-user-experience" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="AgentOps Dashboard" class="md-header__button md-logo" aria-label="AgentOps Dashboard" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            AgentOps Dashboard
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Frontend & UX
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="AgentOps Dashboard" class="md-nav__button md-logo" aria-label="AgentOps Dashboard" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    AgentOps Dashboard
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PRDs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    PRDs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-001-master-overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Master Overview
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frontend & UX
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frontend & UX
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#design-principles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Design Principles
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#application-layout" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Application Layout
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#zone-1-job-queue-sidebar" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Zone 1 — Job Queue Sidebar
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Zone 1 — Job Queue Sidebar">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#purpose" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Purpose
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#job-card-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Job Card Structure
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#status-definitions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Status Definitions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#interactions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Interactions
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#zone-2-live-workspace" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Zone 2 — Live Workspace
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Zone 2 — Live Workspace">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#purpose_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Purpose
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#workspace-header" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Workspace Header
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#agent-cards" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Agent Cards
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#agent-question-cards" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Agent Question Cards
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#execution-timeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Execution Timeline
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#zone-3-output-panel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Zone 3 — Output Panel
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Zone 3 — Output Panel">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#purpose_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Purpose
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#structured-report-card" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Structured Report Card
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#github-comment-draft" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GitHub Comment Draft
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ticket-draft" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Ticket Draft
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#action-buttons" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Action Buttons
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#streaming-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Streaming Architecture
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Streaming Architecture">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#sse-event-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SSE Event Types
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#concurrent-connections-multiple-tabs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Concurrent connections (multiple tabs)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#frontend-state-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Frontend State Management
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#github-write-back-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GitHub Write-Back Flow
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#settings-page" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Settings Page
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Settings Page">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#github-account-panel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GitHub Account Panel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#session-panel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Session Panel
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#component-tree" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Component Tree
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tech-stack" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tech Stack
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#non-functional-requirements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Non-Functional Requirements
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_3" id="__nav_2_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frontend Detail
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Frontend Detail
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-002-1-design-system/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Design System & Components
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-002-2-pages-and-wireframes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pages & Wireframes
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-002-3-interactions-and-a11y/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interactions & Accessibility
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-003-langgraph-orchestration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LangGraph Orchestration
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_5" id="__nav_2_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Orchestration Detail
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Orchestration Detail
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-003-1-event-pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Event Pipeline & Worker
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-003-2-supervisor-spec/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Supervisor Prompt & Routing
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-004-agent-layer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agent Layer
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_7" id="__nav_2_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agent Layer Detail
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Agent Layer Detail
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-004-1-agent-chains/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Full LCEL Chain Specs
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-004-2-codebase-index/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Codebase Vector Index
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-005-langsmith-observability/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LangSmith Observability
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_9" id="__nav_2_9_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LangSmith Detail
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    LangSmith Detail
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-005-1-langsmith-api-spec/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API & Integration Spec
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-006-data-validation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Validation
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-007-developer-tooling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Developer Tooling
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-012-backend-di/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backend & DI
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-008-authentication/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authentication
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_14" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_14" id="__nav_2_14_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Auth Detail
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_14_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_14">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Auth Detail
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-008-1-auth-impl-spec/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Implementation Spec
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-009-documentation-standards/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Documentation Standards
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-010-evaluation-framework/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Evaluation Framework
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-011-metrics-collection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Metrics Collection
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-013-testing-strategy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing Strategy & CI
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Plans
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Plans
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-001-1-goals-and-dod/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Goals & Definition of Done
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../plans/roadmap-v1/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roadmap v1 (precise)
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../plans/roadmap-v2/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roadmap v2 (general)
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--PLANNED"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="prd-002-frontend-user-experience">PRD-002 — Frontend &amp; User Experience<a class="headerlink" href="#prd-002-frontend-user-experience" title="Permanent link">&para;</a></h1>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Document ID</td>
+<td>PRD-002</td>
+</tr>
+<tr>
+<td>Version</td>
+<td>1.0</td>
+</tr>
+<tr>
+<td>Status</td>
+<td>DRAFT</td>
+</tr>
+<tr>
+<td>Date</td>
+<td>March 2026</td>
+</tr>
+<tr>
+<td>Parent Doc</td>
+<td><a href="../PRD-001-master-overview/">PRD-001</a></td>
+</tr>
+<tr>
+<td>Related Docs</td>
+<td><a href="../PRD-003-langgraph-orchestration/">PRD-003</a> (Human-in-the-Loop), <a href="../PRD-005-langsmith-observability/">PRD-005</a> (LangSmith)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
+<p>The AgentOps Dashboard frontend is a <strong>Jira-inspired single-page application</strong> that makes multi-agent AI execution
+visible, interactive, and controllable in real time. The UI is intentionally modeled after issue tracking tools because:</p>
+<ul>
+<li>Developers already understand the mental model (jobs as tickets, agents as assignees, outputs as comments)</li>
+<li>Jira-style layouts communicate status, priority, and progress at a glance</li>
+<li>The ticket metaphor maps cleanly onto LangGraph's job lifecycle (queued → running → waiting → done)</li>
+</ul>
+<p>The frontend connects to the FastAPI backend via <strong>Server-Sent Events (SSE)</strong> for live streaming and standard REST calls
+for user actions (submit job, answer agent question, pause/kill agent).</p>
+<blockquote>
+<p><strong>Detailed specs:</strong> <a href="../PRD-002-1-design-system/">Design System</a> ·
+<a href="../PRD-002-2-pages-and-wireframes/">Pages &amp; Wireframes</a> ·
+<a href="../PRD-002-3-interactions-and-a11y/">Interactions &amp; A11y</a></p>
+</blockquote>
+<hr />
+<h2 id="design-principles">Design Principles<a class="headerlink" href="#design-principles" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Principle</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Live by default</strong></td>
+<td>Every job view is streaming. There is no "refresh" — the UI updates as agents execute.</td>
+</tr>
+<tr>
+<td><strong>Trust through transparency</strong></td>
+<td>Users see every agent's reasoning, not just the final answer. Opacity kills trust in AI systems.</td>
+</tr>
+<tr>
+<td><strong>Human always in control</strong></td>
+<td>Pause, redirect, and kill controls are always visible. Agents cannot take irreversible actions (GitHub write-back) without explicit user approval.</td>
+</tr>
+<tr>
+<td><strong>Familiar, not novel</strong></td>
+<td>The Jira mental model is intentional. Developers should feel oriented immediately, not confronted with a new paradigm.</td>
+</tr>
+<tr>
+<td><strong>Progressive disclosure</strong></td>
+<td>High-level status in the job list; full detail in the workspace; raw traces via LangSmith deep-link. Not everything needs to be visible at once.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="application-layout">Application Layout<a class="headerlink" href="#application-layout" title="Permanent link">&para;</a></h2>
+<p>The application is a three-zone layout, always visible simultaneously on desktop (≥1280px wide):</p>
+<table>
+<thead>
+<tr>
+<th>Zone 1 — Job Queue (25%)</th>
+<th>Zone 2 — Live Workspace (50%)</th>
+<th>Zone 3 — Output Panel (25%)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ticket cards with statuses</td>
+<td>Agent cards streaming in real time</td>
+<td>Final triage report</td>
+</tr>
+<tr>
+<td>Filter bar</td>
+<td>Agent question cards (amber, blocking)</td>
+<td>GitHub comment draft</td>
+</tr>
+<tr>
+<td>New Job button</td>
+<td>Execution timeline</td>
+<td>Ticket draft + Post to GitHub</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>View in LangSmith link</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="zone-1-job-queue-sidebar">Zone 1 — Job Queue Sidebar<a class="headerlink" href="#zone-1-job-queue-sidebar" title="Permanent link">&para;</a></h2>
+<h3 id="purpose">Purpose<a class="headerlink" href="#purpose" title="Permanent link">&para;</a></h3>
+<p>Displays all submitted triage jobs as ticket cards, analogous to Jira's issue list. Clicking a job loads it in Zone 2
+and 3.</p>
+<h3 id="job-card-structure">Job Card Structure<a class="headerlink" href="#job-card-structure" title="Permanent link">&para;</a></h3>
+<p>Each card shows:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>┌─────────────────────────────────────────┐
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>│ ● RUNNING                    #1042      │
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>│ Auth token expiry causes 500 on /api/me │
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>│ github.com/org/repo                     │
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>│ Submitted 4 min ago    3 agents active  │
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>└─────────────────────────────────────────┘
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Status badge</td>
+<td>Color-coded: QUEUED (gray), RUNNING (blue, animated), WAITING (amber — needs human input), DONE (green), FAILED (red)</td>
+</tr>
+<tr>
+<td>Issue title</td>
+<td>Truncated GitHub issue title</td>
+</tr>
+<tr>
+<td>Repository</td>
+<td><code>org/repo</code> short form</td>
+</tr>
+<tr>
+<td>Timestamp</td>
+<td>Relative time since submission</td>
+</tr>
+<tr>
+<td>Active agents count</td>
+<td>Only shown when RUNNING</td>
+</tr>
+</tbody>
+</table>
+<h3 id="status-definitions">Status Definitions<a class="headerlink" href="#status-definitions" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Status</th>
+<th>LangGraph State</th>
+<th>Color</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>QUEUED</td>
+<td>Thread created, not started</td>
+<td>Gray</td>
+<td>Job submitted, waiting for resources</td>
+</tr>
+<tr>
+<td>RUNNING</td>
+<td>Graph executing</td>
+<td>Blue (pulse animation)</td>
+<td>At least one agent node is active</td>
+</tr>
+<tr>
+<td>PAUSING</td>
+<td>Pause flag set, not yet reached supervisor boundary</td>
+<td>Blue (static)</td>
+<td>Pause requested — waiting for current supervisor iteration to complete</td>
+</tr>
+<tr>
+<td>WAITING</td>
+<td><code>interrupt()</code> fired</td>
+<td>Amber (pulse)</td>
+<td>Graph paused — user answer required</td>
+</tr>
+<tr>
+<td>DONE</td>
+<td>Graph reached END node</td>
+<td>Green</td>
+<td>All outputs produced</td>
+</tr>
+<tr>
+<td>FAILED</td>
+<td>Unhandled exception</td>
+<td>Red</td>
+<td>Job errored; LangSmith trace available</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>PAUSING is a <strong>client-side-only</strong> status: set optimistically on <code>POST /jobs/{id}/pause</code> 200
+response; cleared when a <code>graph.paused</code> SSE event arrives (transitions to WAITING) or a
+<code>graph.resumed</code> event arrives (transitions back to RUNNING, e.g. if pause was cancelled).</p>
+</blockquote>
+<h3 id="interactions">Interactions<a class="headerlink" href="#interactions" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Click job card</strong> → loads workspace in Zone 2/3</li>
+<li><strong>New Job button</strong> → opens a modal: paste GitHub issue URL, optional notes to supervisor, submit</li>
+<li><strong>Filter bar</strong> (top of sidebar): filter by status, repository, or date</li>
+</ul>
+<hr />
+<h2 id="zone-2-live-workspace">Zone 2 — Live Workspace<a class="headerlink" href="#zone-2-live-workspace" title="Permanent link">&para;</a></h2>
+<h3 id="purpose_1">Purpose<a class="headerlink" href="#purpose_1" title="Permanent link">&para;</a></h3>
+<p>The center panel is the heart of the product. It shows the active job's execution in real time: each agent's activity,
+reasoning, tool calls, and outputs stream in as they happen. This is where the Jira analogy extends: the workspace is
+like a Jira ticket that writes itself, section by section, as agents work.</p>
+<h3 id="workspace-header">Workspace Header<a class="headerlink" href="#workspace-header" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>┌────────────────────────────────────────────────────────────────┐
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>│  #1042  Auth token expiry causes 500 on /api/me                │
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>│  github.com/org/repo · Opened by @user · 2 hours ago          │
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>│                        [↪ Redirect]  [⏸ Pause]  [✕ Kill]  │
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>└────────────────────────────────────────────────────────────────┘
+</code></pre></div>
+<h3 id="agent-cards">Agent Cards<a class="headerlink" href="#agent-cards" title="Permanent link">&para;</a></h3>
+<p>Each active or completed agent gets an <strong>Agent Card</strong> in the workspace. Cards appear as agents are spawned and fill in
+as they execute:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>┌────────────────────────────────────────────────────────────────┐
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>│  🔍  INVESTIGATOR AGENT                    ● DONE  (12s)      │
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>├────────────────────────────────────────────────────────────────┤
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>│  Reading issue body...                                         │
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>│  Identified error: HTTP 500 on authenticated endpoint          │
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>│  Hypothesis forming: likely JWT validation or middleware issue │
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>│                                                                │
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>│  → Passed to: Codebase Searcher, Web Search Agent             │
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>└────────────────────────────────────────────────────────────────┘
+</code></pre></div>
+<p>Agent Card states:</p>
+<table>
+<thead>
+<tr>
+<th>State</th>
+<th>Visual</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Spawning</td>
+<td>Card fades in with a shimmer skeleton</td>
+</tr>
+<tr>
+<td>Running</td>
+<td>Animated "typing" indicator; text streams in token by token</td>
+</tr>
+<tr>
+<td>Waiting on tool</td>
+<td>Shows tool name: <code>🔧 Searching codebase for "JWT middleware"...</code></td>
+</tr>
+<tr>
+<td>Done</td>
+<td>Green checkmark; elapsed time shown</td>
+</tr>
+<tr>
+<td>Error</td>
+<td>Red border; error message; link to LangSmith trace</td>
+</tr>
+</tbody>
+</table>
+<h3 id="agent-question-cards">Agent Question Cards<a class="headerlink" href="#agent-question-cards" title="Permanent link">&para;</a></h3>
+<p>When the supervisor decides to ask the user a question, a <strong>question card</strong> appears above all other agents, with amber
+styling to communicate urgency. The entire graph is paused until the user responds.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>┌────────────────────────────────────────────────────────────────┐
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>│  ⚠  SUPERVISOR NEEDS YOUR INPUT               ● WAITING       │
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>├────────────────────────────────────────────────────────────────┤
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>│  The error appears in two separate code paths:                 │
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>│                                                                │
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>│  (A) auth/middleware.py — JWT token validation                 │
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>│  (B) db/session.py — Database connection pooling               │
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>│                                                                │
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>│  Which code path should agents prioritize for deep analysis?   │
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>│                                                                │
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>│  ┌──────────────────────────────────────────────────────────┐ │
+<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>│  │ Type your answer here...                                  │ │
+<a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a>│  └──────────────────────────────────────────────────────────┘ │
+<a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a>│                                           [Continue →]         │
+<a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a>└────────────────────────────────────────────────────────────────┘
+</code></pre></div>
+<p>Full specification in <strong><a href="../PRD-003-langgraph-orchestration/">PRD-003</a></strong>.</p>
+<h3 id="execution-timeline">Execution Timeline<a class="headerlink" href="#execution-timeline" title="Permanent link">&para;</a></h3>
+<p>Below the agent cards, a compact horizontal timeline shows the sequence of node executions:</p>
+<pre class="mermaid"><code>flowchart LR
+    S([START]) --&gt; INV["investigator\n✓ 12s"]
+    INV --&gt; CS["codebase_search\n✓ 18s"]
+    CS --&gt; HI["⚠ human_input\n● waiting"]
+    HI -.-&gt; WS["web_search\n..."]
+    WS -.-&gt; CRIT["critic\n..."]
+    CRIT -.-&gt; WR["writer\n..."]
+    WR -.-&gt; E([END])</code></pre>
+<p>This is the most direct visualization of the LangGraph graph state — nodes light up as they complete.</p>
+<hr />
+<h2 id="zone-3-output-panel">Zone 3 — Output Panel<a class="headerlink" href="#zone-3-output-panel" title="Permanent link">&para;</a></h2>
+<h3 id="purpose_2">Purpose<a class="headerlink" href="#purpose_2" title="Permanent link">&para;</a></h3>
+<p>The right panel accumulates the final structured outputs as the Writer agent produces them. Content is editable before
+any GitHub write-back occurs.</p>
+<h3 id="structured-report-card">Structured Report Card<a class="headerlink" href="#structured-report-card" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>TRIAGE REPORT
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>Severity:    🔴 HIGH
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>Category:    Authentication / Token Handling
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>Confidence:  87%
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>Root Cause:
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>  JWT expiry check in auth/middleware.py:L142 does not
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>  account for timezone offset. Token appears valid locally
+<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>  but fails on UTC server time.
+<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a>
+<a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a>Relevant Files:
+<a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a>  · auth/middleware.py (lines 138–155)
+<a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a>  · tests/test_auth.py (missing expiry edge case)
+<a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a>  · config/jwt_settings.py
+<a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a>
+<a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a>Similar Past Issues:
+<a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a>  · #891 — Fixed 2024-11 (same root cause, different endpoint)
+</code></pre></div>
+<h3 id="github-comment-draft">GitHub Comment Draft<a class="headerlink" href="#github-comment-draft" title="Permanent link">&para;</a></h3>
+<p>A text area, pre-populated by the Writer agent, editable by the user:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="gu">## 🤖 AgentOps Triage — Issue #1042</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="gs">**Severity:**</span> High
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="gs">**Root Cause:**</span> JWT timezone handling bug in <span class="sb">`auth/middleware.py:142`</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>The token expiry check uses local time instead of UTC...
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>[full comment text]
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>
+<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>---
+<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="ge">*Triaged by AgentOps Dashboard · [View full trace](#)*</span>
+</code></pre></div>
+<h3 id="ticket-draft">Ticket Draft<a class="headerlink" href="#ticket-draft" title="Permanent link">&para;</a></h3>
+<p>A structured form (also pre-filled by Writer agent):</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Title</td>
+<td><code>[Bug] JWT expiry fails on UTC server — auth/middleware.py:142</code></td>
+</tr>
+<tr>
+<td>Labels</td>
+<td><code>bug</code>, <code>authentication</code>, <code>high-priority</code></td>
+</tr>
+<tr>
+<td>Assignee suggestion</td>
+<td><code>@backend-team</code></td>
+</tr>
+<tr>
+<td>Effort estimate</td>
+<td><code>M (2–4 hours)</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="action-buttons">Action Buttons<a class="headerlink" href="#action-buttons" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Post Comment to GitHub</strong> — posts the comment draft to the original issue (requires GitHub auth)</li>
+<li><strong>Create GitHub Issue</strong> — creates a new ticket with the ticket draft fields</li>
+<li><strong>Copy Report</strong> — copies the structured report as markdown</li>
+<li><strong>View in LangSmith</strong> — deep-link to the full job trace in LangSmith (
+  see <a href="../PRD-005-langsmith-observability/">PRD-005</a>)</li>
+</ul>
+<hr />
+<h2 id="streaming-architecture">Streaming Architecture<a class="headerlink" href="#streaming-architecture" title="Permanent link">&para;</a></h2>
+<h3 id="sse-event-types">SSE Event Types<a class="headerlink" href="#sse-event-types" title="Permanent link">&para;</a></h3>
+<p>The FastAPI backend emits the following event types over the SSE stream. Every
+message is emitted with an SSE <code>id:</code> field set to a per-job monotonically
+incrementing integer (e.g. <code>id: 42</code>). On reconnect the browser sends this value
+as the <code>Last-Event-ID</code> header automatically. <strong>v1 behavior:</strong> the backend
+reconnects the stream but does not replay missed events — Redis Pub/Sub has no
+message history, so events emitted during the disconnect window are silently
+lost. Gapless resume (e.g., via Redis Streams or a DB event log) is a v2
+concern.
+See <a href="../PRD-008-authentication/#token-expiry-during-an-active-stream">PRD-008 §Token Expiry During an Active Stream</a> for
+the token-expiry
+reconnect flow.</p>
+<table>
+<thead>
+<tr>
+<th>Event</th>
+<th>Payload</th>
+<th>Frontend Action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>job.started</code></td>
+<td><code>{ job_id, issue_url, issue_title }</code></td>
+<td>Create job card, open workspace</td>
+</tr>
+<tr>
+<td><code>agent.spawned</code></td>
+<td><code>{ agent_name, agent_id }</code></td>
+<td>Create new agent card with skeleton</td>
+</tr>
+<tr>
+<td><code>agent.token</code></td>
+<td><code>{ agent_id, token }</code></td>
+<td>Append token to agent card text</td>
+</tr>
+<tr>
+<td><code>agent.tool_call</code></td>
+<td><code>{ agent_id, tool_name, input }</code></td>
+<td>Show tool indicator on agent card</td>
+</tr>
+<tr>
+<td><code>agent.tool_result</code></td>
+<td><code>{ agent_id, tool_name, result_summary }</code></td>
+<td>Update tool indicator to done</td>
+</tr>
+<tr>
+<td><code>agent.done</code></td>
+<td><code>{ agent_id, elapsed_ms }</code></td>
+<td>Mark agent card as done with time</td>
+</tr>
+<tr>
+<td><code>graph.interrupt</code></td>
+<td><code>{ question, context }</code></td>
+<td>Show question card, amber status</td>
+</tr>
+<tr>
+<td><code>graph.resumed</code></td>
+<td><code>{}</code></td>
+<td>Remove question card, resume status</td>
+</tr>
+<tr>
+<td><code>graph.node_complete</code></td>
+<td><code>{ node_name }</code></td>
+<td>Update timeline</td>
+</tr>
+<tr>
+<td><code>output.token</code></td>
+<td><code>{ section, token }</code></td>
+<td>Stream into output panel section</td>
+</tr>
+<tr>
+<td><code>output.section_done</code></td>
+<td><code>{ section }</code></td>
+<td>Enable edit/copy controls for that section</td>
+</tr>
+<tr>
+<td><code>job.done</code></td>
+<td><code>{ report, comment_draft, ticket_draft }</code></td>
+<td>Finalize output panel, green status</td>
+</tr>
+<tr>
+<td><code>job.failed</code></td>
+<td><code>{ error, langsmith_url }</code></td>
+<td>Red status, show error card</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Concurrent section streaming:</strong> The Writer agent uses <code>RunnableParallel</code>, so <code>output.token</code>
+events for <code>report</code>, <code>comment_draft</code>, and <code>ticket_draft</code> are interleaved — there is no ordering
+guarantee across sections. The frontend must buffer tokens per section and may not assume a section
+is complete until it receives <code>output.section_done</code> for that section. <code>job.done</code> is emitted only
+after all three <code>output.section_done</code> events have been emitted.</p>
+<h3 id="concurrent-connections-multiple-tabs">Concurrent connections (multiple tabs)<a class="headerlink" href="#concurrent-connections-multiple-tabs" title="Permanent link">&para;</a></h3>
+<p>Opening the same job in more than one browser tab is safe and fully supported. Each <code>GET
+/jobs/{job_id}/stream</code> request creates an <strong>independent Redis Pub/Sub subscriber</strong> on the
+<code>jobs:{job_id}:events</code> channel. The ARQ worker publishes each event once; Redis delivers a copy to
+every active subscriber. Consequences:</p>
+<ul>
+<li><strong>No duplicate processing</strong> — subscribers are read-only; publishing happens once in the worker.</li>
+<li><strong>No missed events</strong> — each subscriber receives its own copy from Redis from the moment it subscribes.</li>
+<li><strong>No interference</strong> — closing or losing one tab's connection unsubscribes only that connection's
+  <code>pubsub</code> object; the worker and all other subscribers are unaffected.</li>
+</ul>
+<p>This is specified at the backend level in
+<a href="../PRD-003-langgraph-orchestration/#streaming-to-frontend">PRD-003 §Streaming to Frontend</a>.
+Events emitted <em>before</em> a tab connects are not replayed (same v1 limitation as reconnect — see above).</p>
+<h3 id="frontend-state-management">Frontend State Management<a class="headerlink" href="#frontend-state-management" title="Permanent link">&para;</a></h3>
+<p>State is managed with <strong>Zustand</strong>. Each job has its own state slice:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kd">interface</span><span class="w"> </span><span class="nx">JobState</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">    </span><span class="nx">id</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">    </span><span class="nx">status</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;queued&#39;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s1">&#39;running&#39;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s1">&#39;pausing&#39;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s1">&#39;waiting&#39;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s1">&#39;done&#39;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s1">&#39;failed&#39;</span>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="w">    </span><span class="nx">agents</span><span class="o">:</span><span class="w"> </span><span class="kt">AgentCardState</span><span class="p">[]</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="w">    </span><span class="nx">timelineNodes</span><span class="o">:</span><span class="w"> </span><span class="kt">TimelineNode</span><span class="p">[]</span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="w">    </span><span class="nx">pendingQuestion</span><span class="o">:</span><span class="w"> </span><span class="kt">Question</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="kc">null</span>
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="w">    </span><span class="nx">report</span><span class="o">:</span><span class="w"> </span><span class="kt">StructuredReport</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="kc">null</span>
+<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="w">    </span><span class="nx">commentDraft</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span>
+<a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span class="w">    </span><span class="nx">ticketDraft</span><span class="o">:</span><span class="w"> </span><span class="kt">TicketDraft</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="kc">null</span>
+<a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span class="w">    </span><span class="nx">langsmithUrl</span><span class="o">:</span><span class="w"> </span><span class="kt">string</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="kc">null</span>
+<a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a><span class="w">    </span><span class="nx">completedSections</span><span class="o">:</span><span class="w"> </span><span class="kt">Set</span><span class="o">&lt;</span><span class="kt">string</span><span class="o">&gt;</span><span class="w">   </span><span class="c1">// populated by output.section_done events</span>
+<a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a><span class="p">}</span>
+</code></pre></div>
+<hr />
+<h2 id="github-write-back-flow">GitHub Write-Back Flow<a class="headerlink" href="#github-write-back-flow" title="Permanent link">&para;</a></h2>
+<p>Write-back to GitHub is always a <strong>manual, user-initiated action</strong>. The flow:</p>
+<ol>
+<li>Writer agent produces comment draft and ticket draft</li>
+<li>User reviews and edits both in Zone 3</li>
+<li>User clicks "Post Comment to GitHub"</li>
+<li>Frontend calls <code>POST /jobs/{id}/post-comment</code> with final comment text</li>
+<li>Backend posts to GitHub API using stored OAuth token
+   (Fernet-encrypted in Redis — see <a href="../PRD-008-authentication/#github-oauth-token-management">PRD-008 §GitHub OAuth Token Management</a>)</li>
+<li>UI shows confirmation with link to the GitHub comment</li>
+</ol>
+<p><strong>No agent can post to GitHub autonomously.</strong> This is a hard constraint in v1.0.</p>
+<hr />
+<h2 id="settings-page">Settings Page<a class="headerlink" href="#settings-page" title="Permanent link">&para;</a></h2>
+<p>A minimal Settings page (<code>/settings</code>) lets users manage their GitHub connection and session.</p>
+<h3 id="github-account-panel">GitHub Account Panel<a class="headerlink" href="#github-account-panel" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Element</th>
+<th>Behaviour</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Connected account row</td>
+<td>Shows GitHub avatar, <code>@login</code>, and connection date</td>
+</tr>
+<tr>
+<td><strong>Disconnect GitHub</strong> button</td>
+<td>Calls <code>DELETE /auth/github-token</code>; disables write-back buttons until re-auth</td>
+</tr>
+<tr>
+<td>Re-connect link</td>
+<td>Opens the GitHub OAuth flow (<code>GET /auth/login</code>) to restore write-back capability</td>
+</tr>
+</tbody>
+</table>
+<p>After disconnect, the "Post Comment to GitHub" and "Create GitHub Issue" buttons in the Output
+Panel are replaced with a "Reconnect GitHub to enable write-back" notice. No triage or analysis
+functionality is affected — only GitHub write-back is blocked.</p>
+<h3 id="session-panel">Session Panel<a class="headerlink" href="#session-panel" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Element</th>
+<th>Behaviour</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Log out</strong> button</td>
+<td>Calls <code>POST /auth/logout</code>; invalidates refresh token in Redis, clears cookie, redirects to <code>/login</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="component-tree">Component Tree<a class="headerlink" href="#component-tree" title="Permanent link">&para;</a></h2>
+<pre class="mermaid"><code>graph TD
+    App --&gt; Header
+    App --&gt; AppLayout
+    AppLayout --&gt; JQS["JobQueueSidebar"]
+    AppLayout --&gt; LW["LiveWorkspace"]
+    AppLayout --&gt; OP["OutputPanel"]
+
+    JQS --&gt; NJM["NewJobModal"]
+    JQS --&gt; JFB["JobFilterBar"]
+    JQS --&gt; JC["JobCard × N"]
+
+    LW --&gt; WH["WorkspaceHeader"]
+    LW --&gt; ET["ExecutionTimeline"]
+    LW --&gt; AQC["AgentQuestionCard (conditional)"]
+    LW --&gt; ACL["AgentCardList"]
+    ACL --&gt; AC["AgentCard × N"]
+    WH --&gt; PB["PauseButton"]
+    WH --&gt; KB["KillButton"]
+
+    OP --&gt; TRC["TriageReportCard"]
+    OP --&gt; GCE["GitHubCommentEditor"]
+    OP --&gt; TDF["TicketDraftForm"]
+    OP --&gt; OA["OutputActions"]
+    OA --&gt; PCB["PostCommentButton"]
+    OA --&gt; CTB["CreateTicketButton"]
+    OA --&gt; LSD["LangSmithDeepLink"]</code></pre>
+<hr />
+<h2 id="tech-stack">Tech Stack<a class="headerlink" href="#tech-stack" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Concern</th>
+<th>Choice</th>
+<th>Rationale</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Framework</td>
+<td>React 18 + TypeScript</td>
+<td>Component model matches streaming UI patterns well</td>
+</tr>
+<tr>
+<td>State management</td>
+<td>Zustand</td>
+<td>Lightweight, no boilerplate, works perfectly with streaming updates</td>
+</tr>
+<tr>
+<td>Streaming</td>
+<td>Native <code>EventSource</code> (SSE)</td>
+<td>Server-push only; simpler than WebSockets for this use case</td>
+</tr>
+<tr>
+<td>Styling</td>
+<td>Tailwind CSS</td>
+<td>Utility-first, fast iteration on the Jira-like layout</td>
+</tr>
+<tr>
+<td>HTTP client</td>
+<td>Axios</td>
+<td>Clean REST calls for submit/answer/pause/kill</td>
+</tr>
+<tr>
+<td>Build tool</td>
+<td>Vite</td>
+<td>Fast HMR, modern ESM</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="non-functional-requirements">Non-Functional Requirements<a class="headerlink" href="#non-functional-requirements" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Requirement</th>
+<th>Target</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Time to first streaming token in UI</td>
+<td>&lt; 5 seconds from job submission</td>
+</tr>
+<tr>
+<td>SSE reconnect on drop</td>
+<td>Automatic, within 2 seconds; v1 may miss events emitted during disconnect window (no replay)</td>
+</tr>
+<tr>
+<td>Concurrent jobs in UI</td>
+<td>Support up to 10 simultaneously with no performance degradation</td>
+</tr>
+<tr>
+<td>Browser support</td>
+<td>Chrome 110+, Firefox 115+, Safari 16+</td>
+</tr>
+<tr>
+<td>Accessibility</td>
+<td>WCAG 2.1 AA for all static content; streaming regions use <code>aria-live="polite"</code></td>
+</tr>
+<tr>
+<td>Responsive layout</td>
+<td>Full functionality at 1280px+; graceful degradation at 1024px</td>
+</tr>
+</tbody>
+</table>
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.top", "toc.integrate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

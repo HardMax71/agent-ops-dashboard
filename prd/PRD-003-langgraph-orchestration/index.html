@@ -1,0 +1,2919 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://hardmax71.github.io/agent-ops-dashboard/prd/PRD-003-langgraph-orchestration/">
+      
+      
+        <link rel="prev" href="../PRD-002-3-interactions-and-a11y/">
+      
+      
+        <link rel="next" href="../PRD-003-1-event-pipeline/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.4">
+    
+    
+      
+        <title>LangGraph Orchestration & Human-in-the-Loop - AgentOps Dashboard</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#prd-003-langgraph-orchestration-human-in-the-loop" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="AgentOps Dashboard" class="md-header__button md-logo" aria-label="AgentOps Dashboard" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            AgentOps Dashboard
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              LangGraph Orchestration & Human-in-the-Loop
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="AgentOps Dashboard" class="md-nav__button md-logo" aria-label="AgentOps Dashboard" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    AgentOps Dashboard
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PRDs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    PRDs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-001-master-overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Master Overview
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-002-frontend-ux/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frontend & UX
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_3" id="__nav_2_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frontend Detail
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Frontend Detail
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-002-1-design-system/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Design System & Components
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-002-2-pages-and-wireframes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pages & Wireframes
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-002-3-interactions-and-a11y/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interactions & Accessibility
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LangGraph Orchestration
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LangGraph Orchestration
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#langgraph-fundamentals-used" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        LangGraph Fundamentals Used
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#shared-state-schema" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Shared State Schema
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Shared State Schema">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#schema-versioning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Schema Versioning
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#graph-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Graph Structure
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Graph Structure">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#node-list" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Node List
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#graph-definition-pseudocode" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Graph Definition (Pseudocode)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#routing-logic" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Routing Logic
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#supervisor-agent-design" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Supervisor Agent Design
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Supervisor Agent Design">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#supervisor-system-prompt-abbreviated" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Supervisor System Prompt (Abbreviated)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#supervisor-output-schema" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Supervisor Output Schema
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#worker-agent-node-specs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Worker Agent Node Specs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#human-in-the-loop-implementation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Human-in-the-Loop Implementation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Human-in-the-Loop Implementation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#triggering-an-interrupt" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Triggering an Interrupt
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#resuming-from-fastapi" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resuming from FastAPI
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#interrupt-timeout-mechanism" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Interrupt Timeout Mechanism
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#question-constraints" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Question Constraints
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#implementation-gotchas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Implementation Gotchas
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pause-redirect-and-kill" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pause, Redirect, and Kill
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Pause, Redirect, and Kill">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pause" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pause
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#redirect" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Redirect
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kill" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Kill
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#checkpointing-and-persistence" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Checkpointing and Persistence
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Checkpointing and Persistence">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#why-checkpointing-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why Checkpointing Matters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#thread-ids" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Thread IDs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#checkpointing-deployment-notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Checkpointing Deployment Notes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#streaming-to-frontend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Streaming to Frontend
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#error-handling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Error Handling
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_5" id="__nav_2_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Orchestration Detail
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Orchestration Detail
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-003-1-event-pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Event Pipeline & Worker
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-003-2-supervisor-spec/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Supervisor Prompt & Routing
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-004-agent-layer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agent Layer
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_7" id="__nav_2_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agent Layer Detail
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Agent Layer Detail
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-004-1-agent-chains/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Full LCEL Chain Specs
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-004-2-codebase-index/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Codebase Vector Index
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-005-langsmith-observability/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LangSmith Observability
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_9" id="__nav_2_9_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LangSmith Detail
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    LangSmith Detail
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-005-1-langsmith-api-spec/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API & Integration Spec
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-006-data-validation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Validation
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-007-developer-tooling/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Developer Tooling
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-012-backend-di/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backend & DI
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-008-authentication/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authentication
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_14" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_14" id="__nav_2_14_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Auth Detail
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_14_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_14">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Auth Detail
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-008-1-auth-impl-spec/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Implementation Spec
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-009-documentation-standards/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Documentation Standards
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-010-evaluation-framework/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Evaluation Framework
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-011-metrics-collection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Metrics Collection
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-013-testing-strategy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing Strategy & CI
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Plans
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Plans
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../PRD-001-1-goals-and-dod/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Goals & Definition of Done
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../plans/roadmap-v1/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roadmap v1 (precise)
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--DRAFT"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../plans/roadmap-v2/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Roadmap v2 (general)
+  
+
+    
+  </span>
+  
+  
+    
+  
+  
+    <span class="md-status md-status--PLANNED"></span>
+  
+
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="prd-003-langgraph-orchestration-human-in-the-loop">PRD-003 — LangGraph Orchestration &amp; Human-in-the-Loop<a class="headerlink" href="#prd-003-langgraph-orchestration-human-in-the-loop" title="Permanent link">&para;</a></h1>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Document ID</td>
+<td>PRD-003</td>
+</tr>
+<tr>
+<td>Version</td>
+<td>1.0</td>
+</tr>
+<tr>
+<td>Status</td>
+<td>DRAFT</td>
+</tr>
+<tr>
+<td>Date</td>
+<td>March 2026</td>
+</tr>
+<tr>
+<td>Parent Doc</td>
+<td><a href="../PRD-001-master-overview/">PRD-001</a></td>
+</tr>
+<tr>
+<td>Related Docs</td>
+<td><a href="../PRD-002-frontend-ux/">PRD-002</a> (Frontend), <a href="../PRD-004-agent-layer/">PRD-004</a> (LangChain/LangServe)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
+<p>This document specifies the LangGraph orchestration layer of AgentOps Dashboard — the system's brain. It covers how the
+supervisor coordinates worker agents, how shared state flows through the graph, how human interrupts are handled, and
+how job state is persisted across sessions.</p>
+<blockquote>
+<p><strong>Detailed specs:</strong> <a href="../PRD-003-1-event-pipeline/">Event Pipeline &amp; Worker</a> ·
+<a href="../PRD-003-2-supervisor-spec/">Supervisor Prompt &amp; Routing</a></p>
+</blockquote>
+<p>LangGraph is used here in its intended role: <strong>low-level orchestration of long-running, stateful, multi-agent workflows
+</strong>. It is deliberately not used for simple linear chains (those live in LangChain/LCEL at the LangServe layer — see
+<a href="../PRD-004-agent-layer/">PRD-004</a>).</p>
+<hr />
+<h2 id="langgraph-fundamentals-used">LangGraph Fundamentals Used<a class="headerlink" href="#langgraph-fundamentals-used" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Concept</th>
+<th>Usage in This Product</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>StateGraph</code></td>
+<td>The main graph class; holds the shared <code>BugTriageState</code> (Pydantic <code>BaseModel</code>) across all nodes</td>
+</tr>
+<tr>
+<td>Nodes</td>
+<td>Each agent and decision point is a node: <code>supervisor</code>, <code>investigator</code>, <code>codebase_search</code>, <code>web_search</code>, <code>critic</code>, <code>human_input</code>, <code>writer</code></td>
+</tr>
+<tr>
+<td>Conditional edges</td>
+<td>Supervisor's output determines which worker runs next via <code>add_conditional_edges</code></td>
+</tr>
+<tr>
+<td><code>interrupt()</code></td>
+<td>Pauses graph execution mid-node to await human input; resumes via <code>Command(resume=answer)</code></td>
+</tr>
+<tr>
+<td>Checkpointer</td>
+<td><code>SqliteSaver</code> (dev) / <code>PostgresSaver</code> (prod) — persists full graph state so jobs survive restarts</td>
+</tr>
+<tr>
+<td>Thread ID</td>
+<td>Each triage job maps to a LangGraph thread; jobs are fully isolated</td>
+</tr>
+<tr>
+<td>Streaming</td>
+<td><code>graph.astream_events()</code> runs inside the ARQ worker; the API server is a pure Redis Pub/Sub consumer</td>
+</tr>
+<tr>
+<td>ARQ</td>
+<td>Async Redis Queue — distributed job execution, cross-worker <code>Job.abort()</code>, built-in status tracking (QUEUED / IN_PROGRESS / COMPLETE / FAILED)</td>
+</tr>
+<tr>
+<td>Redis Pub/Sub</td>
+<td>Event fanout channel (<code>jobs:{id}:events</code>) — worker publishes events, SSE endpoint subscribes; supports multiple simultaneous subscribers</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="shared-state-schema">Shared State Schema<a class="headerlink" href="#shared-state-schema" title="Permanent link">&para;</a></h2>
+<p>The <code>BugTriageState</code> Pydantic model is the central data structure. Every node reads from and writes to this state. It is
+persisted at every checkpoint.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Annotated</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydantic</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseModel</span><span class="p">,</span> <span class="n">Field</span><span class="p">,</span> <span class="n">model_validator</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="c1"># CriticVerdict is defined in PRD-004-1 §7 (agent-chains) and imported here.</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="c1"># It provides the binary APPROVED/REJECTED gate used by the supervisor for routing.</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="kn">from</span><span class="w"> </span><span class="nn">agentops.agents.critic</span><span class="w"> </span><span class="kn">import</span> <span class="n">CriticVerdict</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="k">class</span><span class="w"> </span><span class="nc">AgentFinding</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>    <span class="n">agent_name</span><span class="p">:</span> <span class="nb">str</span>
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>    <span class="n">summary</span><span class="p">:</span> <span class="nb">str</span>
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>    <span class="n">details</span><span class="p">:</span> <span class="nb">str</span>
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>    <span class="n">confidence</span><span class="p">:</span> <span class="nb">float</span>  <span class="c1"># 0.0 – 1.0</span>
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>    <span class="n">relevant_files</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a><span class="k">class</span><span class="w"> </span><span class="nc">HumanExchange</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>    <span class="n">question</span><span class="p">:</span> <span class="nb">str</span>
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>    <span class="n">context</span><span class="p">:</span> <span class="nb">str</span>
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>    <span class="n">answer</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>
+<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>
+<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a><span class="k">class</span><span class="w"> </span><span class="nc">TriageReport</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a>    <span class="n">severity</span><span class="p">:</span> <span class="nb">str</span>  <span class="c1"># LOW / MEDIUM / HIGH / CRITICAL</span>
+<a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a>    <span class="n">category</span><span class="p">:</span> <span class="nb">str</span>
+<a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a>    <span class="n">root_cause</span><span class="p">:</span> <span class="nb">str</span>
+<a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a>    <span class="n">relevant_files</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+<a id="__codelineno-0-30" name="__codelineno-0-30" href="#__codelineno-0-30"></a>    <span class="n">similar_issues</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+<a id="__codelineno-0-31" name="__codelineno-0-31" href="#__codelineno-0-31"></a>    <span class="n">confidence</span><span class="p">:</span> <span class="nb">float</span>
+<a id="__codelineno-0-32" name="__codelineno-0-32" href="#__codelineno-0-32"></a>
+<a id="__codelineno-0-33" name="__codelineno-0-33" href="#__codelineno-0-33"></a>
+<a id="__codelineno-0-34" name="__codelineno-0-34" href="#__codelineno-0-34"></a><span class="n">_CURRENT_SCHEMA_VERSION</span> <span class="o">=</span> <span class="mi">1</span>
+<a id="__codelineno-0-35" name="__codelineno-0-35" href="#__codelineno-0-35"></a>
+<a id="__codelineno-0-36" name="__codelineno-0-36" href="#__codelineno-0-36"></a>
+<a id="__codelineno-0-37" name="__codelineno-0-37" href="#__codelineno-0-37"></a><span class="k">class</span><span class="w"> </span><span class="nc">BugTriageState</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<a id="__codelineno-0-38" name="__codelineno-0-38" href="#__codelineno-0-38"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-0-39" name="__codelineno-0-39" href="#__codelineno-0-39"></a><span class="sd">    Central graph state. Persisted by LangGraph&#39;s checkpointer after every node execution.</span>
+<a id="__codelineno-0-40" name="__codelineno-0-40" href="#__codelineno-0-40"></a>
+<a id="__codelineno-0-41" name="__codelineno-0-41" href="#__codelineno-0-41"></a><span class="sd">    Schema evolution rules:</span>
+<a id="__codelineno-0-42" name="__codelineno-0-42" href="#__codelineno-0-42"></a><span class="sd">    - Adding a field: add it with a Field(default=...) default. Pydantic fills missing keys</span>
+<a id="__codelineno-0-43" name="__codelineno-0-43" href="#__codelineno-0-43"></a><span class="sd">      from old checkpoints automatically at deserialization — no migration code required.</span>
+<a id="__codelineno-0-44" name="__codelineno-0-44" href="#__codelineno-0-44"></a><span class="sd">    - Renaming or changing the type of a field: add a branch inside migrate_from_checkpoint()</span>
+<a id="__codelineno-0-45" name="__codelineno-0-45" href="#__codelineno-0-45"></a><span class="sd">      and bump _CURRENT_SCHEMA_VERSION.</span>
+<a id="__codelineno-0-46" name="__codelineno-0-46" href="#__codelineno-0-46"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-0-47" name="__codelineno-0-47" href="#__codelineno-0-47"></a>
+<a id="__codelineno-0-48" name="__codelineno-0-48" href="#__codelineno-0-48"></a>    <span class="c1"># --- Issue metadata ---</span>
+<a id="__codelineno-0-49" name="__codelineno-0-49" href="#__codelineno-0-49"></a>    <span class="n">issue_url</span><span class="p">:</span> <span class="nb">str</span>
+<a id="__codelineno-0-50" name="__codelineno-0-50" href="#__codelineno-0-50"></a>    <span class="n">issue_title</span><span class="p">:</span> <span class="nb">str</span>
+<a id="__codelineno-0-51" name="__codelineno-0-51" href="#__codelineno-0-51"></a>    <span class="n">issue_body</span><span class="p">:</span> <span class="nb">str</span>
+<a id="__codelineno-0-52" name="__codelineno-0-52" href="#__codelineno-0-52"></a>    <span class="n">repository</span><span class="p">:</span> <span class="nb">str</span>
+<a id="__codelineno-0-53" name="__codelineno-0-53" href="#__codelineno-0-53"></a>
+<a id="__codelineno-0-54" name="__codelineno-0-54" href="#__codelineno-0-54"></a>    <span class="c1"># --- Routing ---</span>
+<a id="__codelineno-0-55" name="__codelineno-0-55" href="#__codelineno-0-55"></a>    <span class="n">current_node</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-56" name="__codelineno-0-56" href="#__codelineno-0-56"></a>    <span class="n">next_node</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<a id="__codelineno-0-57" name="__codelineno-0-57" href="#__codelineno-0-57"></a>    <span class="n">supervisor_reasoning</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-58" name="__codelineno-0-58" href="#__codelineno-0-58"></a>    <span class="n">supervisor_confidence</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+<a id="__codelineno-0-59" name="__codelineno-0-59" href="#__codelineno-0-59"></a>    <span class="n">iterations</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>   <span class="c1"># total node executions; not reset on resume</span>
+<a id="__codelineno-0-60" name="__codelineno-0-60" href="#__codelineno-0-60"></a>    <span class="n">max_iterations</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+<a id="__codelineno-0-61" name="__codelineno-0-61" href="#__codelineno-0-61"></a>    <span class="n">paused</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<a id="__codelineno-0-62" name="__codelineno-0-62" href="#__codelineno-0-62"></a>    <span class="n">redirect_instructions</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="k">lambda</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">a</span> <span class="o">+</span> <span class="n">b</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span>
+<a id="__codelineno-0-63" name="__codelineno-0-63" href="#__codelineno-0-63"></a>
+<a id="__codelineno-0-64" name="__codelineno-0-64" href="#__codelineno-0-64"></a>    <span class="c1"># --- Agent outputs ---</span>
+<a id="__codelineno-0-65" name="__codelineno-0-65" href="#__codelineno-0-65"></a>    <span class="n">findings</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="n">AgentFinding</span><span class="p">],</span> <span class="k">lambda</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">a</span> <span class="o">+</span> <span class="n">b</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span>
+<a id="__codelineno-0-66" name="__codelineno-0-66" href="#__codelineno-0-66"></a>    <span class="n">critic_feedback</span><span class="p">:</span> <span class="n">CriticVerdict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<a id="__codelineno-0-67" name="__codelineno-0-67" href="#__codelineno-0-67"></a>    <span class="c1"># Set by critic node. Supervisor reads .verdict to gate writer routing:</span>
+<a id="__codelineno-0-68" name="__codelineno-0-68" href="#__codelineno-0-68"></a>    <span class="c1"># APPROVED → route to writer; REJECTED → re-investigate per .gaps and .required_evidence.</span>
+<a id="__codelineno-0-69" name="__codelineno-0-69" href="#__codelineno-0-69"></a>
+<a id="__codelineno-0-70" name="__codelineno-0-70" href="#__codelineno-0-70"></a>    <span class="c1"># --- Human-in-the-loop ---</span>
+<a id="__codelineno-0-71" name="__codelineno-0-71" href="#__codelineno-0-71"></a>    <span class="n">human_exchanges</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="n">HumanExchange</span><span class="p">],</span> <span class="k">lambda</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">a</span> <span class="o">+</span> <span class="n">b</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span>
+<a id="__codelineno-0-72" name="__codelineno-0-72" href="#__codelineno-0-72"></a>    <span class="n">pending_exchange</span><span class="p">:</span> <span class="n">HumanExchange</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<a id="__codelineno-0-73" name="__codelineno-0-73" href="#__codelineno-0-73"></a>    <span class="n">awaiting_human</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<a id="__codelineno-0-74" name="__codelineno-0-74" href="#__codelineno-0-74"></a>
+<a id="__codelineno-0-75" name="__codelineno-0-75" href="#__codelineno-0-75"></a>    <span class="c1"># --- Collected context ---</span>
+<a id="__codelineno-0-76" name="__codelineno-0-76" href="#__codelineno-0-76"></a>    <span class="n">codebase_chunks</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span>
+<a id="__codelineno-0-77" name="__codelineno-0-77" href="#__codelineno-0-77"></a>    <span class="n">similar_past_issues</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span>
+<a id="__codelineno-0-78" name="__codelineno-0-78" href="#__codelineno-0-78"></a>    <span class="n">web_results</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span>
+<a id="__codelineno-0-79" name="__codelineno-0-79" href="#__codelineno-0-79"></a>
+<a id="__codelineno-0-80" name="__codelineno-0-80" href="#__codelineno-0-80"></a>    <span class="c1"># --- Outputs ---</span>
+<a id="__codelineno-0-81" name="__codelineno-0-81" href="#__codelineno-0-81"></a>    <span class="n">report</span><span class="p">:</span> <span class="n">TriageReport</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<a id="__codelineno-0-82" name="__codelineno-0-82" href="#__codelineno-0-82"></a>    <span class="n">github_comment_draft</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<a id="__codelineno-0-83" name="__codelineno-0-83" href="#__codelineno-0-83"></a>    <span class="n">ticket_draft</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">object</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<a id="__codelineno-0-84" name="__codelineno-0-84" href="#__codelineno-0-84"></a>
+<a id="__codelineno-0-85" name="__codelineno-0-85" href="#__codelineno-0-85"></a>    <span class="c1"># --- Cost tracking ---</span>
+<a id="__codelineno-0-86" name="__codelineno-0-86" href="#__codelineno-0-86"></a>    <span class="n">running_cost_usd</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+<a id="__codelineno-0-87" name="__codelineno-0-87" href="#__codelineno-0-87"></a>    <span class="n">max_cost_usd</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mf">5.0</span><span class="p">)</span>
+<a id="__codelineno-0-88" name="__codelineno-0-88" href="#__codelineno-0-88"></a>    <span class="n">cost_budget_exceeded</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<a id="__codelineno-0-89" name="__codelineno-0-89" href="#__codelineno-0-89"></a>
+<a id="__codelineno-0-90" name="__codelineno-0-90" href="#__codelineno-0-90"></a>    <span class="c1"># --- Job metadata ---</span>
+<a id="__codelineno-0-91" name="__codelineno-0-91" href="#__codelineno-0-91"></a>    <span class="n">job_id</span><span class="p">:</span> <span class="nb">str</span>
+<a id="__codelineno-0-92" name="__codelineno-0-92" href="#__codelineno-0-92"></a>    <span class="n">owner_id</span><span class="p">:</span> <span class="nb">str</span>
+<a id="__codelineno-0-93" name="__codelineno-0-93" href="#__codelineno-0-93"></a>    <span class="n">langsmith_run_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<a id="__codelineno-0-94" name="__codelineno-0-94" href="#__codelineno-0-94"></a>    <span class="n">status</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="s2">&quot;queued&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-95" name="__codelineno-0-95" href="#__codelineno-0-95"></a>
+<a id="__codelineno-0-96" name="__codelineno-0-96" href="#__codelineno-0-96"></a>    <span class="c1"># --- Schema versioning ---</span>
+<a id="__codelineno-0-97" name="__codelineno-0-97" href="#__codelineno-0-97"></a>    <span class="n">schema_version</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">Field</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<a id="__codelineno-0-98" name="__codelineno-0-98" href="#__codelineno-0-98"></a>    <span class="c1"># 0 = pre-versioning checkpoint; always written as CURRENT_SCHEMA_VERSION by</span>
+<a id="__codelineno-0-99" name="__codelineno-0-99" href="#__codelineno-0-99"></a>    <span class="c1"># migrate_from_checkpoint() on the first supervisor execution after a schema bump.</span>
+<a id="__codelineno-0-100" name="__codelineno-0-100" href="#__codelineno-0-100"></a>
+<a id="__codelineno-0-101" name="__codelineno-0-101" href="#__codelineno-0-101"></a>    <span class="nd">@model_validator</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s2">&quot;before&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-102" name="__codelineno-0-102" href="#__codelineno-0-102"></a>    <span class="nd">@classmethod</span>
+<a id="__codelineno-0-103" name="__codelineno-0-103" href="#__codelineno-0-103"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">migrate_from_checkpoint</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">object</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">object</span><span class="p">:</span>
+<a id="__codelineno-0-104" name="__codelineno-0-104" href="#__codelineno-0-104"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-0-105" name="__codelineno-0-105" href="#__codelineno-0-105"></a><span class="sd">        Runs before Pydantic field validation on every deserialization.</span>
+<a id="__codelineno-0-106" name="__codelineno-0-106" href="#__codelineno-0-106"></a><span class="sd">        For additive schema changes this method does nothing — Pydantic fills Field</span>
+<a id="__codelineno-0-107" name="__codelineno-0-107" href="#__codelineno-0-107"></a><span class="sd">        defaults automatically. Add a branch here only when a field is renamed or its</span>
+<a id="__codelineno-0-108" name="__codelineno-0-108" href="#__codelineno-0-108"></a><span class="sd">        type changes in a breaking way, then bump _CURRENT_SCHEMA_VERSION.</span>
+<a id="__codelineno-0-109" name="__codelineno-0-109" href="#__codelineno-0-109"></a><span class="sd">        &quot;&quot;&quot;</span>
+<a id="__codelineno-0-110" name="__codelineno-0-110" href="#__codelineno-0-110"></a>        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+<a id="__codelineno-0-111" name="__codelineno-0-111" href="#__codelineno-0-111"></a>            <span class="k">return</span> <span class="n">data</span>
+<a id="__codelineno-0-112" name="__codelineno-0-112" href="#__codelineno-0-112"></a>
+<a id="__codelineno-0-113" name="__codelineno-0-113" href="#__codelineno-0-113"></a>        <span class="c1"># Example (not yet needed): if the field &quot;web_results&quot; was renamed from</span>
+<a id="__codelineno-0-114" name="__codelineno-0-114" href="#__codelineno-0-114"></a>        <span class="c1"># &quot;search_results&quot; in schema v2, the branch would be:</span>
+<a id="__codelineno-0-115" name="__codelineno-0-115" href="#__codelineno-0-115"></a>        <span class="c1">#</span>
+<a id="__codelineno-0-116" name="__codelineno-0-116" href="#__codelineno-0-116"></a>        <span class="c1">#   if data.get(&quot;schema_version&quot;, 0) &lt; 2 and &quot;search_results&quot; in data:</span>
+<a id="__codelineno-0-117" name="__codelineno-0-117" href="#__codelineno-0-117"></a>        <span class="c1">#       data[&quot;web_results&quot;] = data.pop(&quot;search_results&quot;)</span>
+<a id="__codelineno-0-118" name="__codelineno-0-118" href="#__codelineno-0-118"></a>        <span class="c1">#</span>
+<a id="__codelineno-0-119" name="__codelineno-0-119" href="#__codelineno-0-119"></a>        <span class="n">data</span><span class="p">[</span><span class="s2">&quot;schema_version&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_CURRENT_SCHEMA_VERSION</span>
+<a id="__codelineno-0-120" name="__codelineno-0-120" href="#__codelineno-0-120"></a>        <span class="k">return</span> <span class="n">data</span>
+<a id="__codelineno-0-121" name="__codelineno-0-121" href="#__codelineno-0-121"></a>
+<a id="__codelineno-0-122" name="__codelineno-0-122" href="#__codelineno-0-122"></a>    <span class="n">model_config</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;arbitrary_types_allowed&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span>
+</code></pre></div>
+<h3 id="schema-versioning">Schema Versioning<a class="headerlink" href="#schema-versioning" title="Permanent link">&para;</a></h3>
+<p><code>BugTriageState</code> uses Pydantic <code>BaseModel</code> rather than <code>TypedDict</code> specifically to leverage
+Pydantic's deserialization lifecycle for checkpoint compatibility.</p>
+<p><strong>Additive changes (adding a new field):</strong> Supply a <code>Field(default=...)</code> or
+<code>Field(default_factory=...)</code>. LangGraph's checkpointer passes the stored JSON dict to Pydantic,
+which fills any missing key with its declared default. No migration code is required.</p>
+<p><strong>Non-additive changes (renaming a field, incompatible type change):</strong> Add a conditional branch
+inside <code>migrate_from_checkpoint()</code> guarded by <code>data.get("schema_version", 0) &lt; N</code>, then bump
+<code>CURRENT_SCHEMA_VERSION</code>. The validator is a classmethod on <code>BugTriageState</code> — no module-level
+functions or global registries.</p>
+<p><strong><code>schema_version</code></strong> starts at <code>0</code> in all pre-versioning checkpoints (the field is absent, so
+Pydantic uses <code>Field(default=0)</code>). <code>migrate_from_checkpoint()</code> always writes
+<code>CURRENT_SCHEMA_VERSION</code> into the dict before field validation, so after the first supervisor
+execution following a schema bump the checkpoint is updated automatically.</p>
+<p><strong><code>_CURRENT_SCHEMA_VERSION</code></strong> is a module-level constant defined immediately above <code>BugTriageState</code>
+so it is always co-located with the class it describes.</p>
+<hr />
+<h2 id="graph-structure">Graph Structure<a class="headerlink" href="#graph-structure" title="Permanent link">&para;</a></h2>
+<h3 id="node-list">Node List<a class="headerlink" href="#node-list" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Node</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>START</code></td>
+<td>Built-in</td>
+<td>Entry point</td>
+</tr>
+<tr>
+<td><code>supervisor</code></td>
+<td>LLM node</td>
+<td>Reads current state; decides next step</td>
+</tr>
+<tr>
+<td><code>investigator</code></td>
+<td>Tool node</td>
+<td>Calls LangServe <code>/agents/investigator</code></td>
+</tr>
+<tr>
+<td><code>codebase_search</code></td>
+<td>Tool node</td>
+<td>Calls LangServe <code>/agents/codebase-search</code></td>
+</tr>
+<tr>
+<td><code>web_search</code></td>
+<td>Tool node</td>
+<td>Calls LangServe <code>/agents/web-search</code></td>
+</tr>
+<tr>
+<td><code>critic</code></td>
+<td>Tool node</td>
+<td>Calls LangServe <code>/agents/critic</code></td>
+</tr>
+<tr>
+<td><code>human_input</code></td>
+<td>Interrupt node</td>
+<td>Fires <code>interrupt()</code>; blocks until user answers</td>
+</tr>
+<tr>
+<td><code>writer</code></td>
+<td>Tool node</td>
+<td>Calls LangServe <code>/agents/writer</code>; produces final outputs</td>
+</tr>
+<tr>
+<td><code>END</code></td>
+<td>Built-in</td>
+<td>Exit point</td>
+</tr>
+</tbody>
+</table>
+<h3 id="graph-definition-pseudocode">Graph Definition (Pseudocode)<a class="headerlink" href="#graph-definition-pseudocode" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">langgraph.graph</span><span class="w"> </span><span class="kn">import</span> <span class="n">StateGraph</span><span class="p">,</span> <span class="n">START</span><span class="p">,</span> <span class="n">END</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">langgraph.checkpoint.sqlite</span><span class="w"> </span><span class="kn">import</span> <span class="n">SqliteSaver</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="n">builder</span> <span class="o">=</span> <span class="n">StateGraph</span><span class="p">(</span><span class="n">BugTriageState</span><span class="p">)</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="n">builder</span><span class="o">.</span><span class="n">add_node</span><span class="p">(</span><span class="s2">&quot;supervisor&quot;</span><span class="p">,</span> <span class="n">supervisor_node</span><span class="p">)</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="n">builder</span><span class="o">.</span><span class="n">add_node</span><span class="p">(</span><span class="s2">&quot;investigator&quot;</span><span class="p">,</span> <span class="n">investigator_node</span><span class="p">)</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="n">builder</span><span class="o">.</span><span class="n">add_node</span><span class="p">(</span><span class="s2">&quot;codebase_search&quot;</span><span class="p">,</span> <span class="n">codebase_search_node</span><span class="p">)</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="n">builder</span><span class="o">.</span><span class="n">add_node</span><span class="p">(</span><span class="s2">&quot;web_search&quot;</span><span class="p">,</span> <span class="n">web_search_node</span><span class="p">)</span>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="n">builder</span><span class="o">.</span><span class="n">add_node</span><span class="p">(</span><span class="s2">&quot;critic&quot;</span><span class="p">,</span> <span class="n">critic_node</span><span class="p">)</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="n">builder</span><span class="o">.</span><span class="n">add_node</span><span class="p">(</span><span class="s2">&quot;human_input&quot;</span><span class="p">,</span> <span class="n">human_input_node</span><span class="p">)</span>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="n">builder</span><span class="o">.</span><span class="n">add_node</span><span class="p">(</span><span class="s2">&quot;writer&quot;</span><span class="p">,</span> <span class="n">writer_node</span><span class="p">)</span>
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="n">builder</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">START</span><span class="p">,</span> <span class="s2">&quot;supervisor&quot;</span><span class="p">)</span>
+<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>
+<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a><span class="n">builder</span><span class="o">.</span><span class="n">add_conditional_edges</span><span class="p">(</span>
+<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>    <span class="s2">&quot;supervisor&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>    <span class="n">route_from_supervisor</span><span class="p">,</span>
+<a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a>    <span class="p">{</span>
+<a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>        <span class="s2">&quot;investigator&quot;</span><span class="p">:</span> <span class="s2">&quot;investigator&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a>        <span class="s2">&quot;codebase_search&quot;</span><span class="p">:</span> <span class="s2">&quot;codebase_search&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a>        <span class="s2">&quot;web_search&quot;</span><span class="p">:</span> <span class="s2">&quot;web_search&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a>        <span class="s2">&quot;critic&quot;</span><span class="p">:</span> <span class="s2">&quot;critic&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-24" name="__codelineno-1-24" href="#__codelineno-1-24"></a>        <span class="s2">&quot;human_input&quot;</span><span class="p">:</span> <span class="s2">&quot;human_input&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-25" name="__codelineno-1-25" href="#__codelineno-1-25"></a>        <span class="s2">&quot;writer&quot;</span><span class="p">:</span> <span class="s2">&quot;writer&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-26" name="__codelineno-1-26" href="#__codelineno-1-26"></a>        <span class="s2">&quot;end&quot;</span><span class="p">:</span> <span class="n">END</span><span class="p">,</span>
+<a id="__codelineno-1-27" name="__codelineno-1-27" href="#__codelineno-1-27"></a>    <span class="p">}</span>
+<a id="__codelineno-1-28" name="__codelineno-1-28" href="#__codelineno-1-28"></a><span class="p">)</span>
+<a id="__codelineno-1-29" name="__codelineno-1-29" href="#__codelineno-1-29"></a>
+<a id="__codelineno-1-30" name="__codelineno-1-30" href="#__codelineno-1-30"></a><span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;investigator&quot;</span><span class="p">,</span> <span class="s2">&quot;codebase_search&quot;</span><span class="p">,</span> <span class="s2">&quot;web_search&quot;</span><span class="p">,</span> <span class="s2">&quot;critic&quot;</span><span class="p">]:</span>
+<a id="__codelineno-1-31" name="__codelineno-1-31" href="#__codelineno-1-31"></a>    <span class="n">builder</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="s2">&quot;supervisor&quot;</span><span class="p">)</span>
+<a id="__codelineno-1-32" name="__codelineno-1-32" href="#__codelineno-1-32"></a>
+<a id="__codelineno-1-33" name="__codelineno-1-33" href="#__codelineno-1-33"></a><span class="n">builder</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="s2">&quot;human_input&quot;</span><span class="p">,</span> <span class="s2">&quot;supervisor&quot;</span><span class="p">)</span>
+<a id="__codelineno-1-34" name="__codelineno-1-34" href="#__codelineno-1-34"></a><span class="n">builder</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="s2">&quot;writer&quot;</span><span class="p">,</span> <span class="n">END</span><span class="p">)</span>
+<a id="__codelineno-1-35" name="__codelineno-1-35" href="#__codelineno-1-35"></a>
+<a id="__codelineno-1-36" name="__codelineno-1-36" href="#__codelineno-1-36"></a><span class="n">checkpointer</span> <span class="o">=</span> <span class="n">SqliteSaver</span><span class="o">.</span><span class="n">from_conn_string</span><span class="p">(</span><span class="s2">&quot;jobs.db&quot;</span><span class="p">)</span>
+<a id="__codelineno-1-37" name="__codelineno-1-37" href="#__codelineno-1-37"></a><span class="n">graph</span> <span class="o">=</span> <span class="n">builder</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">checkpointer</span><span class="o">=</span><span class="n">checkpointer</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="routing-logic">Routing Logic<a class="headerlink" href="#routing-logic" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">route_from_supervisor</span><span class="p">(</span><span class="n">state</span><span class="p">:</span> <span class="n">BugTriageState</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="sd">    Supervisor LLM outputs structured JSON with &#39;next&#39; field.</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="sd">    This function extracts it and returns the node name.</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="sd">    Guards: max_iterations check, investigator-first enforcement.</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>    <span class="k">if</span> <span class="n">state</span><span class="p">[</span><span class="s2">&quot;iterations&quot;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">state</span><span class="p">[</span><span class="s2">&quot;max_iterations&quot;</span><span class="p">]:</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>        <span class="k">return</span> <span class="s2">&quot;writer&quot;</span>  <span class="c1"># force completion</span>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>    <span class="c1"># Enforce design invariant: investigator must always run first.</span>
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>    <span class="c1"># The supervisor prompt instructs this, but LLM compliance is not guaranteed.</span>
+<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>    <span class="c1"># state[&quot;iterations&quot;] == 0 means no worker node has executed yet.</span>
+<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>    <span class="k">if</span> <span class="n">state</span><span class="p">[</span><span class="s2">&quot;iterations&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">state</span><span class="p">[</span><span class="s2">&quot;next_node&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;investigator&quot;</span><span class="p">:</span>
+<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>        <span class="k">return</span> <span class="s2">&quot;investigator&quot;</span>
+<a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a>
+<a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a>    <span class="k">return</span> <span class="n">state</span><span class="p">[</span><span class="s2">&quot;next_node&quot;</span><span class="p">]</span>
+</code></pre></div>
+<p><code>iterations</code> counts total worker-node executions across the full job lifetime, including any
+cycles that occur after a human-interrupt resume. The value <code>max_iterations</code> is chosen to
+accommodate a typical flow (investigation → optional human interrupt → continued investigation
+→ write) without premature termination. It is <strong>not</strong> reset on resume.</p>
+<p><strong>Investigator-first guard:</strong> When <code>iterations == 0</code>, no worker node has yet executed. The
+supervisor prompt instructs the LLM to always call <code>investigator</code> first, but prompt compliance
+is not guaranteed — edge-case inputs or model drift could cause the LLM to skip straight to
+<code>codebase_search</code> or <code>writer</code>. The guard in <code>route_from_supervisor</code> overrides any such decision
+deterministically. Once <code>investigator</code> has run, <code>iterations</code> becomes 1 and the guard no longer
+fires; subsequent routing is left entirely to the supervisor.</p>
+<hr />
+<h2 id="supervisor-agent-design">Supervisor Agent Design<a class="headerlink" href="#supervisor-agent-design" title="Permanent link">&para;</a></h2>
+<p>The supervisor is the most critical node. It reads the full current state and decides:</p>
+<ol>
+<li>Which worker to call next (or whether to ask the human, or to finalize)</li>
+<li>Whether it has enough information to write the final report</li>
+<li>Whether it needs to ask the user a clarifying question</li>
+</ol>
+<h3 id="supervisor-system-prompt-abbreviated">Supervisor System Prompt (Abbreviated)<a class="headerlink" href="#supervisor-system-prompt-abbreviated" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>You are the supervisor of a bug triage team. You coordinate specialized agents
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>to investigate a GitHub issue and produce a full triage report.
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>Your available agents:
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>- investigator: Reads and interprets the issue body. Always call this first.
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>- codebase_search: Searches the repository for relevant code. Call when you need
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>  to locate the root cause in source code.
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>- web_search: Searches the web for error messages or stack traces. Call when the
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>  issue contains cryptic errors or library bugs.
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>- critic: Reviews findings for correctness and gaps. Call when you have a
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>  hypothesis but want a second opinion before finalizing.
+<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>- writer: Produces the final report. Call only when you have sufficient evidence.
+<a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a>
+<a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a>Human input rules:
+<a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a>- Ask the user a question if and only if:
+<a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a>  (a) Two or more equally plausible root causes exist and you cannot distinguish them
+<a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a>      without user knowledge, OR
+<a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a>  (b) Critical context is missing that no tool can retrieve (e.g. recent deploys,
+<a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a>      env-specific config)
+<a id="__codelineno-3-20" name="__codelineno-3-20" href="#__codelineno-3-20"></a>- Maximum 2 questions per job. Do not ask about things tools can discover.
+<a id="__codelineno-3-21" name="__codelineno-3-21" href="#__codelineno-3-21"></a>- Frame questions concisely. Provide 2–3 specific options when possible.
+<a id="__codelineno-3-22" name="__codelineno-3-22" href="#__codelineno-3-22"></a>
+<a id="__codelineno-3-23" name="__codelineno-3-23" href="#__codelineno-3-23"></a>Output JSON with fields: next_node, reasoning, question (if asking human), confidence.
+</code></pre></div>
+<h3 id="supervisor-output-schema">Supervisor Output Schema<a class="headerlink" href="#supervisor-output-schema" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">SupervisorDecision</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>    <span class="n">next_node</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>        <span class="s2">&quot;investigator&quot;</span><span class="p">,</span> <span class="s2">&quot;codebase_search&quot;</span><span class="p">,</span> <span class="s2">&quot;web_search&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>        <span class="s2">&quot;critic&quot;</span><span class="p">,</span> <span class="s2">&quot;human_input&quot;</span><span class="p">,</span> <span class="s2">&quot;writer&quot;</span><span class="p">,</span> <span class="s2">&quot;end&quot;</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>    <span class="p">]</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>    <span class="n">reasoning</span><span class="p">:</span> <span class="nb">str</span>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>    <span class="n">question</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span>  <span class="c1"># only populated when next_node == &quot;human_input&quot;</span>
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>    <span class="n">question_context</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span>
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>    <span class="n">confidence</span><span class="p">:</span> <span class="nb">float</span>  <span class="c1"># 0.0–1.0</span>
+</code></pre></div>
+<blockquote>
+<p>When <code>next_node == "human_input"</code>, the supervisor node returns
+<code>{"pending_exchange": HumanExchange(question=..., context=...),
+"awaiting_human": True}</code>. It does <strong>not</strong> append to <code>human_exchanges</code> directly — that
+field is written only by <code>human_input_node</code> via the append reducer.</p>
+</blockquote>
+<hr />
+<h2 id="worker-agent-node-specs">Worker Agent Node Specs<a class="headerlink" href="#worker-agent-node-specs" title="Permanent link">&para;</a></h2>
+<p>Each worker node follows the same pattern: call the corresponding LangServe endpoint, get back an <code>AgentFinding</code>, append
+it to state, return updated state to supervisor.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">investigator_node</span><span class="p">(</span><span class="n">state</span><span class="p">:</span> <span class="n">BugTriageState</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>    <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="n">httpx</span><span class="o">.</span><span class="n">post</span><span class="p">(</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>        <span class="s2">&quot;http://localhost:8001/agents/investigator/invoke&quot;</span><span class="p">,</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>        <span class="n">json</span><span class="o">=</span><span class="p">{</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>            <span class="s2">&quot;input&quot;</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>                <span class="s2">&quot;issue_title&quot;</span><span class="p">:</span> <span class="n">state</span><span class="o">.</span><span class="n">issue_title</span><span class="p">,</span>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>                <span class="s2">&quot;issue_body&quot;</span><span class="p">:</span> <span class="n">state</span><span class="o">.</span><span class="n">issue_body</span><span class="p">,</span>
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>                <span class="s2">&quot;prior_findings&quot;</span><span class="p">:</span> <span class="n">state</span><span class="o">.</span><span class="n">findings</span><span class="p">,</span>
+<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>            <span class="p">}</span>
+<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>        <span class="p">}</span>
+<a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a>    <span class="p">)</span>
+<a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a>    <span class="n">finding</span> <span class="o">=</span> <span class="n">AgentFinding</span><span class="p">(</span><span class="o">**</span><span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="s2">&quot;output&quot;</span><span class="p">])</span>
+<a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a>    <span class="k">return</span> <span class="p">{</span>
+<a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a>        <span class="s2">&quot;findings&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">finding</span><span class="p">],</span>  <span class="c1"># reducer appends this</span>
+<a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a>        <span class="s2">&quot;current_node&quot;</span><span class="p">:</span> <span class="s2">&quot;investigator&quot;</span><span class="p">,</span>
+<a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a>        <span class="s2">&quot;iterations&quot;</span><span class="p">:</span> <span class="n">state</span><span class="o">.</span><span class="n">iterations</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+<a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a>    <span class="p">}</span>
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Node</th>
+<th>LangServe Endpoint</th>
+<th>Key Inputs from State</th>
+<th>Key Outputs to State</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>investigator</code></td>
+<td><code>/agents/investigator</code></td>
+<td><code>issue_title</code>, <code>issue_body</code></td>
+<td><code>findings</code></td>
+</tr>
+<tr>
+<td><code>codebase_search</code></td>
+<td><code>/agents/codebase-search</code></td>
+<td><code>issue_body</code>, <code>findings</code>, <code>repository</code></td>
+<td><code>findings</code>, <code>codebase_chunks</code></td>
+</tr>
+<tr>
+<td><code>web_search</code></td>
+<td><code>/agents/web-search</code></td>
+<td><code>issue_body</code>, <code>findings</code></td>
+<td><code>findings</code>, <code>web_results</code></td>
+</tr>
+<tr>
+<td><code>critic</code></td>
+<td><code>/agents/critic</code></td>
+<td><code>findings</code>, <code>codebase_chunks</code></td>
+<td><code>findings</code> (critique finding)</td>
+</tr>
+<tr>
+<td><code>writer</code></td>
+<td><code>/agents/writer</code></td>
+<td>all findings, human exchanges</td>
+<td><code>report</code>, <code>github_comment_draft</code>, <code>ticket_draft</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="human-in-the-loop-implementation">Human-in-the-Loop Implementation<a class="headerlink" href="#human-in-the-loop-implementation" title="Permanent link">&para;</a></h2>
+<h3 id="triggering-an-interrupt">Triggering an Interrupt<a class="headerlink" href="#triggering-an-interrupt" title="Permanent link">&para;</a></h3>
+<p>When the supervisor routes to <code>human_input</code>, the node fires <code>interrupt()</code>:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">langgraph.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">interrupt</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="k">def</span><span class="w"> </span><span class="nf">human_input_node</span><span class="p">(</span><span class="n">state</span><span class="p">:</span> <span class="n">BugTriageState</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>    <span class="n">exchange</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="s2">&quot;pending_exchange&quot;</span><span class="p">]</span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>    <span class="n">answer</span> <span class="o">=</span> <span class="n">interrupt</span><span class="p">({</span>
+<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>        <span class="s2">&quot;question&quot;</span><span class="p">:</span> <span class="n">exchange</span><span class="p">[</span><span class="s2">&quot;question&quot;</span><span class="p">],</span>
+<a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>        <span class="s2">&quot;context&quot;</span><span class="p">:</span> <span class="n">exchange</span><span class="p">[</span><span class="s2">&quot;context&quot;</span><span class="p">],</span>
+<a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a>    <span class="p">})</span>
+<a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a>
+<a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a>    <span class="k">return</span> <span class="p">{</span>
+<a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a>        <span class="s2">&quot;human_exchanges&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">exchange</span><span class="o">.</span><span class="n">model_copy</span><span class="p">(</span><span class="n">update</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;answer&quot;</span><span class="p">:</span> <span class="n">answer</span><span class="p">})],</span>  <span class="c1"># reducer appends</span>
+<a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a>        <span class="s2">&quot;pending_exchange&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+<a id="__codelineno-6-15" name="__codelineno-6-15" href="#__codelineno-6-15"></a>        <span class="s2">&quot;awaiting_human&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+<a id="__codelineno-6-16" name="__codelineno-6-16" href="#__codelineno-6-16"></a>    <span class="p">}</span>
+</code></pre></div>
+<blockquote>
+<p><strong>State design note:</strong> <code>human_exchanges</code> uses an append reducer
+(<code>Annotated[list[HumanExchange], lambda a, b: a + b]</code>), so nodes may safely return
+<code>[new_item]</code> without reading or copying the existing list. <code>pending_exchange</code> uses plain
+overwrite semantics and holds at most one unanswered question at a time. The supervisor
+writes to <code>pending_exchange</code>; <code>human_input_node</code> reads it, fills the answer, appends the
+completed exchange to <code>human_exchanges</code>, and clears <code>pending_exchange</code> — no list mutation
+anywhere.</p>
+</blockquote>
+<h3 id="resuming-from-fastapi">Resuming from FastAPI<a class="headerlink" href="#resuming-from-fastapi" title="Permanent link">&para;</a></h3>
+<p>When the user submits an answer via <code>POST /jobs/{id}/answer</code>, the endpoint cancels the pending timeout ARQ job and
+resumes the graph. Full implementation is in the <a href="#interrupt-timeout-mechanism">Interrupt Timeout Mechanism</a> section.</p>
+<p><code>Command(resume=answer)</code> does not restart the graph from the beginning. LangGraph restores the
+full <code>BugTriageState</code> from the checkpoint saved at the interrupt and continues execution from
+the <code>human_input</code> node forward. The <code>iterations</code> counter therefore reflects work done both
+before and after the interrupt.</p>
+<p>Before resuming, the endpoint reads the checkpointed state via <code>graph.aget_state()</code> and
+checks <code>awaiting_human</code>. If the job is not currently paused at a <code>human_input</code> interrupt
+(e.g., the job is still running, has already completed, or the timeout already fired and
+auto-resumed), the endpoint returns <strong>HTTP 409 Conflict</strong> rather than calling
+<code>Command(resume=...)</code> on a non-interrupted thread.</p>
+<h3 id="interrupt-timeout-mechanism">Interrupt Timeout Mechanism<a class="headerlink" href="#interrupt-timeout-mechanism" title="Permanent link">&para;</a></h3>
+<p><code>interrupt()</code> blocks the graph indefinitely — LangGraph has no built-in timeout. The 30-minute timeout is implemented
+by enqueuing a deferred ARQ job (<code>expire_human_input</code>) with a 30-minute delay at the moment the interrupt fires. If the
+user has not answered by then, the job resumes the graph with a best-effort signal via <code>graph.ainvoke(Command(resume=...))</code>.
+If the user answers first, the answer endpoint cancels the deferred job via <code>Job.abort()</code> before resuming the graph.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="c1"># worker.py</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="n">TIMEOUT_ANSWER</span> <span class="o">=</span> <span class="s2">&quot;[no answer provided — proceeding with best-effort]&quot;</span>
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="n">HUMAN_INPUT_TIMEOUT_SECONDS</span> <span class="o">=</span> <span class="mi">1800</span>  <span class="c1"># 30 minutes</span>
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>
+<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">expire_human_input</span><span class="p">(</span><span class="n">ctx</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">job_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="sd">    Scheduled ARQ job: fires 30 min after a human_input interrupt if unanswered.</span>
+<a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="sd">    Resumes the graph with a best-effort signal so the supervisor can proceed.</span>
+<a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a>    <span class="n">redis</span><span class="p">:</span> <span class="n">Redis</span> <span class="o">=</span> <span class="n">ctx</span><span class="p">[</span><span class="s2">&quot;redis&quot;</span><span class="p">]</span>
+<a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a>
+<a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a>    <span class="n">job</span> <span class="o">=</span> <span class="n">Job</span><span class="p">(</span><span class="n">job_id</span><span class="p">,</span> <span class="n">redis</span><span class="p">)</span>
+<a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a>    <span class="n">info</span> <span class="o">=</span> <span class="k">await</span> <span class="n">job</span><span class="o">.</span><span class="n">info</span><span class="p">()</span>
+<a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a>    <span class="k">if</span> <span class="n">info</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">info</span><span class="o">.</span><span class="n">status</span> <span class="ow">in</span> <span class="p">(</span><span class="n">JobStatus</span><span class="o">.</span><span class="n">complete</span><span class="p">,</span> <span class="n">JobStatus</span><span class="o">.</span><span class="n">not_found</span><span class="p">):</span>
+<a id="__codelineno-7-16" name="__codelineno-7-16" href="#__codelineno-7-16"></a>        <span class="k">return</span>
+<a id="__codelineno-7-17" name="__codelineno-7-17" href="#__codelineno-7-17"></a>
+<a id="__codelineno-7-18" name="__codelineno-7-18" href="#__codelineno-7-18"></a>    <span class="n">config</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;configurable&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;thread_id&quot;</span><span class="p">:</span> <span class="n">job_id</span><span class="p">}}</span>
+<a id="__codelineno-7-19" name="__codelineno-7-19" href="#__codelineno-7-19"></a>    <span class="k">await</span> <span class="n">graph</span><span class="o">.</span><span class="n">ainvoke</span><span class="p">(</span><span class="n">Command</span><span class="p">(</span><span class="n">resume</span><span class="o">=</span><span class="n">TIMEOUT_ANSWER</span><span class="p">),</span> <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">)</span>
+<a id="__codelineno-7-20" name="__codelineno-7-20" href="#__codelineno-7-20"></a>
+<a id="__codelineno-7-21" name="__codelineno-7-21" href="#__codelineno-7-21"></a>    <span class="n">channel</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;jobs:</span><span class="si">{</span><span class="n">job_id</span><span class="si">}</span><span class="s2">:events&quot;</span>
+<a id="__codelineno-7-22" name="__codelineno-7-22" href="#__codelineno-7-22"></a>    <span class="k">await</span> <span class="n">redis</span><span class="o">.</span><span class="n">publish</span><span class="p">(</span><span class="n">channel</span><span class="p">,</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">({</span>
+<a id="__codelineno-7-23" name="__codelineno-7-23" href="#__codelineno-7-23"></a>        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;human_input.timeout&quot;</span><span class="p">,</span>
+<a id="__codelineno-7-24" name="__codelineno-7-24" href="#__codelineno-7-24"></a>        <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="s2">&quot;No answer received after 30 minutes. Proceeding with best-effort.&quot;</span><span class="p">,</span>
+<a id="__codelineno-7-25" name="__codelineno-7-25" href="#__codelineno-7-25"></a>    <span class="p">}))</span>
+</code></pre></div>
+<p>The timeout job is enqueued at the moment the ARQ worker detects the graph has paused at a <code>human_input</code> node (i.e.,
+<code>astream_events</code> yields an <code>on_chain_end</code> event whose metadata indicates an interrupt):</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="c1"># worker.py — inside run_triage(), after the astream_events loop</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">run_triage</span><span class="p">(</span><span class="n">ctx</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">job_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">initial_state</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>    <span class="n">redis</span><span class="p">:</span> <span class="n">Redis</span> <span class="o">=</span> <span class="n">ctx</span><span class="p">[</span><span class="s2">&quot;redis&quot;</span><span class="p">]</span>
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>    <span class="n">config</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;configurable&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;thread_id&quot;</span><span class="p">:</span> <span class="n">job_id</span><span class="p">}}</span>
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>    <span class="n">channel</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;jobs:</span><span class="si">{</span><span class="n">job_id</span><span class="si">}</span><span class="s2">:events&quot;</span>
+<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>
+<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>    <span class="k">async</span> <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">astream_events</span><span class="p">(</span><span class="n">initial_state</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="s2">&quot;v2&quot;</span><span class="p">):</span>
+<a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>        <span class="n">sse_event</span> <span class="o">=</span> <span class="n">transform_langgraph_event</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
+<a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a>        <span class="k">if</span> <span class="n">sse_event</span><span class="p">:</span>
+<a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a>            <span class="k">await</span> <span class="n">redis</span><span class="o">.</span><span class="n">publish</span><span class="p">(</span><span class="n">channel</span><span class="p">,</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">sse_event</span><span class="p">))</span>
+<a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a>
+<a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a>        <span class="k">if</span> <span class="n">_is_human_input_interrupt</span><span class="p">(</span><span class="n">event</span><span class="p">):</span>
+<a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a>            <span class="k">await</span> <span class="n">arq_queue</span><span class="o">.</span><span class="n">enqueue_job</span><span class="p">(</span>
+<a id="__codelineno-8-14" name="__codelineno-8-14" href="#__codelineno-8-14"></a>                <span class="s2">&quot;expire_human_input&quot;</span><span class="p">,</span>
+<a id="__codelineno-8-15" name="__codelineno-8-15" href="#__codelineno-8-15"></a>                <span class="n">job_id</span><span class="p">,</span>
+<a id="__codelineno-8-16" name="__codelineno-8-16" href="#__codelineno-8-16"></a>                <span class="n">_job_id</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;timeout:</span><span class="si">{</span><span class="n">job_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+<a id="__codelineno-8-17" name="__codelineno-8-17" href="#__codelineno-8-17"></a>                <span class="n">_defer_by</span><span class="o">=</span><span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="n">HUMAN_INPUT_TIMEOUT_SECONDS</span><span class="p">),</span>
+<a id="__codelineno-8-18" name="__codelineno-8-18" href="#__codelineno-8-18"></a>            <span class="p">)</span>
+<a id="__codelineno-8-19" name="__codelineno-8-19" href="#__codelineno-8-19"></a>
+<a id="__codelineno-8-20" name="__codelineno-8-20" href="#__codelineno-8-20"></a>    <span class="k">await</span> <span class="n">redis</span><span class="o">.</span><span class="n">publish</span><span class="p">(</span><span class="n">channel</span><span class="p">,</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">({</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;job.done&quot;</span><span class="p">}))</span>
+</code></pre></div>
+<p><strong>Answer endpoint cancels the timeout</strong> by aborting the scheduled ARQ job before resuming the graph:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="nd">@app</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="s2">&quot;/jobs/</span><span class="si">{job_id}</span><span class="s2">/answer&quot;</span><span class="p">)</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">submit_answer</span><span class="p">(</span><span class="n">job_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">body</span><span class="p">:</span> <span class="n">AnswerRequest</span><span class="p">,</span> <span class="n">redis</span><span class="p">:</span> <span class="n">Redis</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_redis</span><span class="p">)):</span>
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>    <span class="n">config</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;configurable&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;thread_id&quot;</span><span class="p">:</span> <span class="n">job_id</span><span class="p">}}</span>
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>    <span class="n">snapshot</span> <span class="o">=</span> <span class="k">await</span> <span class="n">graph</span><span class="o">.</span><span class="n">aget_state</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>    <span class="k">if</span> <span class="ow">not</span> <span class="n">snapshot</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;awaiting_human&quot;</span><span class="p">):</span>
+<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a>        <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="n">status_code</span><span class="o">=</span><span class="mi">409</span><span class="p">,</span> <span class="n">detail</span><span class="o">=</span><span class="s2">&quot;Job is not awaiting human input&quot;</span><span class="p">)</span>
+<a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a>
+<a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a>    <span class="n">timeout_job_id</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;timeout:</span><span class="si">{</span><span class="n">job_id</span><span class="si">}</span><span class="s2">&quot;</span>
+<a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a>    <span class="n">timeout_job</span> <span class="o">=</span> <span class="n">Job</span><span class="p">(</span><span class="n">timeout_job_id</span><span class="p">,</span> <span class="n">redis</span><span class="p">)</span>
+<a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a>    <span class="k">await</span> <span class="n">timeout_job</span><span class="o">.</span><span class="n">abort</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>  <span class="c1"># no-op if already fired or not found</span>
+<a id="__codelineno-9-12" name="__codelineno-9-12" href="#__codelineno-9-12"></a>
+<a id="__codelineno-9-13" name="__codelineno-9-13" href="#__codelineno-9-13"></a>    <span class="k">await</span> <span class="n">graph</span><span class="o">.</span><span class="n">ainvoke</span><span class="p">(</span><span class="n">Command</span><span class="p">(</span><span class="n">resume</span><span class="o">=</span><span class="n">body</span><span class="o">.</span><span class="n">answer</span><span class="p">),</span> <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="question-constraints">Question Constraints<a class="headerlink" href="#question-constraints" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Rule</th>
+<th>Value</th>
+<th>Rationale</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Max questions per job</td>
+<td>2</td>
+<td>Prevent over-reliance on user; agents should be capable</td>
+</tr>
+<tr>
+<td>Timeout (no answer)</td>
+<td>30 minutes — enforced via deferred ARQ job (<code>expire_human_input</code>)</td>
+<td>Prevents indefinite graph hang; graph resumes with best-effort signal</td>
+</tr>
+<tr>
+<td>Question format</td>
+<td>Single question + 2–3 concrete options when applicable</td>
+<td>Reduces cognitive load</td>
+</tr>
+<tr>
+<td>Blocker scope</td>
+<td>Entire graph pauses, not just one agent</td>
+<td>Ensures answer is incorporated before any further work</td>
+</tr>
+</tbody>
+</table>
+<h3 id="implementation-gotchas">Implementation Gotchas<a class="headerlink" href="#implementation-gotchas" title="Permanent link">&para;</a></h3>
+<p><strong>Node re-execution on resume:</strong> When <code>Command(resume=...)</code> is called, LangGraph re-runs the
+entire <code>human_input_node</code> function from the top. The current implementation is safe because no
+side effects occur before <code>interrupt()</code>. Any future code added before the <code>interrupt()</code> call
+must be idempotent — it will execute twice (once when the interrupt fires, once when the graph
+resumes).</p>
+<p><strong>Bare except trap:</strong> <code>interrupt()</code> works by raising a special internal exception
+(<code>GraphInterrupt</code>). Any bare <code>except Exception:</code> or <code>except:</code> block inside <code>human_input_node</code>
+will silently swallow it, preventing the graph from pausing. Always catch specific exception
+types in this node.</p>
+<p><strong>Multiple interrupt ordering:</strong> If multiple <code>interrupt()</code> calls exist in a node, LangGraph
+matches resume values by index. Since <code>human_input_node</code> has exactly one interrupt call, this
+constraint is satisfied automatically. Future multi-interrupt nodes must maintain deterministic
+<code>interrupt()</code> call order to ensure correct resume value matching.</p>
+<hr />
+<h2 id="pause-redirect-and-kill">Pause, Redirect, and Kill<a class="headerlink" href="#pause-redirect-and-kill" title="Permanent link">&para;</a></h2>
+<h3 id="pause">Pause<a class="headerlink" href="#pause" title="Permanent link">&para;</a></h3>
+<p>Triggered by user clicking "Pause" in the UI. Sends <code>POST /jobs/{id}/pause</code>.</p>
+<p>Implementation: Sets <code>paused: True</code> in the checkpointed state. The supervisor checks this flag <strong>at
+the start of each iteration</strong> and fires <code>interrupt()</code> with a <code>"manual_pause"</code> signal if set. User
+can resume by clicking "Resume".</p>
+<p><strong>"At-next-iteration" behaviour:</strong> The pause takes effect at the next supervisor node boundary, not
+immediately. If the supervisor is already mid-LLM-call (e.g. deciding which worker to dispatch) when
+the API call arrives, execution continues until that LLM call completes and the supervisor node runs
+again. In practice this means up to one additional worker agent may be spawned before the graph
+actually pauses.</p>
+<p>This is by design — LangGraph does not expose a mid-node cancellation hook for the flag-based
+pattern. The alternative (a hard <code>Job.abort()</code> followed by re-enqueue) is lossy and not used here.</p>
+<p><strong>UI implication:</strong> The frontend must show a <strong>"Pause requested…"</strong> intermediate status from the
+moment <code>POST /jobs/{id}/pause</code> returns 200 until a <code>graph.paused</code> SSE event is received. See
+<a href="../PRD-002-frontend-ux/#status-definitions">PRD-002 §Status Definitions</a>.</p>
+<h3 id="redirect">Redirect<a class="headerlink" href="#redirect" title="Permanent link">&para;</a></h3>
+<p>Triggered after a pause. User can type a new instruction into a text field in the UI: e.g., "Focus
+only on the database layer — ignore the auth middleware."</p>
+<p>Implementation: Resumes the graph via <code>Command(resume={"type": "redirect", "instruction": "..."})</code>.
+When the supervisor node receives this command, it:</p>
+<ol>
+<li>Reads the <code>instruction</code> string from the <code>Command</code> payload (the return value of <code>interrupt()</code>).</li>
+<li><strong>Appends it to <code>redirect_instructions</code></strong> in its returned state dict, so the instruction is
+   written into the LangGraph checkpoint immediately.</li>
+<li>Prepends all accumulated <code>redirect_instructions</code> (not just the latest) to its system prompt for
+   the current and all subsequent supervisor iterations.</li>
+</ol>
+<p><strong>Persistence guarantee:</strong> Because the instruction is stored in <code>BugTriageState.redirect_instructions</code>
+before any further LLM work is done, it survives server restarts. If the worker process crashes and
+the job is resumed from checkpoint, the full list of redirect instructions is restored and the
+supervisor continues to honour them.</p>
+<p><strong>Multiple redirects:</strong> Each redirect appends to the list. The supervisor concatenates all entries
+in order, so earlier redirects remain in effect unless a later one explicitly overrides them.</p>
+<h3 id="kill">Kill<a class="headerlink" href="#kill" title="Permanent link">&para;</a></h3>
+<p>Sends <code>DELETE /jobs/{id}</code>. Immediately terminates the LangGraph thread via ARQ's cross-process abort mechanism.
+Final state is checkpointed with <code>status: "killed"</code>. Any partial outputs already in state are preserved and shown in
+the output panel.</p>
+<p><strong>Architecture:</strong> The API server never runs the graph. Jobs are enqueued to ARQ workers via Redis. <code>Job.abort()</code> sends
+an abort signal through Redis; the worker process holding that job cancels its asyncio task — this works across any
+number of workers and processes by design. No module-level <code>running_tasks</code> dict is needed.</p>
+<pre class="mermaid"><code>flowchart LR
+    subgraph API["FastAPI API server (REST + SSE)"]
+        REST["REST endpoints\n/jobs/*"]
+        SSE["SSE subscriber\njobs:{id}:events"]
+    end
+
+    subgraph WORKER["ARQ Worker(s)"]
+        GRAPH["graph.ainvoke()"]
+        PUB["publishes events\nto Redis channel"]
+    end
+
+    REDIS[("Redis\nARQ queue + Pub/Sub\n+ job status")]
+    PG[("PostgreSQL\nLangGraph state")]
+
+    API --&gt;|"enqueue_job()"| WORKER
+    WORKER --&gt;|"Redis Pub/Sub events"| API
+    API --&gt;|"Job.abort()"| REDIS
+    REDIS --&gt;|"job queue"| WORKER
+    WORKER --&gt;|"PostgresSaver"| PG</code></pre>
+<p><strong>ARQ worker function</strong> — runs on a worker process, not the API server:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="c1"># worker.py</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">run_triage</span><span class="p">(</span><span class="n">ctx</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">job_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">initial_state</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>    <span class="n">redis</span><span class="p">:</span> <span class="n">Redis</span> <span class="o">=</span> <span class="n">ctx</span><span class="p">[</span><span class="s2">&quot;redis&quot;</span><span class="p">]</span>
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>    <span class="n">config</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;configurable&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;thread_id&quot;</span><span class="p">:</span> <span class="n">job_id</span><span class="p">}}</span>
+<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>    <span class="n">channel</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;jobs:</span><span class="si">{</span><span class="n">job_id</span><span class="si">}</span><span class="s2">:events&quot;</span>
+<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>
+<a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a>    <span class="k">async</span> <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">astream_events</span><span class="p">(</span><span class="n">initial_state</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="s2">&quot;v2&quot;</span><span class="p">):</span>
+<a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a>        <span class="n">sse_event</span> <span class="o">=</span> <span class="n">transform_langgraph_event</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
+<a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a>        <span class="k">if</span> <span class="n">sse_event</span><span class="p">:</span>
+<a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a>            <span class="k">await</span> <span class="n">redis</span><span class="o">.</span><span class="n">publish</span><span class="p">(</span><span class="n">channel</span><span class="p">,</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">sse_event</span><span class="p">))</span>
+<a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a>
+<a id="__codelineno-10-12" name="__codelineno-10-12" href="#__codelineno-10-12"></a>    <span class="k">await</span> <span class="n">redis</span><span class="o">.</span><span class="n">publish</span><span class="p">(</span><span class="n">channel</span><span class="p">,</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">({</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;job.done&quot;</span><span class="p">}))</span>
+<a id="__codelineno-10-13" name="__codelineno-10-13" href="#__codelineno-10-13"></a>
+<a id="__codelineno-10-14" name="__codelineno-10-14" href="#__codelineno-10-14"></a>
+<a id="__codelineno-10-15" name="__codelineno-10-15" href="#__codelineno-10-15"></a><span class="k">class</span><span class="w"> </span><span class="nc">WorkerSettings</span><span class="p">:</span>
+<a id="__codelineno-10-16" name="__codelineno-10-16" href="#__codelineno-10-16"></a>    <span class="n">functions</span> <span class="o">=</span> <span class="p">[</span><span class="n">run_triage</span><span class="p">]</span>
+<a id="__codelineno-10-17" name="__codelineno-10-17" href="#__codelineno-10-17"></a>    <span class="n">allow_abort_jobs</span> <span class="o">=</span> <span class="kc">True</span>   <span class="c1"># enables Job.abort() cross-worker</span>
+<a id="__codelineno-10-18" name="__codelineno-10-18" href="#__codelineno-10-18"></a>    <span class="n">max_jobs</span> <span class="o">=</span> <span class="mi">10</span>             <span class="c1"># concurrent job cap per worker</span>
+<a id="__codelineno-10-19" name="__codelineno-10-19" href="#__codelineno-10-19"></a>    <span class="n">retry_jobs</span> <span class="o">=</span> <span class="kc">False</span>        <span class="c1"># ARQ retries disabled; at-most-once deduplication is enforced</span>
+<a id="__codelineno-10-20" name="__codelineno-10-20" href="#__codelineno-10-20"></a>                              <span class="c1"># at the API layer via a Redis idempotency key (see PRD-006)</span>
+</code></pre></div>
+<p><strong>Kill endpoint</strong> — no dict lookup, no task tracking:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="nd">@app</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="s2">&quot;/jobs/</span><span class="si">{job_id}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">kill_job</span><span class="p">(</span><span class="n">job_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">redis</span><span class="p">:</span> <span class="n">Redis</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_redis</span><span class="p">)):</span>
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>    <span class="n">job</span> <span class="o">=</span> <span class="n">Job</span><span class="p">(</span><span class="n">job_id</span><span class="p">,</span> <span class="n">redis</span><span class="p">)</span>
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>    <span class="n">info</span> <span class="o">=</span> <span class="k">await</span> <span class="n">job</span><span class="o">.</span><span class="n">info</span><span class="p">()</span>
+<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>    <span class="k">if</span> <span class="n">info</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>        <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="n">status_code</span><span class="o">=</span><span class="mi">404</span><span class="p">,</span> <span class="n">detail</span><span class="o">=</span><span class="s2">&quot;Job not found&quot;</span><span class="p">)</span>
+<a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a>
+<a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a>    <span class="n">aborted</span> <span class="o">=</span> <span class="k">await</span> <span class="n">job</span><span class="o">.</span><span class="n">abort</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a>    <span class="k">if</span> <span class="ow">not</span> <span class="n">aborted</span><span class="p">:</span>
+<a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a>        <span class="c1"># run_triage exits normally when interrupt() suspends the graph, so ARQ</span>
+<a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a>        <span class="c1"># marks the job complete while the LangGraph thread sits checkpointed.</span>
+<a id="__codelineno-11-12" name="__codelineno-11-12" href="#__codelineno-11-12"></a>        <span class="c1"># The pending timeout job is present exactly in that window.</span>
+<a id="__codelineno-11-13" name="__codelineno-11-13" href="#__codelineno-11-13"></a>        <span class="n">timeout_job</span> <span class="o">=</span> <span class="n">Job</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;timeout:</span><span class="si">{</span><span class="n">job_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">redis</span><span class="p">)</span>
+<a id="__codelineno-11-14" name="__codelineno-11-14" href="#__codelineno-11-14"></a>        <span class="n">timeout_info</span> <span class="o">=</span> <span class="k">await</span> <span class="n">timeout_job</span><span class="o">.</span><span class="n">info</span><span class="p">()</span>
+<a id="__codelineno-11-15" name="__codelineno-11-15" href="#__codelineno-11-15"></a>        <span class="k">if</span> <span class="n">timeout_info</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">timeout_info</span><span class="o">.</span><span class="n">status</span> <span class="ow">in</span> <span class="p">(</span><span class="n">JobStatus</span><span class="o">.</span><span class="n">complete</span><span class="p">,</span> <span class="n">JobStatus</span><span class="o">.</span><span class="n">not_found</span><span class="p">):</span>
+<a id="__codelineno-11-16" name="__codelineno-11-16" href="#__codelineno-11-16"></a>            <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span><span class="n">status_code</span><span class="o">=</span><span class="mi">409</span><span class="p">,</span> <span class="n">detail</span><span class="o">=</span><span class="s2">&quot;Job could not be aborted (may already be complete)&quot;</span><span class="p">)</span>
+<a id="__codelineno-11-17" name="__codelineno-11-17" href="#__codelineno-11-17"></a>        <span class="k">await</span> <span class="n">timeout_job</span><span class="o">.</span><span class="n">abort</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>  <span class="c1"># no-op if already fired</span>
+<a id="__codelineno-11-18" name="__codelineno-11-18" href="#__codelineno-11-18"></a>
+<a id="__codelineno-11-19" name="__codelineno-11-19" href="#__codelineno-11-19"></a>    <span class="n">config</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;configurable&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;thread_id&quot;</span><span class="p">:</span> <span class="n">job_id</span><span class="p">}}</span>
+<a id="__codelineno-11-20" name="__codelineno-11-20" href="#__codelineno-11-20"></a>    <span class="k">await</span> <span class="n">graph</span><span class="o">.</span><span class="n">aupdate_state</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;killed&quot;</span><span class="p">})</span>
+<a id="__codelineno-11-21" name="__codelineno-11-21" href="#__codelineno-11-21"></a>
+<a id="__codelineno-11-22" name="__codelineno-11-22" href="#__codelineno-11-22"></a>    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;job_id&quot;</span><span class="p">:</span> <span class="n">job_id</span><span class="p">,</span> <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;killed&quot;</span><span class="p">}</span>
+</code></pre></div>
+<hr />
+<h2 id="checkpointing-and-persistence">Checkpointing and Persistence<a class="headerlink" href="#checkpointing-and-persistence" title="Permanent link">&para;</a></h2>
+<h3 id="why-checkpointing-matters">Why Checkpointing Matters<a class="headerlink" href="#why-checkpointing-matters" title="Permanent link">&para;</a></h3>
+<p>LangGraph's checkpointer saves the full <code>BugTriageState</code> to a database after every node execution. This means:</p>
+<ul>
+<li>Jobs survive server restarts</li>
+<li>Users can close the browser and come back to a running job</li>
+<li>The full execution history is available for debugging</li>
+<li>Paused jobs (waiting for human input) persist indefinitely until answered</li>
+</ul>
+<h3 id="configuration">Configuration<a class="headerlink" href="#configuration" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Environment</th>
+<th>Checkpointer</th>
+<th>Connection</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Development</td>
+<td><code>SqliteSaver</code></td>
+<td><code>jobs.db</code> (local file)</td>
+</tr>
+<tr>
+<td>Production</td>
+<td><code>PostgresSaver</code></td>
+<td><code>DATABASE_URL</code> env var</td>
+</tr>
+</tbody>
+</table>
+<h3 id="thread-ids">Thread IDs<a class="headerlink" href="#thread-ids" title="Permanent link">&para;</a></h3>
+<p>Each job is identified by a UUID that maps 1:1 to a LangGraph thread ID. This UUID is generated at <code>POST /jobs</code> and is
+the same ID used in SSE stream URLs, answer endpoints, and LangSmith trace grouping.</p>
+<h3 id="checkpointing-deployment-notes">Checkpointing Deployment Notes<a class="headerlink" href="#checkpointing-deployment-notes" title="Permanent link">&para;</a></h3>
+<p><strong><code>setup()</code> call:</strong> Must be called exactly once before first use to create the checkpoint
+tables in PostgreSQL. Run it as a database migration step in CI/CD (e.g. via <code>alembic</code> or a
+standalone management command), not during <code>lifespan()</code> startup. Repeated calls on an existing
+schema are safe but noisy; insufficient-permission errors at startup are harder to recover from
+than migration-step failures.</p>
+<p><strong><code>AsyncPostgresSaver</code> connection requirements:</strong> The <code>psycopg</code> connection must be created with:
+- <code>autocommit=True</code> — required for <code>setup()</code> to commit the table creation DDL
+- <code>row_factory=dict_row</code> — required because the saver accesses rows as <code>row["column"]</code>; the
+  default tuple-based row factory causes <code>TypeError</code> at runtime</p>
+<p><strong>Connection pool sizing:</strong> The <code>AsyncConnectionPool</code> <code>max_size</code> should equal or exceed the
+ARQ worker's <code>max_jobs</code> setting (currently 10). Each concurrent job holds one connection during
+checkpoint reads and writes. Undersizing the pool causes jobs to queue on connection acquisition
+and increases perceived latency.</p>
+<p><strong>Known PoolClosed race condition:</strong> When the PostgreSQL connection pool is recycled (e.g.
+after a cloud database failover or idle timeout), agent instances holding stale pool references
+receive <code>PoolClosed</code> errors. Pattern to avoid this: acquire a fresh connection per checkpoint
+operation via the <code>pool.connection()</code> async context manager rather than holding a long-lived
+connection reference across multiple node executions.</p>
+<hr />
+<h2 id="streaming-to-frontend">Streaming to Frontend<a class="headerlink" href="#streaming-to-frontend" title="Permanent link">&para;</a></h2>
+<p><strong>Separation of concerns:</strong> <code>graph.astream_events()</code> runs inside the ARQ worker (see <a href="#kill">Kill</a>). The worker publishes each
+transformed event to a Redis Pub/Sub channel (<code>jobs:{job_id}:events</code>). The FastAPI SSE endpoint is a pure subscriber
+— it never executes graph logic.</p>
+<p>This means multiple browser tabs can subscribe to the same job stream independently (each gets a separate Redis
+subscriber), and a client disconnect drops only that subscriber — the running job in the ARQ worker is unaffected.</p>
+<p><strong>Disconnect handling:</strong> Starlette's <code>StreamingResponse</code> runs the generator inside an anyio cancel scope. When the
+client disconnects, Starlette cancels the scope, which raises <code>asyncio.CancelledError</code> at whichever <code>await</code> the
+generator is blocked on inside <code>pubsub.listen()</code>. The <code>finally</code> block fires unconditionally and cleans up the
+subscriber. No polling, no <code>request.is_disconnected()</code> checks, no extra tasks.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="nd">@router</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;/</span><span class="si">{job_id}</span><span class="s2">/stream&quot;</span><span class="p">)</span>
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">stream_job</span><span class="p">(</span>
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>    <span class="n">job_id</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_job_and_verify_owner</span><span class="p">)],</span>
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>    <span class="n">redis</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="n">Redis</span><span class="p">,</span> <span class="n">Depends</span><span class="p">(</span><span class="n">get_redis</span><span class="p">)],</span>
+<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">StreamingResponse</span><span class="p">:</span>
+<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>    <span class="n">channel</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;jobs:</span><span class="si">{</span><span class="n">job_id</span><span class="si">}</span><span class="s2">:events&quot;</span>
+<a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a>
+<a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a>    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">event_generator</span><span class="p">():</span>
+<a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a>        <span class="n">pubsub</span> <span class="o">=</span> <span class="n">redis</span><span class="o">.</span><span class="n">pubsub</span><span class="p">()</span>
+<a id="__codelineno-12-10" name="__codelineno-12-10" href="#__codelineno-12-10"></a>        <span class="k">await</span> <span class="n">pubsub</span><span class="o">.</span><span class="n">subscribe</span><span class="p">(</span><span class="n">channel</span><span class="p">)</span>
+<a id="__codelineno-12-11" name="__codelineno-12-11" href="#__codelineno-12-11"></a>        <span class="n">seq</span> <span class="o">=</span> <span class="mi">0</span>
+<a id="__codelineno-12-12" name="__codelineno-12-12" href="#__codelineno-12-12"></a>        <span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-12-13" name="__codelineno-12-13" href="#__codelineno-12-13"></a>            <span class="k">async</span> <span class="k">for</span> <span class="n">message</span> <span class="ow">in</span> <span class="n">pubsub</span><span class="o">.</span><span class="n">listen</span><span class="p">():</span>
+<a id="__codelineno-12-14" name="__codelineno-12-14" href="#__codelineno-12-14"></a>                <span class="k">if</span> <span class="n">message</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;message&quot;</span><span class="p">:</span>
+<a id="__codelineno-12-15" name="__codelineno-12-15" href="#__codelineno-12-15"></a>                    <span class="k">continue</span>
+<a id="__codelineno-12-16" name="__codelineno-12-16" href="#__codelineno-12-16"></a>                <span class="k">yield</span> <span class="sa">f</span><span class="s2">&quot;id: </span><span class="si">{</span><span class="n">seq</span><span class="si">}</span><span class="se">\n</span><span class="s2">data: </span><span class="si">{</span><span class="n">message</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span><span class="si">}</span><span class="se">\n\n</span><span class="s2">&quot;</span>
+<a id="__codelineno-12-17" name="__codelineno-12-17" href="#__codelineno-12-17"></a>                <span class="n">seq</span> <span class="o">+=</span> <span class="mi">1</span>
+<a id="__codelineno-12-18" name="__codelineno-12-18" href="#__codelineno-12-18"></a>                <span class="k">if</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">message</span><span class="p">[</span><span class="s2">&quot;data&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;type&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;job.done&quot;</span><span class="p">:</span>
+<a id="__codelineno-12-19" name="__codelineno-12-19" href="#__codelineno-12-19"></a>                    <span class="k">break</span>
+<a id="__codelineno-12-20" name="__codelineno-12-20" href="#__codelineno-12-20"></a>        <span class="k">finally</span><span class="p">:</span>
+<a id="__codelineno-12-21" name="__codelineno-12-21" href="#__codelineno-12-21"></a>            <span class="k">await</span> <span class="n">pubsub</span><span class="o">.</span><span class="n">unsubscribe</span><span class="p">(</span><span class="n">channel</span><span class="p">)</span>
+<a id="__codelineno-12-22" name="__codelineno-12-22" href="#__codelineno-12-22"></a>            <span class="k">await</span> <span class="n">pubsub</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+<a id="__codelineno-12-23" name="__codelineno-12-23" href="#__codelineno-12-23"></a>
+<a id="__codelineno-12-24" name="__codelineno-12-24" href="#__codelineno-12-24"></a>    <span class="k">return</span> <span class="n">StreamingResponse</span><span class="p">(</span><span class="n">event_generator</span><span class="p">(),</span> <span class="n">media_type</span><span class="o">=</span><span class="s2">&quot;text/event-stream&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p>The <code>transform_langgraph_event()</code> function (called in the ARQ worker) maps LangGraph's internal event types (e.g.,
+<code>on_chat_model_stream</code>, <code>on_tool_start</code>, <code>on_chain_end</code>) to the frontend event schema in
+<a href="../PRD-002-frontend-ux/">PRD-002</a>. When a Writer <code>RunnableParallel</code> branch completes,
+the corresponding <code>on_chain_end</code> event is translated to <code>output.section_done { section }</code> so the
+frontend can enable per-section controls without waiting for <code>job.done</code>.</p>
+<p><strong>FastAPI lifespan</strong> — no graph tasks to drain on shutdown; only the Redis pool needs cleanup:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="nd">@asynccontextmanager</span>
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">lifespan</span><span class="p">(</span><span class="n">app</span><span class="p">:</span> <span class="n">FastAPI</span><span class="p">):</span>
+<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>    <span class="n">app</span><span class="o">.</span><span class="n">state</span><span class="o">.</span><span class="n">redis</span> <span class="o">=</span> <span class="k">await</span> <span class="n">create_redis_pool</span><span class="p">(</span><span class="n">RedisSettings</span><span class="p">())</span>
+<a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a>    <span class="n">app</span><span class="o">.</span><span class="n">state</span><span class="o">.</span><span class="n">arq_queue</span> <span class="o">=</span> <span class="n">ArqRedis</span><span class="p">(</span><span class="n">app</span><span class="o">.</span><span class="n">state</span><span class="o">.</span><span class="n">redis</span><span class="p">)</span>
+<a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a>    <span class="k">yield</span>
+<a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a>    <span class="k">await</span> <span class="n">app</span><span class="o">.</span><span class="n">state</span><span class="o">.</span><span class="n">redis</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+<a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a>
+<a id="__codelineno-13-8" name="__codelineno-13-8" href="#__codelineno-13-8"></a><span class="n">app</span> <span class="o">=</span> <span class="n">FastAPI</span><span class="p">(</span><span class="n">lifespan</span><span class="o">=</span><span class="n">lifespan</span><span class="p">)</span>
+</code></pre></div>
+<hr />
+<h2 id="error-handling">Error Handling<a class="headerlink" href="#error-handling" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Error Scenario</th>
+<th>Behavior</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Worker agent LangServe endpoint is down</td>
+<td>Supervisor retries once after 5s; on second failure, marks agent as errored and routes to next available agent or human_input</td>
+</tr>
+<tr>
+<td>LLM rate limit (429)</td>
+<td>Exponential backoff with max 3 retries; after that, job status set to FAILED</td>
+</tr>
+<tr>
+<td>Supervisor outputs invalid JSON</td>
+<td>Pydantic validation catches it; supervisor is re-invoked once with an error correction prompt</td>
+</tr>
+<tr>
+<td><code>max_iterations</code> reached</td>
+<td>Graph routes directly to <code>writer</code> with whatever findings have been accumulated</td>
+</tr>
+<tr>
+<td>Unhandled exception in any node</td>
+<td>Job status set to FAILED; full traceback captured in LangSmith; error event sent to frontend</td>
+</tr>
+<tr>
+<td>Checkpointer DB unavailable</td>
+<td>Job continues in-memory; warning logged; user notified that job will not survive restart</td>
+</tr>
+<tr>
+<td><code>POST /jobs/{id}/answer</code> called while job is not awaiting input</td>
+<td>Returns HTTP 409 Conflict; <code>awaiting_human</code> flag checked via <code>graph.aget_state()</code> before resuming</td>
+</tr>
+</tbody>
+</table>
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.top", "toc.integrate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
