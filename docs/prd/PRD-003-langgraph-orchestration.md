@@ -114,6 +114,7 @@ class BugTriageState(BaseModel):
     current_node: str = Field(default="")
     next_node: str | None = Field(default=None)
     supervisor_reasoning: str = Field(default="")
+    supervisor_confidence: float = Field(default=0.0)
     iterations: int = Field(default=0)   # total node executions; not reset on resume
     max_iterations: int = Field(default=12)
     paused: bool = Field(default=False)
@@ -139,6 +140,11 @@ class BugTriageState(BaseModel):
     report: TriageReport | None = Field(default=None)
     github_comment_draft: str | None = Field(default=None)
     ticket_draft: dict[str, object] | None = Field(default=None)
+
+    # --- Cost tracking ---
+    running_cost_usd: float = Field(default=0.0)
+    max_cost_usd: float = Field(default=5.0)
+    cost_budget_exceeded: bool = Field(default=False)
 
     # --- Job metadata ---
     job_id: str
@@ -360,9 +366,9 @@ async def investigator_node(state: BugTriageState) -> dict:
         "http://localhost:8001/agents/investigator/invoke",
         json={
             "input": {
-                "issue_title": state["issue_title"],
-                "issue_body": state["issue_body"],
-                "prior_findings": state["findings"],
+                "issue_title": state.issue_title,
+                "issue_body": state.issue_body,
+                "prior_findings": state.findings,
             }
         }
     )
@@ -370,7 +376,7 @@ async def investigator_node(state: BugTriageState) -> dict:
     return {
         "findings": [finding],  # reducer appends this
         "current_node": "investigator",
-        "iterations": state["iterations"] + 1,
+        "iterations": state.iterations + 1,
     }
 ```
 

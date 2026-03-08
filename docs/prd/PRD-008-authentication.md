@@ -720,7 +720,7 @@ and redeploying all affected services — no token store or expiry mechanism req
 | Type | Opaque UUID v4 |
 | Expiry | 7 days |
 | Storage | `HttpOnly; Secure; SameSite=Strict` cookie |
-| Redis key | `refresh_token:{uuid}` → plain `github_id` string (e.g. `"1234567"`) |
+| Redis key | `refresh_token:{uuid}` → `"{github_id}:{github_login}"` colon-separated string (e.g. `"1234567:octocat"`) |
 | Revocation | Delete Redis key → immediate revocation |
 | Rotation | Not in v1; add on v1.1 (new refresh token issued on every `/auth/refresh` call) |
 
