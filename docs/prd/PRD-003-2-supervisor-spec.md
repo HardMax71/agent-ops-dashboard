@@ -410,27 +410,26 @@ confidence or reasoning quality.
 
 ```python
 def route_from_supervisor(state: BugTriageState) -> str:
-    decision_node = state.get("next_node")
+    decision_node = state.next_node
 
     # Guard 1: investigator-first invariant
-    if state["iterations"] == 0 and decision_node != "investigator":
+    if state.iterations == 0 and decision_node != "investigator":
         return "investigator"
 
     # Guard 2: max human questions enforced in code, not just prompt
-    if len(state["human_exchanges"]) >= 2 and decision_node == "human_input":
+    if len(state.human_exchanges) >= 2 and decision_node == "human_input":
         return "codebase_search"
 
     # Guard 3: iteration limit — overrides Guard 5; routes to writer regardless of verdict
-    if state["iterations"] >= state["max_iterations"]:
+    if state.iterations >= state.max_iterations:
         return "writer"
 
     # Guard 4: supervisor must not end without a report
-    if decision_node == "end" and state["report"] is None:
+    if decision_node == "end" and state.report is None:
         return "writer"
 
     # Guard 5: critic verdict gate — REJECTED blocks routing to writer
-    critic_feedback = state.get("critic_feedback")
-    if critic_feedback is not None and critic_feedback.verdict == "REJECTED":
+    if state.critic_feedback is not None and state.critic_feedback.verdict == "REJECTED":
         if decision_node == "writer":
             return "investigator"
 
@@ -464,6 +463,22 @@ This is enforced both in the supervisor system prompt (§3) and in code via Guar
 `"REJECTED"`, it overrides any LLM decision to route to `"writer"`, redirecting to
 `"investigator"` instead. Guard 3 (iteration limit) runs before Guard 5 and takes priority —
 when `max_iterations` is reached the graph routes to writer regardless of verdict.
+
+### `human_input` Node Implementation Note
+
+`supervisor_node()` sets `state.pending_exchange` (a `HumanExchange`) before routing to
+`human_input`. The `human_input` node must call `interrupt(state.pending_exchange)` — passing
+the already-constructed `HumanExchange` object directly. No dict construction is needed:
+
+```python
+async def human_input_node(state: BugTriageState) -> dict:
+    interrupt(state.pending_exchange)   # typed end-to-end — no {"question": ..., "context": ...} dict
+    return {}
+```
+
+The interrupt value is `state.pending_exchange` itself, typed as `HumanExchange`. The
+`_check_for_interrupt()` function in PRD-003-1 reads it back as `state.tasks[0].interrupts[0].value`
+and returns it typed as `HumanExchange | None` — dot field access throughout, no dict keys.
 
 ---
 

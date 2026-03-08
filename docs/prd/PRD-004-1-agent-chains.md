@@ -180,23 +180,16 @@ without appending a finding. The supervisor then re-routes based on the unchange
 Full node pattern (see Section 10 for complete call pattern):
 
 ```python
-output = response.json()["output"]
+# Parse first — dot notation throughout; no untyped dict access on the output
+raw = InvestigatorFinding(**response.json()["output"])
 
-if output.get("error"):
-    logger.warning("agent=%s error=%s", node_name, output["error"])
-    return {
-        "current_node": node_name,
-        "iterations": state["iterations"] + 1,
-        # findings NOT appended — supervisor sees no new finding and may retry or escalate
-    }
+if raw.error:
+    logger.warning("agent=%s error=%s", node_name, raw.error)
+    return {"current_node": node_name, "iterations": state.iterations + 1}
+    # findings NOT appended — supervisor sees no new finding and may retry or escalate
 
-raw = AgentFindingBase(**output)
-finding = _to_agent_finding(raw, details=..., relevant_files=...)
-return {
-    "findings": [finding],
-    "current_node": node_name,
-    "iterations": state["iterations"] + 1,
-}
+finding = _to_agent_finding(raw, details=raw.hypothesis, relevant_files=raw.affected_areas)
+return {"findings": [finding], "current_node": node_name, "iterations": state.iterations + 1}
 ```
 
 ---
@@ -861,27 +854,26 @@ async def investigator_node(state: BugTriageState) -> dict:
             f"{settings.investigator_url}/agents/investigator/invoke",
             json={
                 "input": {
-                    "issue_title": state["issue_title"],
-                    "issue_body": state["issue_body"],
-                    "prior_findings": state["findings"],
+                    "issue_title": state.issue_title,
+                    "issue_body": state.issue_body,
+                    "prior_findings": state.findings,
                 }
             },
             timeout=60.0,
         )
     response.raise_for_status()
 
-    output: dict = response.json()["output"]
+    # Parse first — typed from here on; no dict access on the output
+    raw = InvestigatorFinding(**response.json()["output"])
 
     # Error field check: if the agent set error, do not append a finding
-    if output.get("error"):
-        logger.warning("agent=%s error=%s", node_name, output["error"])
+    if raw.error:
+        logger.warning("agent=%s error=%s", node_name, raw.error)
         return {
             "current_node": node_name,
-            "iterations": state["iterations"] + 1,
+            "iterations": state.iterations + 1,
             # findings NOT appended — supervisor sees no new finding and may retry or escalate
         }
-
-    raw = InvestigatorFinding(**output)
 
     finding = _to_agent_finding(
         raw=raw,
@@ -892,7 +884,7 @@ async def investigator_node(state: BugTriageState) -> dict:
     return {
         "findings": [finding],
         "current_node": node_name,
-        "iterations": state["iterations"] + 1,
+        "iterations": state.iterations + 1,
     }
 ```
 
