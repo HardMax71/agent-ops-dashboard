@@ -1,3 +1,7 @@
+import os
+
+os.environ.setdefault("JWT_SECRET", "test-placeholder-secret-32characters!!")
+
 import json
 from pathlib import Path
 
@@ -17,7 +21,7 @@ def settings() -> Settings:
     return Settings(
         environment="test",
         redis_url="redis://localhost:6379/0",
-        jwt_secret="test-secret-12345",
+        jwt_secret="test-placeholder-secret-32characters!!",
         openai_api_key="sk-test",
     )
 

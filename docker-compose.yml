@@ -4,13 +4,21 @@ services:
     build: .
     ports: ["8000:8000"]
     env_file: .env
-    depends_on: [db, redis]
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     command: uvicorn agentops.api.main:app --host 0.0.0.0 --port 8000
 
   worker:
     build: .
     env_file: .env
-    depends_on: [db, redis]
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     command: python -m agentops.worker
 
   db:
@@ -19,13 +27,24 @@ services:
       POSTGRES_USER: agentops
       POSTGRES_PASSWORD: agentops
       POSTGRES_DB: agentops
-    ports: ["5432:5432"]
+    ports: ["127.0.0.1:5432:5432"]
     volumes: ["pgdata:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U agentops -d agentops"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
   redis:
     image: redis:7
-    ports: ["6379:6379"]
+    ports: ["127.0.0.1:6379:6379"]
     volumes: ["redisdata:/data"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
 
   investigator:
     build:

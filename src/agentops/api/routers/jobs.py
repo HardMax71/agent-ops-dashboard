@@ -60,12 +60,14 @@ async def create_job(
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Invalid GitHub issue URL")
 
     owner_id = "anonymous"
-    idempotency_key = f"idempotency:{hashlib.sha256(body.issue_url.encode()).hexdigest()}"
-    existing_job_id = await redis.get(idempotency_key)
-    if existing_job_id is not None:
-        return CreateJobResponse(job_id=existing_job_id, status="queued")
-
     job_id = str(uuid.uuid4())
+    idempotency_key = f"idempotency:{hashlib.sha256(str(body.issue_url).encode()).hexdigest()}"
+
+    set_result = await redis.set(idempotency_key, job_id, nx=True, ex=86400)
+    if set_result is None:
+        existing = await redis.get(idempotency_key)
+        return CreateJobResponse(job_id=existing or job_id, status="queued")
+
     job_data = {
         "job_id": job_id,
         "status": "queued",
@@ -78,7 +80,6 @@ async def create_job(
     }
     await redis.hset(f"job:{job_id}", mapping=job_data)
     await redis.expire(f"job:{job_id}", 86400)
-    await redis.setex(idempotency_key, 86400, job_id)
 
     return CreateJobResponse(job_id=job_id, status="queued")
 
