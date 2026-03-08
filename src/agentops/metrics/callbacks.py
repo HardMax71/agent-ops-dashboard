@@ -8,6 +8,7 @@ from opentelemetry.sdk.metrics import MeterProvider
 MODEL_PRICING: dict[str, dict[str, float]] = {
     "gpt-4o": {"input": 2.50 / 1_000_000, "output": 10.00 / 1_000_000},
     "gpt-4o-mini": {"input": 0.15 / 1_000_000, "output": 0.60 / 1_000_000},
+    "gpt-3.5-turbo": {"input": 0.50 / 1_000_000, "output": 1.50 / 1_000_000},
 }
 
 AGENT_NAMES = {"investigator", "codebase_search", "web_search", "critic", "writer", "supervisor"}
@@ -44,7 +45,7 @@ class AgentOpsMetricsCallback(BaseCallbackHandler):
             "cost_usd_total",
             description="Total LLM cost in USD",
         )
-        self._start_times: dict[str, float] = {}
+        self._runs: dict[str, tuple[float, str]] = {}
 
     def _agent_name(self, serialized: dict[str, object], kwargs: dict[str, object]) -> str | None:
         """Extract the LangGraph node name if this is a tracked agent."""
@@ -65,7 +66,7 @@ class AgentOpsMetricsCallback(BaseCallbackHandler):
     ) -> None:
         agent = self._agent_name(serialized, kwargs)
         if agent:
-            self._start_times[str(run_id)] = time.perf_counter()
+            self._runs[str(run_id)] = (time.perf_counter(), agent)
             self._agent_calls.add(1, {"agent": agent})
 
     def on_chain_end(
@@ -76,10 +77,10 @@ class AgentOpsMetricsCallback(BaseCallbackHandler):
         **kwargs: object,  # noqa: ANN401 — LangChain callback protocol has untyped kwargs
     ) -> None:
         key = str(run_id)
-        if key in self._start_times:
-            elapsed = time.perf_counter() - self._start_times.pop(key)
-            metadata = kwargs.get("metadata") or {}
-            agent = str(metadata.get("langgraph_node") or "unknown")  # type: ignore[union-attr]
+        run_info = self._runs.pop(key, None)
+        if run_info is not None:
+            start_time, agent = run_info
+            elapsed = time.perf_counter() - start_time
             self._agent_duration.record(elapsed, {"agent": agent})
 
     def on_chain_error(
@@ -89,10 +90,10 @@ class AgentOpsMetricsCallback(BaseCallbackHandler):
         run_id: uuid.UUID,
         **kwargs: object,  # noqa: ANN401 — LangChain callback protocol has untyped kwargs
     ) -> None:
-        self._start_times.pop(str(run_id), None)
-        metadata = kwargs.get("metadata") or {}
-        agent = str(metadata.get("langgraph_node") or "unknown")  # type: ignore[union-attr]
-        if agent in AGENT_NAMES:
+        key = str(run_id)
+        run_info = self._runs.pop(key, None)
+        if run_info is not None:
+            _, agent = run_info
             self._agent_errors.add(1, {"agent": agent})
 
     def on_llm_start(
@@ -116,9 +117,15 @@ class AgentOpsMetricsCallback(BaseCallbackHandler):
         pricing = MODEL_PRICING.get(model, MODEL_PRICING["gpt-4o-mini"])
 
         usage = response.llm_output or {}
+        # Try usage_metadata first (newer format), fall back to token_usage (legacy)
         usage_metadata = usage.get("usage_metadata") or {}
-        input_tokens: int = usage_metadata.get("input_tokens", 0)  # type: ignore[assignment]
-        output_tokens: int = usage_metadata.get("output_tokens", 0)  # type: ignore[assignment]
+        token_usage = usage.get("token_usage") or {}
+        input_tokens: int = (
+            usage_metadata.get("input_tokens") or token_usage.get("prompt_tokens") or 0
+        )
+        output_tokens: int = (
+            usage_metadata.get("output_tokens") or token_usage.get("completion_tokens") or 0
+        )
         cost = input_tokens * pricing["input"] + output_tokens * pricing["output"]
 
         if input_tokens or output_tokens:

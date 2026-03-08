@@ -31,10 +31,11 @@ Analyze this issue and provide your investigator findings.""",
 
 def create_investigator_chain() -> RunnableSerializable:
     """Create the investigator chain. Call during app startup, not at import."""
-    llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+    llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)  # type: ignore[unknown-argument]
     primary = _INVESTIGATOR_PROMPT | llm.with_structured_output(InvestigatorFinding)
     fallback = _INVESTIGATOR_PROMPT | ChatOpenAI(
-        model="gpt-3.5-turbo", temperature=0
+        model="gpt-3.5-turbo",  # type: ignore[unknown-argument]
+        temperature=0,
     ).with_structured_output(InvestigatorFinding)
     return primary.with_retry(
         stop_after_attempt=3,

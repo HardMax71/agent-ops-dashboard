@@ -17,13 +17,13 @@ def create_app(settings: Settings, *, testing: bool = False) -> FastAPI:
     )
 
     app.add_middleware(
-        CORSMiddleware,
+        CORSMiddleware,  # type: ignore[invalid-argument-type]
         allow_origins=[settings.frontend_origin],
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
     )
-    app.add_middleware(SecurityHeadersMiddleware, frontend_origin=settings.frontend_origin)
+    app.add_middleware(SecurityHeadersMiddleware, frontend_origin=settings.frontend_origin)  # type: ignore[invalid-argument-type]
 
     app.include_router(jobs_router)
 

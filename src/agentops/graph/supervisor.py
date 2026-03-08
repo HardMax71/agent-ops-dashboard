@@ -148,7 +148,7 @@ async def _invoke_supervisor(
     for attempt in range(2):
         try:
             return await structured_llm.ainvoke(messages)  # type: ignore[union-attr]
-        except (ValidationError, Exception) as exc:
+        except ValidationError as exc:
             last_error = exc
             if attempt == 0:
                 logger.warning("Supervisor output invalid (attempt 1): %s", exc)
@@ -162,7 +162,7 @@ async def _invoke_supervisor(
 
 async def supervisor_node(state: BugTriageState) -> dict:  # noqa: ANN401 — LangGraph node returns partial state dict
     """Full supervisor node with LLM routing."""
-    llm = ChatOpenAI(model="gpt-4o", temperature=0)
+    llm = ChatOpenAI(model="gpt-4o", temperature=0)  # type: ignore[unknown-argument]
     context = build_supervisor_context(state)
     prompt_messages = _SUPERVISOR_PROMPT.format_messages(**context)
     structured_llm = llm.with_structured_output(SupervisorDecision)

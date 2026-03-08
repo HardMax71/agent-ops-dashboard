@@ -4,8 +4,8 @@ import redis.asyncio as aioredis
 from fastapi import Depends, Request
 
 
-async def get_redis(request: Request) -> aioredis.Redis:  # type: ignore[type-arg]
-    return request.app.state.redis  # type: ignore[return-value]
+async def get_redis(request: Request) -> aioredis.Redis:
+    return request.app.state.redis
 
 
-RedisDep = Annotated[aioredis.Redis, Depends(get_redis)]  # type: ignore[type-arg]
+RedisDep = Annotated[aioredis.Redis, Depends(get_redis)]

@@ -1,5 +1,7 @@
+from langgraph.checkpoint.base import BaseCheckpointSaver
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import END, START, StateGraph
+from langgraph.graph.state import CompiledStateGraph
 
 from agentops.graph.nodes.codebase_search import codebase_search_node
 from agentops.graph.nodes.critic import critic_node
@@ -11,7 +13,7 @@ from agentops.graph.state import BugTriageState
 from agentops.graph.supervisor import route_from_supervisor, supervisor_node
 
 
-def build_graph(checkpointer: object = None) -> object:  # noqa: ANN401 — LangGraph CompiledGraph has no public type export
+def build_graph(checkpointer: BaseCheckpointSaver | None = None) -> CompiledStateGraph:
     """Build and compile the full bug triage graph."""
     builder: StateGraph = StateGraph(BugTriageState)
 
@@ -46,7 +48,7 @@ def build_graph(checkpointer: object = None) -> object:  # noqa: ANN401 — Lang
     return builder.compile(checkpointer=checkpointer)
 
 
-def create_graph_in_memory() -> object:  # noqa: ANN401 — LangGraph CompiledGraph has no public type export
+def create_graph_in_memory() -> CompiledStateGraph:
     """Create graph with in-memory checkpointer for development.
 
     For production, use build_graph(checkpointer=AsyncPostgresSaver(...)) managed

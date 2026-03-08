@@ -11,7 +11,7 @@ async def human_input_node(state: BugTriageState) -> dict:  # noqa: ANN401 — L
     the return value of interrupt() and is stored as the answer.
     """
     question = state.supervisor_reasoning or "Please provide clarification."
-    answer: str = interrupt({"question": question})
+    answer: str = str(interrupt({"question": question}))
     exchange = HumanExchange(question=question, answer=answer)
     return {
         "human_exchanges": state.human_exchanges + [exchange],

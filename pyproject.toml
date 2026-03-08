@@ -37,7 +37,11 @@ dependencies = [
 [dependency-groups]
 dev = ["ruff>=0.6", "ty>=0.0.1a1", "pre-commit>=3.8"]
 test = [
+    "codebase_search",
+    "critic",
     "investigator",
+    "web_search",
+    "writer",
     "pytest>=8.3",
     "pytest-asyncio>=0.24",
     "pytest-xdist>=3.6",
@@ -69,4 +73,8 @@ testpaths = ["tests"]
 packages = ["src/agentops"]
 
 [tool.uv.sources]
+codebase_search = {path = "agents/codebase_search", editable = true}
+critic = {path = "agents/critic", editable = true}
 investigator = {path = "agents/investigator", editable = true}
+web_search = {path = "agents/web_search", editable = true}
+writer = {path = "agents/writer", editable = true}
