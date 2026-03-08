@@ -359,9 +359,10 @@ The API process and the ARQ worker are separate OS processes with separate memor
 Each must expose its own `/metrics` endpoint — they cannot share a single
 `prometheus_client` registry across process boundaries.
 
-- **API process** (`main.py`): mounts `/metrics` as an ASGI sub-app on port 8001.
-- **ARQ worker** (`worker.py`): starts a lightweight HTTP server thread on port 8002 at
-  startup. Prometheus scrapes both ports.
+- **API process** (`main.py`): calls `prometheus_client.start_http_server(8001)` in lifespan,
+  which starts a separate HTTP server thread — not an ASGI mount.
+- **ARQ worker** (`worker.py`): calls `prometheus_client.start_http_server(8002)` in
+  `on_startup`. Prometheus scrapes both ports.
 
 ```python
 # agentops/metrics/setup.py
@@ -709,7 +710,7 @@ async def on_user_feedback(event: UserFeedbackSubmitted) -> None:
 ```
 
 **Imports:** `langsmith.Client`, `asyncio`, `uuid`. Nothing from business logic modules.
-This is the **only** place in the codebase that imports `langsmith.Client` outside of
+This is the **only** place in the codebase that imports `langsmith.Client` outside
 `agentops/langsmith_client.py`.
 
 ---
@@ -868,7 +869,7 @@ app.add_middleware(MetricsMiddleware)
 | `main.py` / `conftest.py` | `MeterProvider` configuration | Metric recording |
 
 **Enforcement:** In code review, any PR that adds a `prometheus_client` import or `langsmith`
-import outside of `agentops/metrics/` and `agentops/langsmith_client.py` is blocked.
+import outside `agentops/metrics/` and `agentops/langsmith_client.py` is blocked.
 
 ```bash
 # .pre-commit-config.yaml addition
@@ -984,7 +985,7 @@ This is the **only** test in the system that needs to mock an external SDK.
 
 ### Global Rule
 
-`conftest.py` sets `MeterProvider()` (empty, no exporters) at module level:
+`conftest.py` sets `NoOpMeterProvider()` (explicit no-op, distinct from the SDK's default `MeterProvider()`) at module level:
 - All `create_counter` / `create_histogram` calls return no-op instruments
 - All `.add()` and `.record()` calls silently succeed
 - No Prometheus registry accumulation between test runs
