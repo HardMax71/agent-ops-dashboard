@@ -46,11 +46,12 @@ async def create_job(
         f"idempotency:{hashlib.sha256(f'{body.issue_url}{owner_id}'.encode()).hexdigest()}"
     )
 
-    existing_job_id = await redis.get(idempotency_key)
-    if existing_job_id is not None:
-        return CreateJobResponse(job_id=existing_job_id, status="queued")
-
     job_id = str(uuid.uuid4())
+    set_result = await redis.set(idempotency_key, job_id, nx=True, ex=86400)
+    if set_result is None:
+        existing_job_id = await redis.get(idempotency_key)
+        return CreateJobResponse(job_id=existing_job_id or job_id, status="queued")
+
     job_data = {
         "job_id": job_id,
         "status": "queued",
@@ -59,7 +60,6 @@ async def create_job(
         "langsmith_url": "",
     }
     await redis.setex(f"job:{job_id}", 86400, json.dumps(job_data))
-    await redis.setex(idempotency_key, 86400, job_id)
 
     return CreateJobResponse(job_id=job_id, status="queued")
 

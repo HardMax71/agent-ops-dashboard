@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     redis_url: str = "redis://localhost:6379/0"
 
     # Auth
-    jwt_secret: str = Field(default="dev-secret-change-in-prod")
+    jwt_secret: str = Field(min_length=32)  # no default → required env var
     jwt_algorithm: str = "HS256"
     access_token_expire_seconds: int = 900
     refresh_token_expire_seconds: int = 604800

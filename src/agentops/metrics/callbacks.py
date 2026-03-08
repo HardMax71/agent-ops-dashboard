@@ -32,3 +32,5 @@ class AgentOpsMetricsCallback(BaseCallbackHandler):
             total,
             {"job_id": self.job_id, "agent": self.agent_name},
         )
+        cost_usd = total * 0.000001  # ~$0.001 per 1000 tokens (gpt-4o-mini rate)
+        _cost_counter.add(cost_usd, {"job_id": self.job_id, "agent": self.agent_name})

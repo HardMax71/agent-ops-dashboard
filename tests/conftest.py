@@ -1,5 +1,8 @@
 import json
+import os
 from pathlib import Path
+
+os.environ.setdefault("JWT_SECRET", "test-placeholder-secret-32characters!!")
 
 import pytest
 import pytest_asyncio
@@ -17,7 +20,7 @@ def settings() -> Settings:
     return Settings(
         environment="test",
         redis_url="redis://localhost:6379/0",
-        jwt_secret="test-secret-12345",
+        jwt_secret="test-placeholder-secret-32characters!!",
         openai_api_key="sk-test",
     )
 

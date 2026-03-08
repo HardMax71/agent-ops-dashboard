@@ -5,7 +5,7 @@ import redis.asyncio as aioredis
 from fastapi import FastAPI
 
 from agentops.config import get_settings
-from agentops.metrics.setup import configure_api_metrics
+from agentops.metrics.setup import configure_api_metrics, shutdown_api_metrics
 
 
 @asynccontextmanager
@@ -25,3 +25,4 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     yield
 
     await app.state.redis.aclose()
+    shutdown_api_metrics()

@@ -1,4 +1,4 @@
-from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
+from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import END, START, StateGraph
 
 from agentops.graph.nodes.codebase_search import codebase_search_node
@@ -43,6 +43,9 @@ def build_graph(checkpointer: object = None) -> object:  # noqa: ANN401
 
 
 async def create_graph_with_sqlite(db_path: str = "checkpoints.db") -> object:  # noqa: ANN401
-    """Create graph with SQLite checkpointer for development."""
-    async with AsyncSqliteSaver.from_conn_string(db_path) as checkpointer:
-        return build_graph(checkpointer=checkpointer)
+    """Create graph with in-memory checkpointer for development.
+
+    For production, use build_graph(checkpointer=AsyncPostgresSaver(...)) managed
+    by the application lifespan instead.
+    """
+    return build_graph(checkpointer=MemorySaver())
