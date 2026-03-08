@@ -142,15 +142,33 @@ Six fixtures live at `tests/conftest.py`:
 | `memory_checkpointer`      | `function` | `MemorySaver()`                                     | `langgraph.checkpoint.memory`                          |
 | `async_client`             | `function` | `AsyncClient` + `ASGITransport` + `LifespanManager` | `httpx` + `asgi_lifespan`                              |
 | `override_auth`            | `function` | sets `app.dependency_overrides[get_current_user]`   | cleared in teardown                                    |
-| `noop_metrics`             | `function` | —                                                   | `metrics.set_meter_provider(NoOpMeterProvider())`; opt-in per test |
+| `noop_metrics`             | `function` | —                                                   | patches OTel internals via `monkeypatch`; opt-in per test |
 
 `noop_metrics` is function-scoped and **not** `autouse` — tests that need OTel silenced request it explicitly.
-The Python OTel SDK (`opentelemetry-sdk`) allows `set_meter_provider()` to be called multiple times; each call
-replaces the global. However, global state is process-level, so tests in the same worker that do not request
-`noop_metrics` inherit whatever provider the previous test installed. With `-n auto` (xdist) each worker is a
-separate process so workers are fully isolated. `test_metrics_callback.py` does **not** use `noop_metrics` — it
-calls `set_meter_provider(MeterProvider(reader=InMemoryMetricReader()))` explicitly at the start of each test to
-install a fresh provider regardless of prior state, then reads metrics from that reader within the same test.
+
+**Why `set_meter_provider()` cannot be used for test isolation:** The Python OTel SDK guards
+`set_meter_provider()` with `_METER_PROVIDER_SET_ONCE = Once()`. `Once.do_once()` executes its
+argument exactly once per process lifetime; every subsequent call is a silent no-op (plus a
+`WARNING: Overriding of current MeterProvider is not allowed` log). Calling
+`set_meter_provider(NoOpMeterProvider())` a second time in the same worker process does nothing —
+the first provider installed remains active for the rest of the process.
+
+**Correct isolation pattern:** Patch the two internal globals directly with `monkeypatch` so
+pytest restores them automatically after each test:
+
+```python
+import opentelemetry.metrics._internal as _otel_metrics
+from opentelemetry.util._once import Once
+
+@pytest.fixture()
+def noop_metrics(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(_otel_metrics, "_METER_PROVIDER", NoOpMeterProvider())
+    monkeypatch.setattr(_otel_metrics, "_METER_PROVIDER_SET_ONCE", Once())
+```
+
+`test_metrics_callback.py` uses the same pattern, substituting `NoOpMeterProvider()` with
+`MeterProvider(reader=InMemoryMetricReader())`, so each test gets a fresh provider with an empty
+reader. After the test, `monkeypatch` resets the globals to whatever they were before the test.
 
 ```python
 # tests/conftest.py (sketch)
@@ -163,7 +181,9 @@ from fakeredis.aioredis import FakeAsyncRedis
 from httpx import ASGITransport, AsyncClient
 from langchain_core.language_models.fake_chat_models import FakeListChatModel
 from langgraph.checkpoint.memory import MemorySaver
-from opentelemetry.metrics import NoOpMeterProvider, set_meter_provider
+import opentelemetry.metrics._internal as _otel_metrics
+from opentelemetry.metrics import NoOpMeterProvider
+from opentelemetry.util._once import Once
 
 
 @pytest.fixture()
@@ -199,8 +219,11 @@ def override_auth(fake_user) -> None:
 
 
 @pytest.fixture()
-def noop_metrics() -> None:
-    set_meter_provider(NoOpMeterProvider())
+def noop_metrics(monkeypatch: pytest.MonkeyPatch) -> None:
+    # set_meter_provider() is set-once (Once guard) — patch internals directly
+    # so monkeypatch restores original state after each test.
+    monkeypatch.setattr(_otel_metrics, "_METER_PROVIDER", NoOpMeterProvider())
+    monkeypatch.setattr(_otel_metrics, "_METER_PROVIDER_SET_ONCE", Once())
 ```
 
 ---
