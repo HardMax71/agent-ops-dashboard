@@ -137,7 +137,7 @@ Six fixtures live at `tests/conftest.py`:
 
 | Fixture                    | Scope      | Returns                                             | Implementation                                         |
 |----------------------------|------------|-----------------------------------------------------|--------------------------------------------------------|
-| `fake_redis`               | `function` | `FakeAsyncRedis(decode_responses=True)`             | `fakeredis.aioredis.FakeAsyncRedis`                    |
+| `fake_redis`               | `function` | `FakeAsyncRedis(decode_responses=True)`             | `fakeredis.FakeAsyncRedis`                             |
 | `fake_llm`                 | `function` | `FakeListChatModel(responses=[...])`                | `langchain_core.language_models.fake_chat_models`      |
 | `memory_checkpointer`      | `function` | `MemorySaver()`                                     | `langgraph.checkpoint.memory`                          |
 | `async_client`             | `function` | `AsyncClient` + `ASGITransport` + `LifespanManager` | `httpx` + `asgi_lifespan`                              |
@@ -176,8 +176,9 @@ reader. After the test, `monkeypatch` resets the globals to whatever they were b
 import pytest
 from agentops.api.deps import get_current_user
 from agentops.api.main import app
+from agentops.api.models import CurrentUser
 from asgi_lifespan import LifespanManager
-from fakeredis.aioredis import FakeAsyncRedis
+from fakeredis import FakeAsyncRedis
 from httpx import ASGITransport, AsyncClient
 from langchain_core.language_models.fake_chat_models import FakeListChatModel
 from langgraph.checkpoint.memory import MemorySaver
@@ -209,6 +210,11 @@ async def async_client() -> AsyncClient:
             base_url="http://test",
         ) as client:
             yield client
+
+
+@pytest.fixture()
+def fake_user() -> CurrentUser:
+    return CurrentUser(id="test-user-id", github_login="testuser", github_id=1234567)
 
 
 @pytest.fixture()

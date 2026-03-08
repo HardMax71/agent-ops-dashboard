@@ -706,7 +706,7 @@ eliminates a class of mysterious 401s in v1.1 horizontal scaling.
 ## Verification Checklist
 
 - [x] `POST /auth/refresh` implementation shown with full code (§2)
-- [x] Refresh token Redis format consistent: plain `github_id` string (§2)
+- [x] Refresh token Redis format consistent: `"{github_id}:{github_login}"` colon-separated string (§2)
 - [x] All env vars used in code snippets appear in the env var table (§4): `GITHUB_REDIRECT_URI`, `FRONTEND_ORIGIN`, `ENVIRONMENT`
 - [x] GitHub 1-year inactivity revocation documented with re-auth flow (§5)
 - [x] `SecurityHeadersMiddleware` includes `Content-Security-Policy` (§6)

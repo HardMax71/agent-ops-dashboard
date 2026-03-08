@@ -17,7 +17,7 @@ key_decisions: [ uv-ruff-ty-astral-stack, pyproject-toml-single-source, typeddic
 | Date         | March 2026                                                                                                                                              |
 | Author       | Engineering Team                                                                                                                                        |
 | Parent       | [PRD-001](PRD-001-master-overview.md)                                                                                                                   |
-| Related Docs | [PRD-003](PRD-003-langgraph-orchestration.md) (BugTriageState TypedDict question), [PRD-006](PRD-006-data-validation.md) (Pydantic validation patterns) |
+| Related Docs | [PRD-003](PRD-003-langgraph-orchestration.md) (BugTriageState schema), [PRD-006](PRD-006-data-validation.md) (Pydantic validation patterns) |
 
 ---
 
@@ -230,7 +230,7 @@ Violations are caught automatically — no manual review required.
 | Try-catch spam — `try/except` blocks scattered across service functions for cross-cutting concerns (logging, failure events, observability) | Cross-cutting concerns belong in **one** service-wide handler: a `@worker_error_handler` decorator applied in `WorkerSettings`, a FastAPI `@app.exception_handler`, or a Starlette middleware class. Individual business-logic functions must not handle exceptions they cannot recover from. |
 | Try-catch-reraise — catching an exception only to log/publish it then `raise` again | Never catch-and-reraise inside a business function. Let the exception propagate to the service-wide handler. One try-except per cross-cutting concern, declared once. |
 | Multiple nested `try/except` blocks in a single function | If retry logic genuinely requires catching exceptions, extract it into a dedicated helper with a single `try/except` inside a loop (max attempts). The caller remains exception-free. |
-| `isinstance()`, `cast()`, `type()`, `getattr()`/`setattr()` for runtime type dispatch, or any reflection (`__class__`, `__dict__`, `vars()`, `dir()`) | **Completely forbidden.** Write well-typed code: declare precise types at function boundaries so the type is always known statically. If you feel the need to check a type at runtime, the function signature is wrong — tighten it. Use `typing.overload` or a `Protocol` if you need to express a union of calling conventions. The only permitted introspection is structured pattern matching (`match`/`case`) on `Literal` or `Enum` values. |
+| `isinstance()`, `cast()`, `type()`, `getattr()`/`setattr()` for runtime type dispatch, or any reflection (`__class__`, `__dict__`, `vars()`, `dir()`) | **Completely forbidden.** Write well-typed code: declare precise types at function boundaries so the type is always known statically. If you feel the need to check a type at runtime, the function signature is wrong — tighten it. Use `typing.overload` or a `Protocol` if you need to express a union of calling conventions. The only permitted introspection is structured pattern matching (`match`/`case`) on `Literal` or `Enum` values. **Single approved exception:** `@model_validator(mode="before")` — Pydantic calls this validator with `object` by design (the input may be a `dict`, another model instance, or any other type). The guard `if not isinstance(data, dict): return data` is Pydantic-mandated boilerplate required to safely handle non-dict construction paths (e.g. constructing a model from another model instance). This is the one and only approved use of `isinstance`. |
 
 > **Dependency injection standards:** [PRD-012 — Backend Architecture & DI](PRD-012-backend-di.md)
 > covers the full rules for FastAPI `Depends()` usage, async resource lifecycle, ARQ worker DI,
@@ -322,7 +322,7 @@ without `NotRequired` boilerplate, no computed fields, no `frozen` immutability,
 
 | Use case                                                                   | Type to use              | Reason                                                                                                                                                                                                                                                          |
 |----------------------------------------------------------------------------|--------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| LangGraph state (`BugTriageState`)                                         | `TypedDict`              | **Recommended** — `StateGraph` also accepts `BaseModel`/dataclass, but `TypedDict` is the idiomatic choice: nodes return partial dicts (only changed keys), LangGraph merges them cleanly; `BaseModel` state requires full model reconstruction per node update |
+| LangGraph state (`BugTriageState`)                                         | Pydantic `BaseModel`     | PRD-003 deliberately chose `BaseModel` over `TypedDict` to leverage `@model_validator(mode="before")` for checkpoint migration (renaming fields across schema versions). LangGraph accepts `BaseModel` state and handles partial dict returns from nodes cleanly — no full model reconstruction per node update is required. |
 | API request / response bodies                                              | Pydantic `BaseModel`     | Runtime validation, automatic 422 response, `.model_dump()`                                                                                                                                                                                                     |
 | Internal structured data (`AgentFinding`, `HumanExchange`, `TriageReport`) | Pydantic `BaseModel`     | Serialization to/from Redis, validation, attribute access                                                                                                                                                                                                       |
 | Supervisor LLM output (`SupervisorDecision`)                               | Pydantic `BaseModel`     | `.with_structured_output()` accepts `TypedDict` / JSON schema too, but `BaseModel` is preferred: returns a validated object (not a raw dict), attribute access, validation errors surface cleanly ([PRD-003 §Supervisor Output Schema](PRD-003-langgraph-orchestration.md#supervisor-output-schema))                                                |
@@ -330,24 +330,37 @@ without `NotRequired` boilerplate, no computed fields, no `frozen` immutability,
 
 ### Implication for PRD-003
 
-`AgentFinding`, `HumanExchange`, and `TriageReport` should be refactored from `TypedDict` to Pydantic `BaseModel`.
-`BugTriageState` stays `TypedDict` — LangGraph supports `BaseModel` state too, but `TypedDict` is the
-idiomatic choice: nodes return partial dicts with only the keys they update, which LangGraph merges
-cleanly without requiring full model reconstruction. PRD-003 references this section for rationale.
+`AgentFinding`, `HumanExchange`, and `TriageReport` use Pydantic `BaseModel` for serialisation,
+validation, and attribute access.
+
+`BugTriageState` also uses Pydantic `BaseModel` — a deliberate choice driven by the need for
+`@model_validator(mode="before")` to handle checkpoint migration when fields are renamed or their
+types change across schema versions. LangGraph accepts `BaseModel` state natively: nodes return
+partial dicts (only changed keys), which LangGraph merges into the checkpointed state without
+requiring full model reconstruction. The rationale that "BaseModel requires full model
+reconstruction per node update" is incorrect — LangGraph handles partial dict returns cleanly
+regardless of whether the state type is `TypedDict`, `dataclass`, or `BaseModel`.
 
 ### Example: correct boundary
 
 ```python
 from __future__ import annotations
 
-from typing import TypedDict
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, model_validator
 
 
-class BugTriageState(TypedDict):
+class BugTriageState(BaseModel):
     issue_url: str
-    findings: list[AgentFinding]
-    report: TriageReport | None
+    findings: list[AgentFinding] = Field(default_factory=list)
+    report: TriageReport | None = Field(default=None)
+
+    @model_validator(mode="before")
+    @classmethod
+    def migrate_from_checkpoint(cls, data: object) -> object:
+        if not isinstance(data, dict):
+            return data
+        # migration branches here
+        return data
 
 
 class AgentFinding(BaseModel):

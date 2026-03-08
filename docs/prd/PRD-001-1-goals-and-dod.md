@@ -91,7 +91,7 @@ An agent can stop mid-execution, surface a clarifying question to the user, and 
 - [ ] A question card appears in the UI within 2 seconds of the interrupt
 - [ ] Submitting an answer via `POST /jobs/{id}/answer` resumes graph execution from the checkpoint (no state is lost)
 - [ ] A job with 2 question rounds completes successfully with all prior context retained
-- [ ] If the user does not answer within 10 minutes, the job transitions to `timed_out`
+- [ ] If the user does not answer within 30 minutes, the job transitions to `timed_out`
 
 **Verification**
 
@@ -233,10 +233,12 @@ Each finalized agent chain is deployed as an independent LangServe HTTP endpoint
 **Verification**
 
 ```bash
-# Health checks
+# Health checks — each agent runs on its own port (PRD-004 Service Registry)
+declare -A AGENT_PORTS=([investigator]=8001 [codebase-search]=8002 [web-search]=8003 [critic]=8004 [writer]=8005)
 for agent in investigator codebase-search web-search critic writer; do
-  STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8001/agents/$agent/health)
-  echo "$agent: $STATUS"
+  PORT=${AGENT_PORTS[$agent]}
+  STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:${PORT}/agents/$agent/health)
+  echo "$agent (port $PORT): $STATUS"
 done
 # Expected: all 200
 
