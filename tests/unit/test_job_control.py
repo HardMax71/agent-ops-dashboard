@@ -37,27 +37,14 @@ async def control_client(settings, fake_redis, mock_graph, mock_arq):
     app.dependency_overrides.clear()
 
 
-async def _create_job(redis, job_id, **overrides):
-    data = {
-        "job_id": job_id,
-        "status": "running",
-        "issue_url": "https://github.com/a/b/issues/1",
-        "langsmith_url": "",
-        "awaiting_human": False,
-        "current_node": "",
-        **overrides,
-    }
-    await redis.setex(f"job:{job_id}", 86400, json.dumps(data))
-
-
-async def test_answer_409_when_not_awaiting(control_client, fake_redis):
-    await _create_job(fake_redis, "job-1", awaiting_human=False)
+async def test_answer_409_when_not_awaiting(control_client, fake_redis, make_job):
+    await make_job("job-1", awaiting_human=False)
     resp = await control_client.post("/jobs/job-1/answer", json={"answer": "yes"})
     assert resp.status_code == 409
 
 
-async def test_answer_200_when_awaiting(control_client, fake_redis, mock_graph, mock_arq):
-    await _create_job(fake_redis, "job-2", status="waiting", awaiting_human=True)
+async def test_answer_200_when_awaiting(control_client, fake_redis, mock_graph, mock_arq, make_job):
+    await make_job("job-2", status="waiting", awaiting_human=True)
     resp = await control_client.post("/jobs/job-2/answer", json={"answer": "the fix is X"})
     assert resp.status_code == 200
     body = resp.json()
@@ -73,8 +60,8 @@ async def test_answer_200_when_awaiting(control_client, fake_redis, mock_graph, 
     mock_arq.abort_job.assert_called_once()
 
 
-async def test_pause_sets_flag(control_client, fake_redis):
-    await _create_job(fake_redis, "job-3", status="running")
+async def test_pause_sets_flag(control_client, fake_redis, make_job):
+    await make_job("job-3", status="running")
     resp = await control_client.post("/jobs/job-3/pause")
     assert resp.status_code == 200
     assert resp.json()["status"] == "pausing"
@@ -84,8 +71,8 @@ async def test_pause_sets_flag(control_client, fake_redis):
     assert data["status"] == "pausing"
 
 
-async def test_resume_clears_flag(control_client, fake_redis, mock_graph):
-    await _create_job(fake_redis, "job-4", status="paused", paused=True)
+async def test_resume_clears_flag(control_client, fake_redis, mock_graph, make_job):
+    await make_job("job-4", status="paused", paused=True)
     resp = await control_client.post("/jobs/job-4/resume")
     assert resp.status_code == 200
     assert resp.json()["status"] == "resumed"
@@ -96,8 +83,8 @@ async def test_resume_clears_flag(control_client, fake_redis, mock_graph):
     mock_graph.ainvoke.assert_called_once()
 
 
-async def test_kill_sets_status(control_client, fake_redis, mock_arq):
-    await _create_job(fake_redis, "job-5", status="running")
+async def test_kill_sets_status(control_client, fake_redis, mock_arq, make_job):
+    await make_job("job-5", status="running")
     resp = await control_client.delete("/jobs/job-5")
     assert resp.status_code == 200
     assert resp.json()["status"] == "killed"
@@ -107,8 +94,8 @@ async def test_kill_sets_status(control_client, fake_redis, mock_arq):
     mock_arq.abort_job.assert_called_once_with("job-5")
 
 
-async def test_redirect_stores_instruction(control_client, fake_redis):
-    await _create_job(fake_redis, "job-6", status="running")
+async def test_redirect_stores_instruction(control_client, fake_redis, make_job):
+    await make_job("job-6", status="running")
     resp = await control_client.post(
         "/jobs/job-6/redirect", json={"instruction": "focus on auth module"}
     )
@@ -119,8 +106,8 @@ async def test_redirect_stores_instruction(control_client, fake_redis):
     assert "focus on auth module" in data["redirect_instructions"]
 
 
-async def test_redirect_resumes_paused_job(control_client, fake_redis, mock_graph):
-    await _create_job(fake_redis, "job-7", status="paused", paused=True)
+async def test_redirect_resumes_paused_job(control_client, fake_redis, mock_graph, make_job):
+    await make_job("job-7", status="paused", paused=True)
     resp = await control_client.post(
         "/jobs/job-7/redirect", json={"instruction": "look at DB layer"}
     )
@@ -137,8 +124,8 @@ async def test_answer_404_missing_job(control_client):
     assert resp.status_code == 404
 
 
-async def test_get_job_includes_new_fields(control_client, fake_redis):
-    await _create_job(fake_redis, "job-8", awaiting_human=True, current_node="human_input")
+async def test_get_job_includes_new_fields(control_client, fake_redis, make_job):
+    await make_job("job-8", awaiting_human=True, current_node="human_input")
     resp = await control_client.get("/jobs/job-8")
     assert resp.status_code == 200
     body = resp.json()

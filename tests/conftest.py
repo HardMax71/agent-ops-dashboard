@@ -1,6 +1,6 @@
 import json
 import os
-from collections.abc import Callable
+from collections.abc import Callable, Coroutine
 from pathlib import Path
 
 os.environ.setdefault("JWT_SECRET", "test-placeholder-secret-32characters!!")
@@ -60,6 +60,24 @@ def make_finding() -> Callable[..., AgentFinding]:
             keywords_for_search=["bug", "null"],
             affected_areas=["service"],
         )
+
+    return _factory
+
+
+@pytest.fixture
+def make_job(fake_redis: FakeAsyncRedis) -> Callable[..., Coroutine[None, None, dict[str, object]]]:
+    async def _factory(job_id: str = "job-1", **overrides: object) -> dict[str, object]:
+        data: dict[str, object] = {
+            "job_id": job_id,
+            "status": "running",
+            "issue_url": "https://github.com/a/b/issues/1",
+            "langsmith_url": "",
+            "awaiting_human": False,
+            "current_node": "",
+            **overrides,
+        }
+        await fake_redis.setex(f"job:{job_id}", 86400, json.dumps(data))
+        return data
 
     return _factory
 
