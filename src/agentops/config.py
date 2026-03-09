@@ -1,13 +1,20 @@
+from enum import StrEnum
 from functools import lru_cache
 
 from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
+class Environment(StrEnum):
+    DEVELOPMENT = "development"
+    TEST = "test"
+    PRODUCTION = "production"
+
+
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
-    environment: str = "development"
+    environment: Environment = Environment.PRODUCTION
 
     # Database
     database_url: str = "postgresql+asyncpg://agentops:agentops@localhost:5432/agentops"
@@ -61,7 +68,7 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def _validate_production_secrets(self) -> "Settings":
-        if self.environment not in ("development", "test"):
+        if self.environment == Environment.PRODUCTION:
             if self.internal_service_secret == "dev-internal-secret":  # noqa: S105
                 raise ValueError(
                     "internal_service_secret must be explicitly set in non-development environments"

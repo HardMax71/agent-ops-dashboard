@@ -5,6 +5,7 @@ from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock
 
 os.environ.setdefault("JWT_SECRET", "test-placeholder-secret-32characters!!")
+os.environ.setdefault("ENVIRONMENT", "test")
 
 import pytest
 import pytest_asyncio

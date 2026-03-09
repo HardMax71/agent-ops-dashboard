@@ -9,6 +9,7 @@ from agentops.api.deps.redis import RedisDep
 from agentops.api.deps.settings import SettingsDep
 from agentops.auth.models import AccessTokenResponse, AuthCodeRequest, UserInfoResponse
 from agentops.auth.service import create_access_token, encrypt_github_token
+from agentops.config import Environment
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -131,7 +132,7 @@ async def exchange_token(
     )
 
     # Set cookie with path="/auth" (PRD-008-1 §7)
-    secure_cookie = settings.environment not in ("development", "test")
+    secure_cookie = settings.environment == Environment.PRODUCTION
     response.set_cookie(
         key="refresh_token",
         value=refresh_token_id,

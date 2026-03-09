@@ -7,7 +7,7 @@ from arq.cron import cron
 from langchain_core.runnables import RunnableConfig
 from langgraph.types import Command
 
-from agentops.config import get_settings
+from agentops.config import Environment, get_settings
 from agentops.events.interrupt import check_for_interrupt
 from agentops.events.transformer import LangGraphEventTransformer
 from agentops.graph.graph import create_graph_with_postgres
@@ -32,7 +32,7 @@ async def on_startup(ctx: dict) -> None:  # noqa: ANN401 — ARQ ctx is untyped 
         encoding="utf-8",
         decode_responses=True,
     )
-    if settings.environment != "test":
+    if settings.environment != Environment.TEST:
         httpd, provider = configure_metrics(port=settings.worker_metrics_port)
         ctx["metrics_httpd"] = httpd
         ctx["meter_provider"] = provider
