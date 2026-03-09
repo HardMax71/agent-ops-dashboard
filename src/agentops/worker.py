@@ -7,7 +7,7 @@ from arq.cron import cron
 from langgraph.types import Command
 
 from agentops.config import get_settings
-from agentops.graph.graph import create_graph_in_memory, create_graph_with_postgres
+from agentops.graph.graph import create_graph_with_postgres
 from agentops.graph.state import BugTriageState
 from agentops.metrics.setup import configure_metrics, shutdown_metrics
 
@@ -29,11 +29,8 @@ async def on_startup(ctx: dict) -> None:  # noqa: ANN401 — ARQ ctx is untyped 
     ctx["metrics_httpd"] = httpd
     ctx["meter_provider"] = provider
 
-    # Build graph
-    if settings.checkpoint_backend == "postgres":
-        ctx["graph"] = await create_graph_with_postgres(settings.psycopg_dsn)
-    else:
-        ctx["graph"] = create_graph_in_memory()
+    # Build graph (PostgreSQL checkpointer)
+    ctx["graph"] = await create_graph_with_postgres(settings.psycopg_dsn)
 
 
 async def on_shutdown(ctx: dict) -> None:  # noqa: ANN401 — ARQ ctx is untyped dict

@@ -1,5 +1,5 @@
 from langgraph.checkpoint.base import BaseCheckpointSaver
-from langgraph.checkpoint.memory import MemorySaver
+from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
 from langgraph.graph import END, START, StateGraph
 from langgraph.graph.state import CompiledStateGraph
 
@@ -48,19 +48,8 @@ def build_graph(checkpointer: BaseCheckpointSaver | None = None) -> CompiledStat
     return builder.compile(checkpointer=checkpointer)
 
 
-def create_graph_in_memory() -> CompiledStateGraph:
-    """Create graph with in-memory checkpointer for development.
-
-    For production, use build_graph(checkpointer=AsyncPostgresSaver(...)) managed
-    by the application lifespan instead.
-    """
-    return build_graph(checkpointer=MemorySaver())
-
-
 async def create_graph_with_postgres(conninfo: str) -> CompiledStateGraph:
     """Create graph with PostgreSQL-backed checkpointer for production."""
-    from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
-
     async with AsyncPostgresSaver.from_conn_string(conninfo) as saver:
         await saver.setup()
         return build_graph(checkpointer=saver)

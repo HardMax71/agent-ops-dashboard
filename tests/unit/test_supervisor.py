@@ -5,6 +5,7 @@ import pytest
 
 from agentops.graph.state import AgentFinding, BugTriageState, CriticFeedback, HumanExchange
 from agentops.graph.supervisor import (
+    SupervisorDecision,
     build_supervisor_context,
     route_from_supervisor,
     supervisor_node,
@@ -106,8 +107,6 @@ async def test_pause_fires_interrupt(make_state):
 
 
 async def test_pending_exchange_set_on_human_input(make_state):
-    from agentops.graph.supervisor import SupervisorDecision
-
     decision = SupervisorDecision(
         next_node="human_input",
         reasoning="Need more info",
@@ -128,8 +127,6 @@ async def test_pending_exchange_set_on_human_input(make_state):
 
 
 async def test_no_pending_exchange_for_other_nodes(make_state):
-    from agentops.graph.supervisor import SupervisorDecision
-
     decision = SupervisorDecision(
         next_node="investigator",
         reasoning="Investigate further",

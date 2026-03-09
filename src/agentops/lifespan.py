@@ -8,7 +8,7 @@ from fastapi import FastAPI
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from agentops.config import get_settings
-from agentops.graph.graph import create_graph_in_memory, create_graph_with_postgres
+from agentops.graph.graph import create_graph_with_postgres
 from agentops.metrics.setup import configure_metrics, shutdown_metrics
 
 
@@ -29,11 +29,8 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         decode_responses=True,
     )
 
-    # Graph (with checkpoint backend)
-    if settings.checkpoint_backend == "postgres":
-        app.state.graph = await create_graph_with_postgres(settings.psycopg_dsn)
-    else:
-        app.state.graph = create_graph_in_memory()
+    # Graph (PostgreSQL checkpointer)
+    app.state.graph = await create_graph_with_postgres(settings.psycopg_dsn)
 
     # ArqRedis pool for job control from API endpoints
     app.state.arq = await create_arq_pool(ArqRedisSettings.from_dsn(settings.redis_url))
