@@ -12,6 +12,13 @@ def mock_graph():
     graph = MagicMock()
     graph.ainvoke = AsyncMock(return_value=None)
     graph.aget_state = AsyncMock()
+
+    # Default: astream_events returns an empty async generator
+    async def _empty_stream(*_args, **_kwargs):
+        return
+        yield  # noqa: RET504
+
+    graph.astream_events = _empty_stream
     return graph
 
 
@@ -104,7 +111,6 @@ async def test_run_triage_skips_killed_job(ctx, fake_redis, mock_graph, make_job
 
     await run_triage(ctx, "j6")
 
-    mock_graph.ainvoke.assert_not_called()
     raw = await fake_redis.get("job:j6")
     data = json.loads(raw)
     assert data["status"] == "killed"
@@ -116,14 +122,15 @@ async def test_run_triage_respects_kill_during_execution(ctx, fake_redis, mock_g
     mock_graph.aget_state.return_value = MagicMock(tasks=[])
 
     async def simulate_kill(*_args, **_kwargs):
-        # Simulate API killing the job while graph is running
+        # Simulate API killing the job while astream_events is running
         raw = await fake_redis.get("job:j7")
         data = json.loads(raw)
         data["status"] = "killed"
         await fake_redis.setex("job:j7", 86400, json.dumps(data))
-        return None
+        return
+        yield  # noqa: RET504
 
-    mock_graph.ainvoke = AsyncMock(side_effect=simulate_kill)
+    mock_graph.astream_events = simulate_kill
 
     await run_triage(ctx, "j7")
 
@@ -138,15 +145,16 @@ async def test_run_triage_respects_pause_during_execution(ctx, fake_redis, mock_
     mock_graph.aget_state.return_value = MagicMock(tasks=[])
 
     async def simulate_pause(*_args, **_kwargs):
-        # Simulate API pausing the job while graph is running
+        # Simulate API pausing the job while astream_events is running
         raw = await fake_redis.get("job:j8")
         data = json.loads(raw)
         data["status"] = "pausing"
         data["paused"] = True
         await fake_redis.setex("job:j8", 86400, json.dumps(data))
-        return None
+        return
+        yield  # noqa: RET504
 
-    mock_graph.ainvoke = AsyncMock(side_effect=simulate_pause)
+    mock_graph.astream_events = simulate_pause
 
     await run_triage(ctx, "j8")
 

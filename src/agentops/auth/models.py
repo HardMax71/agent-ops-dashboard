@@ -15,3 +15,4 @@ class UserInfoResponse(BaseModel):
     github_id: str
     github_login: str
     avatar_url: str = ""
+    jti: str = ""

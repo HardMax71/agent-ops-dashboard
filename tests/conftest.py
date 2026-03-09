@@ -14,6 +14,7 @@ from httpx import ASGITransport, AsyncClient
 from agentops.api.deps.arq import get_arq
 from agentops.api.deps.redis import get_redis
 from agentops.api.main import create_app
+from agentops.auth.service import create_access_token
 from agentops.config import Settings
 from agentops.graph.state import AgentFinding, BugTriageState
 
@@ -93,12 +94,37 @@ def mock_arq() -> MagicMock:
     return arq
 
 
+@pytest.fixture
+def make_token(settings: Settings) -> Callable[..., str]:
+    """Create a JWT access token for testing."""
+
+    def _factory(github_id: str = "12345", github_login: str = "testuser") -> str:
+        return create_access_token(github_id, github_login, settings)
+
+    return _factory
+
+
 @pytest_asyncio.fixture
 async def api_client(
     settings: Settings,
     fake_redis: FakeAsyncRedis,
     mock_arq: MagicMock,
 ) -> AsyncClient:
+    app = create_app(settings, testing=True)
+    app.dependency_overrides[get_redis] = lambda: fake_redis
+    app.dependency_overrides[get_arq] = lambda: mock_arq
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        yield client
+    app.dependency_overrides.clear()
+
+
+@pytest_asyncio.fixture
+async def auth_client(
+    settings: Settings,
+    fake_redis: FakeAsyncRedis,
+    mock_arq: MagicMock,
+) -> AsyncClient:
+    """API client with auth router configured."""
     app = create_app(settings, testing=True)
     app.dependency_overrides[get_redis] = lambda: fake_redis
     app.dependency_overrides[get_arq] = lambda: mock_arq

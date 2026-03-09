@@ -1,15 +1,21 @@
+"""ARQ worker: triage graph execution with SSE event streaming."""
+
 import json
 import logging
 import time
 
 import redis.asyncio as aioredis
 from arq.cron import cron
+from langchain_core.runnables import RunnableConfig
 from langgraph.types import Command
 
 from agentops.config import get_settings
+from agentops.events.interrupt import check_for_interrupt
+from agentops.events.transformer import LangGraphEventTransformer
 from agentops.graph.graph import create_graph_with_postgres
 from agentops.graph.state import BugTriageState
 from agentops.metrics.setup import configure_metrics, shutdown_metrics
+from agentops.worker_middleware import worker_error_handler
 
 _logger = logging.getLogger(__name__)
 
@@ -17,6 +23,8 @@ TIMEOUT_ANSWER = "No human response received within the allowed time window."
 _HUMAN_TIMEOUT_SECONDS = 1800  # 30 minutes
 _JOB_STALE_SECONDS = 600  # 10 minutes for cron cleaner
 _TERMINAL_STATES = frozenset({"killed", "done", "failed", "timed_out"})
+
+_transformer = LangGraphEventTransformer()
 
 
 async def on_startup(ctx: dict) -> None:  # noqa: ANN401 — ARQ ctx is untyped dict
@@ -45,9 +53,10 @@ async def on_shutdown(ctx: dict) -> None:  # noqa: ANN401 — ARQ ctx is untyped
         shutdown_metrics(httpd)
 
 
+@worker_error_handler
 async def run_triage(ctx: dict, job_id: str) -> None:  # noqa: ANN401 — ARQ ctx is untyped dict
-    """Execute the bug triage graph for a job."""
-    redis_client = ctx["redis"]
+    """Execute the bug triage graph for a job with SSE streaming."""
+    redis_client: aioredis.Redis = ctx["redis"]
     graph = ctx["graph"]
 
     raw = await redis_client.get(f"job:{job_id}")
@@ -71,8 +80,17 @@ async def run_triage(ctx: dict, job_id: str) -> None:  # noqa: ANN401 — ARQ ct
         supervisor_notes=data.get("supervisor_notes", ""),
     )
 
-    config = {"configurable": {"thread_id": job_id}}
-    await graph.ainvoke(initial_state.model_dump(), config=config)
+    config: RunnableConfig = {"configurable": {"thread_id": job_id}}
+    channel = f"jobs:{job_id}:events"
+
+    # Stream events via astream_events and publish to Redis Pub/Sub
+    spawned_agents: dict[str, str] = {}
+
+    async for event in graph.astream_events(
+        initial_state.model_dump(), config=config, version="v2"
+    ):
+        for sse in _transformer.transform(event, spawned_agents):
+            await redis_client.publish(channel, json.dumps(sse))
 
     # Re-read fresh data to detect concurrent status changes (pause/kill)
     fresh_raw = await redis_client.get(f"job:{job_id}")
@@ -89,9 +107,21 @@ async def run_triage(ctx: dict, job_id: str) -> None:  # noqa: ANN401 — ARQ ct
         return
 
     # Check for interrupt (human input requested)
-    state_snapshot = await graph.aget_state(config)
-    if state_snapshot.tasks:
+    interrupt_payload = await check_for_interrupt(graph, config)
+
+    if interrupt_payload is not None:
         # Job is interrupted — waiting for human input
+        await redis_client.publish(
+            channel,
+            json.dumps(
+                {
+                    "type": "graph.interrupt",
+                    "question": interrupt_payload.question,
+                    "context": interrupt_payload.context,
+                }
+            ),
+        )
+
         data["status"] = "waiting"
         data["awaiting_human"] = True
         data["waiting_since"] = str(int(time.time()))
@@ -105,6 +135,7 @@ async def run_triage(ctx: dict, job_id: str) -> None:  # noqa: ANN401 — ARQ ct
             )
     else:
         # Job completed
+        await redis_client.publish(channel, json.dumps({"type": "job.done"}))
         data["status"] = "done"
         await redis_client.setex(f"job:{job_id}", 86400, json.dumps(data))
 
