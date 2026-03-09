@@ -2,7 +2,9 @@ from __future__ import annotations
 
 from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
+
+_CURRENT_SCHEMA_VERSION = 1
 
 
 class AgentFinding(BaseModel):
@@ -57,8 +59,18 @@ class CriticFeedback(BaseModel):
 class BugTriageState(BaseModel):
     """Full state for the bug triage graph."""
 
+    schema_version: int = Field(default=0)
+
     # Job identification
     job_id: str
+
+    @model_validator(mode="before")
+    @classmethod
+    def migrate_from_checkpoint(cls, data: dict[str, object]) -> dict[str, object]:  # noqa: ANN401
+        """Set schema_version to current when loading old checkpoints."""
+        data["schema_version"] = _CURRENT_SCHEMA_VERSION
+        return data
+
     issue_url: str
     issue_title: str = ""
     issue_body: str = ""

@@ -1,4 +1,5 @@
 from agentops.graph.state import (
+    _CURRENT_SCHEMA_VERSION,
     AgentFinding,
     BugTriageState,
     CriticFeedback,
@@ -115,3 +116,22 @@ def test_timed_out_is_valid_status() -> None:
         status="timed_out",
     )
     assert state.status == "timed_out"
+
+
+def test_schema_version_set_on_construction() -> None:
+    state = BugTriageState(
+        job_id="test-123",
+        issue_url="https://github.com/a/b/issues/1",
+    )
+    assert state.schema_version == _CURRENT_SCHEMA_VERSION
+
+
+def test_schema_version_migrated_from_old_checkpoint() -> None:
+    """Old checkpoints without schema_version get migrated to current version."""
+    state = BugTriageState.model_validate(
+        {
+            "job_id": "test-123",
+            "issue_url": "https://github.com/a/b/issues/1",
+        }
+    )
+    assert state.schema_version == _CURRENT_SCHEMA_VERSION

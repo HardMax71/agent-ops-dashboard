@@ -16,6 +16,7 @@ _logger = logging.getLogger(__name__)
 TIMEOUT_ANSWER = "No human response received within the allowed time window."
 _HUMAN_TIMEOUT_SECONDS = 1800  # 30 minutes
 _JOB_STALE_SECONDS = 600  # 10 minutes for cron cleaner
+_TERMINAL_STATES = frozenset({"killed", "done", "failed", "timed_out"})
 
 
 async def on_startup(ctx: dict) -> None:  # noqa: ANN401 — ARQ ctx is untyped dict
@@ -25,9 +26,13 @@ async def on_startup(ctx: dict) -> None:  # noqa: ANN401 — ARQ ctx is untyped 
         encoding="utf-8",
         decode_responses=True,
     )
-    httpd, provider = configure_metrics(port=8002)
-    ctx["metrics_httpd"] = httpd
-    ctx["meter_provider"] = provider
+    if settings.environment != "test":
+        httpd, provider = configure_metrics(port=8002)
+        ctx["metrics_httpd"] = httpd
+        ctx["meter_provider"] = provider
+    else:
+        ctx["metrics_httpd"] = None
+        ctx["meter_provider"] = None
 
     # Build graph (PostgreSQL checkpointer)
     ctx["graph"] = await create_graph_with_postgres(settings.psycopg_dsn)
@@ -35,7 +40,9 @@ async def on_startup(ctx: dict) -> None:  # noqa: ANN401 — ARQ ctx is untyped 
 
 async def on_shutdown(ctx: dict) -> None:  # noqa: ANN401 — ARQ ctx is untyped dict
     await ctx["redis"].aclose()
-    shutdown_metrics(ctx["metrics_httpd"])
+    httpd = ctx.get("metrics_httpd")
+    if httpd is not None:
+        shutdown_metrics(httpd)
 
 
 async def run_triage(ctx: dict, job_id: str) -> None:  # noqa: ANN401 — ARQ ctx is untyped dict
@@ -49,6 +56,11 @@ async def run_triage(ctx: dict, job_id: str) -> None:  # noqa: ANN401 — ARQ ct
         return
 
     data = json.loads(raw)
+
+    # Guard: skip if job already reached a terminal state
+    if data.get("status") in _TERMINAL_STATES:
+        return
+
     data["status"] = "running"
     await redis_client.setex(f"job:{job_id}", 86400, json.dumps(data))
 
@@ -61,6 +73,20 @@ async def run_triage(ctx: dict, job_id: str) -> None:  # noqa: ANN401 — ARQ ct
 
     config = {"configurable": {"thread_id": job_id}}
     await graph.ainvoke(initial_state.model_dump(), config=config)
+
+    # Re-read fresh data to detect concurrent status changes (pause/kill)
+    fresh_raw = await redis_client.get(f"job:{job_id}")
+    if fresh_raw is None:
+        return
+    data = json.loads(fresh_raw)
+
+    if data.get("status") in _TERMINAL_STATES:
+        return
+
+    if data.get("paused") or data.get("status") == "pausing":
+        data["status"] = "paused"
+        await redis_client.setex(f"job:{job_id}", 86400, json.dumps(data))
+        return
 
     # Check for interrupt (human input requested)
     state_snapshot = await graph.aget_state(config)
@@ -103,6 +129,15 @@ async def expire_human_input(ctx: dict, job_id: str) -> None:  # noqa: ANN401 �
 
     # Resume with timeout answer
     await graph.ainvoke(Command(resume=TIMEOUT_ANSWER), config=config)
+
+    # Re-read fresh data to detect concurrent status changes (kill)
+    fresh_raw = await redis_client.get(f"job:{job_id}")
+    if fresh_raw is None:
+        return
+    data = json.loads(fresh_raw)
+
+    if data.get("status") in _TERMINAL_STATES:
+        return
 
     data["status"] = "running"
     data["awaiting_human"] = False

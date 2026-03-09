@@ -65,6 +65,7 @@ class JobActionResponse(BaseModel):
 async def create_job(
     body: CreateJobRequest,
     redis: RedisDep,
+    arq: ArqDep,
 ) -> CreateJobResponse:
     """Create a new triage job. Idempotent within 24h per issue URL."""
     # Idempotency key (owner_id placeholder until auth is implemented)
@@ -89,6 +90,7 @@ async def create_job(
         "current_node": "",
     }
     await redis.setex(f"job:{job_id}", 86400, json.dumps(job_data))
+    await arq.enqueue_job("run_triage", job_id)
 
     return CreateJobResponse(job_id=job_id, status="queued")
 

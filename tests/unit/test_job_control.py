@@ -19,14 +19,6 @@ def mock_graph():
 
 
 @pytest.fixture
-def mock_arq():
-    arq = MagicMock()
-    arq.abort_job = AsyncMock(return_value=None)
-    arq.aclose = AsyncMock(return_value=None)
-    return arq
-
-
-@pytest.fixture
 async def control_client(settings, fake_redis, mock_graph, mock_arq):
     app = create_app(settings, testing=True)
     app.dependency_overrides[get_redis] = lambda: fake_redis

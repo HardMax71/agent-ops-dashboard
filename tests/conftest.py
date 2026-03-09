@@ -2,6 +2,7 @@ import json
 import os
 from collections.abc import Callable, Coroutine
 from pathlib import Path
+from unittest.mock import AsyncMock, MagicMock
 
 os.environ.setdefault("JWT_SECRET", "test-placeholder-secret-32characters!!")
 
@@ -10,6 +11,7 @@ import pytest_asyncio
 from fakeredis import FakeAsyncRedis
 from httpx import ASGITransport, AsyncClient
 
+from agentops.api.deps.arq import get_arq
 from agentops.api.deps.redis import get_redis
 from agentops.api.main import create_app
 from agentops.config import Settings
@@ -82,10 +84,24 @@ def make_job(fake_redis: FakeAsyncRedis) -> Callable[..., Coroutine[None, None, 
     return _factory
 
 
+@pytest.fixture
+def mock_arq() -> MagicMock:
+    arq = MagicMock()
+    arq.enqueue_job = AsyncMock(return_value=None)
+    arq.abort_job = AsyncMock(return_value=None)
+    arq.aclose = AsyncMock(return_value=None)
+    return arq
+
+
 @pytest_asyncio.fixture
-async def api_client(settings: Settings, fake_redis: FakeAsyncRedis) -> AsyncClient:
+async def api_client(
+    settings: Settings,
+    fake_redis: FakeAsyncRedis,
+    mock_arq: MagicMock,
+) -> AsyncClient:
     app = create_app(settings, testing=True)
     app.dependency_overrides[get_redis] = lambda: fake_redis
+    app.dependency_overrides[get_arq] = lambda: mock_arq
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
         yield client
     app.dependency_overrides.clear()

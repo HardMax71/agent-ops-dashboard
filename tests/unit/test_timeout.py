@@ -4,7 +4,7 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from agentops.worker import TIMEOUT_ANSWER, expire_human_input, job_timeout_cleaner
+from agentops.worker import TIMEOUT_ANSWER, expire_human_input, job_timeout_cleaner, run_triage
 
 
 @pytest.fixture
@@ -91,3 +91,86 @@ async def test_timeout_cleaner_skips_non_waiting(ctx, fake_redis, make_job):
     raw = await fake_redis.get("job:j5")
     data = json.loads(raw)
     assert data["status"] == "running"
+
+
+# ---------------------------------------------------------------------------
+# Race-condition guard tests
+# ---------------------------------------------------------------------------
+
+
+async def test_run_triage_skips_killed_job(ctx, fake_redis, mock_graph, make_job):
+    """run_triage returns early without invoking the graph when job is already killed."""
+    await make_job("j6", status="killed")
+
+    await run_triage(ctx, "j6")
+
+    mock_graph.ainvoke.assert_not_called()
+    raw = await fake_redis.get("job:j6")
+    data = json.loads(raw)
+    assert data["status"] == "killed"
+
+
+async def test_run_triage_respects_kill_during_execution(ctx, fake_redis, mock_graph, make_job):
+    """run_triage preserves killed status when kill happens during graph execution."""
+    await make_job("j7", status="queued")
+    mock_graph.aget_state.return_value = MagicMock(tasks=[])
+
+    async def simulate_kill(*_args, **_kwargs):
+        # Simulate API killing the job while graph is running
+        raw = await fake_redis.get("job:j7")
+        data = json.loads(raw)
+        data["status"] = "killed"
+        await fake_redis.setex("job:j7", 86400, json.dumps(data))
+        return None
+
+    mock_graph.ainvoke = AsyncMock(side_effect=simulate_kill)
+
+    await run_triage(ctx, "j7")
+
+    raw = await fake_redis.get("job:j7")
+    data = json.loads(raw)
+    assert data["status"] == "killed"
+
+
+async def test_run_triage_respects_pause_during_execution(ctx, fake_redis, mock_graph, make_job):
+    """run_triage sets status to paused when pause happens during graph execution."""
+    await make_job("j8", status="queued")
+    mock_graph.aget_state.return_value = MagicMock(tasks=[])
+
+    async def simulate_pause(*_args, **_kwargs):
+        # Simulate API pausing the job while graph is running
+        raw = await fake_redis.get("job:j8")
+        data = json.loads(raw)
+        data["status"] = "pausing"
+        data["paused"] = True
+        await fake_redis.setex("job:j8", 86400, json.dumps(data))
+        return None
+
+    mock_graph.ainvoke = AsyncMock(side_effect=simulate_pause)
+
+    await run_triage(ctx, "j8")
+
+    raw = await fake_redis.get("job:j8")
+    data = json.loads(raw)
+    assert data["status"] == "paused"
+
+
+async def test_expire_skips_killed_during_resume(ctx, fake_redis, mock_graph, make_job):
+    """expire_human_input preserves killed status when kill happens during graph resume."""
+    await make_job("j9", status="waiting", awaiting_human=True)
+    mock_graph.aget_state.return_value = MagicMock(tasks=["pending_task"])
+
+    async def simulate_kill(*_args, **_kwargs):
+        raw = await fake_redis.get("job:j9")
+        data = json.loads(raw)
+        data["status"] = "killed"
+        await fake_redis.setex("job:j9", 86400, json.dumps(data))
+        return None
+
+    mock_graph.ainvoke = AsyncMock(side_effect=simulate_kill)
+
+    await expire_human_input(ctx, "j9")
+
+    raw = await fake_redis.get("job:j9")
+    data = json.loads(raw)
+    assert data["status"] == "killed"

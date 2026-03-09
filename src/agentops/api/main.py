@@ -20,8 +20,8 @@ def create_app(settings: Settings, *, testing: bool = False) -> FastAPI:
         CORSMiddleware,  # type: ignore[invalid-argument-type]
         allow_origins=[settings.frontend_origin],
         allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
+        allow_methods=["GET", "POST", "DELETE"],
+        allow_headers=["Authorization", "Content-Type"],
     )
     app.add_middleware(SecurityHeadersMiddleware, frontend_origin=settings.frontend_origin)  # type: ignore[invalid-argument-type]
 
