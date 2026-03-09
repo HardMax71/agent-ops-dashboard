@@ -27,7 +27,7 @@ def decode_access_token(token: str, settings: Settings) -> dict[str, object]:
         settings.jwt_secret,
         algorithms=[settings.jwt_algorithm],
         leeway=timedelta(seconds=30),
-        options={"require": ["exp", "sub", "iat"]},
+        options={"require": ["exp", "sub", "iat", "login", "jti"]},
     )
 
 
