@@ -23,7 +23,7 @@ class Settings(BaseSettings):
     github_redirect_uri: str = "http://localhost:8000/auth/callback"
     github_token_encryption_key: str = ""
     frontend_origin: str = "http://localhost:5173"
-    internal_service_secret: str = Field(default="dev-internal-secret")
+    internal_service_secret: str = Field(default="dev-internal-secret", min_length=16)
 
     # LLM
     openai_api_key: str = ""
@@ -40,6 +40,10 @@ class Settings(BaseSettings):
     tavily_api_key: str = ""
     github_token: str = ""
     github_webhook_secret: str = ""
+
+    # Metrics
+    api_metrics_port: int = 8001
+    worker_metrics_port: int = 8002
 
     # Chroma
     chroma_persist_dir: str = "/data/chroma"

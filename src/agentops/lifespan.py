@@ -36,7 +36,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     app.state.arq = await create_arq_pool(ArqRedisSettings.from_dsn(settings.redis_url))
 
     # OTel metrics (API process)
-    httpd, provider = configure_metrics(port=8001)
+    httpd, provider = configure_metrics(port=settings.api_metrics_port)
     app.state.metrics_httpd = httpd
     app.state.meter_provider = provider
 

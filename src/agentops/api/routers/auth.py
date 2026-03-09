@@ -68,7 +68,20 @@ async def callback(
         )
         token_response.raise_for_status()
         token_data = token_response.json()
+
+        if "error" in token_data:
+            description = token_data.get("error_description", token_data["error"])
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail=f"GitHub OAuth error: {description}",
+            )
+
         github_access_token: str = token_data.get("access_token", "")
+        if not github_access_token:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="GitHub OAuth token exchange returned no access token",
+            )
 
         user_response = await client.get(
             _GITHUB_USER_URL,

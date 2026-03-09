@@ -35,7 +35,7 @@ async def on_startup(ctx: dict) -> None:  # noqa: ANN401 — ARQ ctx is untyped 
         decode_responses=True,
     )
     if settings.environment != "test":
-        httpd, provider = configure_metrics(port=8002)
+        httpd, provider = configure_metrics(port=settings.worker_metrics_port)
         ctx["metrics_httpd"] = httpd
         ctx["meter_provider"] = provider
     else:
