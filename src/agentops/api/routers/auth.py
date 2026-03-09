@@ -16,16 +16,12 @@ _GITHUB_AUTHORIZE_URL = "https://github.com/login/oauth/authorize"
 _GITHUB_TOKEN_URL = "https://github.com/login/oauth/access_token"  # noqa: S105
 _GITHUB_USER_URL = "https://api.github.com/user"
 
-_CSRF_STATE_TTL = 600  # 10 minutes
-_AUTH_CODE_TTL = 300  # 5 minutes
-_GITHUB_TOKEN_TTL = 365 * 24 * 3600  # 365 days (PRD-008-1 §5)
-
 
 @router.get("/login")
 async def login(settings: SettingsDep, redis: RedisDep) -> RedirectResponse:
     """Redirect to GitHub OAuth login with CSRF state param."""
     state = str(uuid.uuid4())
-    await redis.setex(f"oauth_state:{state}", _CSRF_STATE_TTL, "1")
+    await redis.setex(f"oauth_state:{state}", settings.csrf_state_ttl_seconds, "1")
 
     params = (
         f"client_id={settings.github_client_id}"
@@ -94,11 +90,12 @@ async def callback(
     # Store encrypted GitHub token (PRD-008-1 §5 — 365-day TTL)
     if settings.github_token_encryption_key and github_access_token:
         encrypted = encrypt_github_token(github_access_token, settings)
-        await redis.setex(f"github_token:{github_id}", _GITHUB_TOKEN_TTL, encrypted)
+        await redis.setex(f"github_token:{github_id}", settings.github_token_ttl_seconds, encrypted)
 
     # Generate one-time auth code
     auth_code = str(uuid.uuid4())
-    await redis.setex(f"auth_code:{auth_code}", _AUTH_CODE_TTL, f"{github_id}:{github_login}")
+    auth_value = f"{github_id}:{github_login}"
+    await redis.setex(f"auth_code:{auth_code}", settings.auth_code_ttl_seconds, auth_value)
 
     return RedirectResponse(url=f"{settings.frontend_origin}/auth/callback?code={auth_code}")
 

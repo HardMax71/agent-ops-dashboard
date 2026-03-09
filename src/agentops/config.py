@@ -18,6 +18,9 @@ class Settings(BaseSettings):
     jwt_algorithm: str = "HS256"
     access_token_expire_seconds: int = 900
     refresh_token_expire_seconds: int = 604800
+    csrf_state_ttl_seconds: int = 600
+    auth_code_ttl_seconds: int = 300
+    github_token_ttl_seconds: int = 365 * 24 * 3600
     github_client_id: str = ""
     github_client_secret: str = ""
     github_redirect_uri: str = "http://localhost:8000/auth/callback"
