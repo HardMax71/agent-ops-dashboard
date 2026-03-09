@@ -22,8 +22,6 @@ _HUMAN_TIMEOUT_SECONDS = 1800  # 30 minutes
 _JOB_STALE_SECONDS = 600  # 10 minutes for cron cleaner
 _TERMINAL_STATES = frozenset({"killed", "done", "failed", "timed_out"})
 
-_transformer = LangGraphEventTransformer()
-
 
 async def on_startup(ctx: dict) -> None:  # noqa: ANN401 — ARQ ctx is untyped dict
     settings = get_settings()
@@ -82,12 +80,12 @@ async def run_triage(ctx: dict, job_id: str) -> None:  # noqa: ANN401 — ARQ ct
     channel = f"jobs:{job_id}:events"
 
     # Stream events via astream_events and publish to Redis Pub/Sub
-    spawned_agents: dict[str, str] = {}
+    transformer = LangGraphEventTransformer()
 
     async for event in graph.astream_events(
         initial_state.model_dump(), config=config, version="v2"
     ):
-        for sse in _transformer.transform(event, spawned_agents):
+        for sse in transformer.transform(event):
             await redis_client.publish(channel, json.dumps(sse))
 
     # Re-read fresh data to detect concurrent status changes (pause/kill)
