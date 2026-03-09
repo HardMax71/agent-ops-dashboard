@@ -8,23 +8,18 @@ from agentops.api.deps.settings import SettingsDep
 from agentops.auth.models import UserInfoResponse
 from agentops.auth.service import decode_access_token
 
-_bearer = HTTPBearer(auto_error=False)
+_bearer_required = HTTPBearer()
+_bearer_optional = HTTPBearer(auto_error=False)
 
 
 async def get_current_user(
-    credentials: Annotated[HTTPAuthorizationCredentials | None, Depends(_bearer)],
+    credentials: Annotated[HTTPAuthorizationCredentials, Depends(_bearer_required)],
     settings: SettingsDep,
 ) -> UserInfoResponse:
     """Extract and validate the current user from the JWT Bearer token.
 
     JWT decode exceptions are caught here (infrastructure layer, not business logic).
     """
-    if credentials is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Not authenticated",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
     try:
         payload = decode_access_token(credentials.credentials, settings)
     except jwt.ExpiredSignatureError:
@@ -47,7 +42,7 @@ async def get_current_user(
 
 
 async def get_optional_user(
-    credentials: Annotated[HTTPAuthorizationCredentials | None, Depends(_bearer)],
+    credentials: Annotated[HTTPAuthorizationCredentials | None, Depends(_bearer_optional)],
     settings: SettingsDep,
 ) -> UserInfoResponse | None:
     """Like get_current_user but returns None when no credentials are present."""
