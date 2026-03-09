@@ -29,11 +29,6 @@ _SSE_KEEPALIVE_SECONDS = 30
 GitHubIssueUrl = Annotated[str, Field(pattern=_GITHUB_ISSUE_URL_PATTERN)]
 
 
-# ---------------------------------------------------------------------------
-# Request / Response models
-# ---------------------------------------------------------------------------
-
-
 class CreateJobRequest(BaseModel):
     issue_url: GitHubIssueUrl
     supervisor_notes: str = ""
@@ -64,11 +59,6 @@ class RedirectRequest(BaseModel):
 class JobActionResponse(BaseModel):
     status: str
     job_id: str
-
-
-# ---------------------------------------------------------------------------
-# CRUD endpoints
-# ---------------------------------------------------------------------------
 
 
 @router.post("", status_code=status.HTTP_202_ACCEPTED, response_model=CreateJobResponse)
@@ -150,11 +140,6 @@ async def get_job(job_id: str, redis: RedisDep) -> JobResponse:
     return JobResponse.model_validate(json.loads(raw))
 
 
-# ---------------------------------------------------------------------------
-# SSE streaming endpoint
-# ---------------------------------------------------------------------------
-
-
 async def _sse_generator(redis: RedisDep, job_id: str) -> AsyncGenerator[str, None]:
     """Subscribe to Redis Pub/Sub and yield SSE-formatted events."""
     pubsub = redis.pubsub()
@@ -205,11 +190,6 @@ async def stream_job(job_id: str, redis: RedisDep) -> StreamingResponse:
             "X-Accel-Buffering": "no",
         },
     )
-
-
-# ---------------------------------------------------------------------------
-# Job control endpoints
-# ---------------------------------------------------------------------------
 
 
 async def _load_job_data(redis: RedisDep, job_id: str) -> dict[str, object]:  # noqa: ANN401 — Redis JSON is untyped

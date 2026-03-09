@@ -100,11 +100,6 @@ async def test_timeout_cleaner_skips_non_waiting(ctx, fake_redis, make_job):
     assert data["status"] == "running"
 
 
-# ---------------------------------------------------------------------------
-# Race-condition guard tests
-# ---------------------------------------------------------------------------
-
-
 async def test_run_triage_skips_killed_job(ctx, fake_redis, mock_graph, make_job):
     """run_triage returns early without invoking the graph when job is already killed."""
     await make_job("j6", status="killed")
