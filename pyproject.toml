@@ -33,6 +33,7 @@ dependencies = [
     "opentelemetry-sdk>=1.25",
     "opentelemetry-exporter-prometheus>=0.46",
     "prometheus-client>=0.20",
+    "githubkit>=0.14.7",
 ]
 
 [dependency-groups]
