@@ -44,8 +44,16 @@ class Settings(BaseSettings):
     # Chroma
     chroma_persist_dir: str = "/data/chroma"
 
+    # Graph checkpointing
+    checkpoint_backend: str = "memory"  # "memory" or "postgres"
+
     # Job limits
     default_cost_budget_usd: float = 0.20
+
+    @property
+    def psycopg_dsn(self) -> str:
+        """Derive psycopg-compatible DSN from SQLAlchemy database_url."""
+        return self.database_url.replace("+asyncpg", "").replace("+aiosqlite", "")
 
     @model_validator(mode="after")
     def _validate_production_secrets(self) -> "Settings":

@@ -12,6 +12,7 @@ dependencies = [
     "pydantic>=2.7",
     "pydantic-settings>=2.3",
     "langgraph>=0.2",
+    "langgraph-checkpoint-postgres>=2.0",
     "langchain>=0.3",
     "langchain-openai>=0.2",
     "langserve[all]>=0.3,<0.4",

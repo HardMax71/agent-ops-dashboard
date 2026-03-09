@@ -1,7 +1,14 @@
 from collections.abc import Callable
+from unittest.mock import patch
+
+import pytest
 
 from agentops.graph.state import AgentFinding, BugTriageState, CriticFeedback, HumanExchange
-from agentops.graph.supervisor import build_supervisor_context, route_from_supervisor
+from agentops.graph.supervisor import (
+    build_supervisor_context,
+    route_from_supervisor,
+    supervisor_node,
+)
 
 
 def test_g1_first_iteration(make_state: Callable[..., BugTriageState]) -> None:
@@ -69,3 +76,71 @@ def test_normal_routing_to_writer(make_state: Callable[..., BugTriageState]) -> 
 def test_normal_routing_to_investigator(make_state: Callable[..., BugTriageState]) -> None:
     state = make_state(iterations=3, supervisor_next="investigator")
     assert route_from_supervisor(state) == "investigator"
+
+
+def test_redirect_instructions_in_context(make_state):
+    state = make_state(
+        iterations=2,
+        redirect_instructions=["focus on auth", "check DB layer"],
+    )
+    ctx = build_supervisor_context(state)
+    block = ctx["redirect_instructions_block"]
+    assert "1. focus on auth" in block
+    assert "2. check DB layer" in block
+    assert "Active redirect instructions" in block
+
+
+def test_empty_redirect_instructions(make_state):
+    state = make_state(iterations=2)
+    ctx = build_supervisor_context(state)
+    assert ctx["redirect_instructions_block"] == ""
+
+
+async def test_pause_fires_interrupt(make_state):
+    state = make_state(iterations=2, paused=True)
+    with patch("agentops.graph.supervisor.interrupt") as mock_interrupt:
+        mock_interrupt.side_effect = Exception("interrupt fired")
+        with pytest.raises(Exception, match="interrupt fired"):
+            await supervisor_node(state)
+        mock_interrupt.assert_called_once_with("manual_pause")
+
+
+async def test_pending_exchange_set_on_human_input(make_state):
+    from agentops.graph.supervisor import SupervisorDecision
+
+    decision = SupervisorDecision(
+        next_node="human_input",
+        reasoning="Need more info",
+        confidence=0.8,
+        question="What error do you see?",
+        question_context="Login page returns 500",
+    )
+
+    state = make_state(iterations=2)
+
+    with patch("agentops.graph.supervisor._invoke_supervisor", return_value=decision):
+        with patch("agentops.graph.supervisor.ChatOpenAI"):
+            result = await supervisor_node(state)
+
+    assert result["awaiting_human"] is True
+    assert result["pending_exchange"].question == "What error do you see?"
+    assert result["pending_exchange"].context == "Login page returns 500"
+
+
+async def test_no_pending_exchange_for_other_nodes(make_state):
+    from agentops.graph.supervisor import SupervisorDecision
+
+    decision = SupervisorDecision(
+        next_node="investigator",
+        reasoning="Investigate further",
+        confidence=0.9,
+    )
+
+    state = make_state(iterations=2)
+
+    with patch("agentops.graph.supervisor._invoke_supervisor", return_value=decision):
+        with patch("agentops.graph.supervisor.ChatOpenAI"):
+            result = await supervisor_node(state)
+
+    assert "pending_exchange" not in result
+    assert "awaiting_human" not in result

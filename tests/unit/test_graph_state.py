@@ -74,3 +74,44 @@ def test_critic_feedback_from_dict() -> None:
     )
     assert feedback.verdict == "REJECTED"
     assert feedback.gaps == ["missing tests"]
+
+
+def test_human_exchange_context_field() -> None:
+    exchange = HumanExchange(
+        question="What is the error?",
+        context="Occurs during login flow",
+        answer="NullPointerException",
+    )
+    assert exchange.context == "Occurs during login flow"
+
+
+def test_human_exchange_context_default() -> None:
+    exchange = HumanExchange(question="What is the error?")
+    assert exchange.context == ""
+
+
+def test_redirect_instructions_field() -> None:
+    state = BugTriageState(
+        job_id="test-123",
+        issue_url="https://github.com/a/b/issues/1",
+        redirect_instructions=["focus on auth", "check DB"],
+    )
+    assert len(state.redirect_instructions) == 2
+    assert state.redirect_instructions[0] == "focus on auth"
+
+
+def test_redirect_instructions_default() -> None:
+    state = BugTriageState(
+        job_id="test-123",
+        issue_url="https://github.com/a/b/issues/1",
+    )
+    assert state.redirect_instructions == []
+
+
+def test_timed_out_is_valid_status() -> None:
+    state = BugTriageState(
+        job_id="test-123",
+        issue_url="https://github.com/a/b/issues/1",
+        status="timed_out",
+    )
+    assert state.status == "timed_out"

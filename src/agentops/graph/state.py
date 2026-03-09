@@ -25,6 +25,7 @@ class HumanExchange(BaseModel):
     """A completed Q&A exchange with a human."""
 
     question: str
+    context: str = ""
     answer: str = ""
     asked_at: str = ""
     answered_at: str = ""
@@ -65,7 +66,9 @@ class BugTriageState(BaseModel):
     owner_id: str = ""
 
     # Orchestration
-    status: Literal["queued", "running", "waiting", "paused", "done", "failed", "killed"] = "queued"
+    status: Literal[
+        "queued", "running", "waiting", "paused", "done", "failed", "killed", "timed_out"
+    ] = "queued"
     current_node: str = ""
     iterations: int = 0
     max_iterations: int = 10
@@ -98,3 +101,6 @@ class BugTriageState(BaseModel):
 
     # Supervisor notes from user
     supervisor_notes: str = ""
+
+    # Redirect instructions from user
+    redirect_instructions: list[str] = Field(default_factory=list)

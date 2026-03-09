@@ -13,6 +13,7 @@ from httpx import ASGITransport, AsyncClient
 from agentops.api.deps.redis import get_redis
 from agentops.api.main import create_app
 from agentops.config import Settings
+from agentops.graph.graph import create_graph_in_memory
 from agentops.graph.state import AgentFinding, BugTriageState
 
 
@@ -62,6 +63,11 @@ def make_finding() -> Callable[..., AgentFinding]:
         )
 
     return _factory
+
+
+@pytest.fixture
+def memory_graph():
+    return create_graph_in_memory()
 
 
 @pytest_asyncio.fixture

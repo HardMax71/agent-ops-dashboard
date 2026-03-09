@@ -55,3 +55,12 @@ def create_graph_in_memory() -> CompiledStateGraph:
     by the application lifespan instead.
     """
     return build_graph(checkpointer=MemorySaver())
+
+
+async def create_graph_with_postgres(conninfo: str) -> CompiledStateGraph:
+    """Create graph with PostgreSQL-backed checkpointer for production."""
+    from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
+
+    saver = AsyncPostgresSaver.from_conn_string(conninfo)
+    await saver.setup()
+    return build_graph(checkpointer=saver)
