@@ -1,0 +1,30 @@
+import httpx
+
+from agentops.graph.state import BugTriageState, TriageReport
+
+
+async def writer_node(state: BugTriageState) -> dict:  # noqa: ANN401 — LangGraph node returns partial state dict
+    """Call writer LangServe endpoint."""
+    payload = {
+        "input": {
+            "issue_title": state.issue_title,
+            "findings": [f.model_dump() for f in state.findings],
+            "critic_feedback": state.critic_feedback.model_dump() if state.critic_feedback else {},
+            "human_exchanges": [e.model_dump() for e in state.human_exchanges],
+        }
+    }
+    async with httpx.AsyncClient(timeout=60.0) as client:
+        response = await client.post(
+            "http://writer:8005/agents/writer/invoke",
+            json=payload,
+        )
+        response.raise_for_status()
+        raw = response.json()
+
+    report = TriageReport.model_validate(raw["output"])
+    report.ticket_title = report.ticket_title or state.issue_title
+    return {
+        "report": report,
+        "current_node": "writer",
+        "status": "done",
+    }
