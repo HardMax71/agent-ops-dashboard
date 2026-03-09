@@ -1,5 +1,3 @@
-"""JWT token and GitHub token encryption service."""
-
 import uuid
 from datetime import UTC, datetime, timedelta
 

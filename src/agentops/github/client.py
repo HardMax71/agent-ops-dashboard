@@ -1,5 +1,3 @@
-"""GitHub API client for fetching issue metadata."""
-
 import logging
 import re
 

@@ -1,5 +1,3 @@
-"""Internal webhook router for LangSmith alerts."""
-
 from fastapi import APIRouter, HTTPException, Query, status
 from pydantic import BaseModel
 

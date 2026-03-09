@@ -1,5 +1,3 @@
-"""Authentication dependencies for FastAPI routes."""
-
 from typing import Annotated
 
 import jwt

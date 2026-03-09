@@ -1,5 +1,3 @@
-"""Interrupt detection after astream_events loop (PRD-003-1 §7)."""
-
 from langchain_core.runnables import RunnableConfig
 from langgraph.graph.state import CompiledStateGraph
 

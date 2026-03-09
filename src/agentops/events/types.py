@@ -1,5 +1,3 @@
-"""SSE event type definitions (PRD-003-1 §5)."""
-
 from typing import Literal, TypedDict
 
 

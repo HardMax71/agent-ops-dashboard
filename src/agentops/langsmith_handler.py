@@ -1,5 +1,3 @@
-"""LangSmith feedback handler and run query utilities."""
-
 from langsmith import Client
 
 

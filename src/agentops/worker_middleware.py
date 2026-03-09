@@ -1,5 +1,3 @@
-"""Service-wide ARQ worker error handler (PRD-003-1 §10)."""
-
 import functools
 import json
 import logging

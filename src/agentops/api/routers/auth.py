@@ -1,5 +1,3 @@
-"""OAuth 2.0 authentication router (GitHub provider)."""
-
 import uuid
 
 import httpx

@@ -1,5 +1,3 @@
-"""SQLAlchemy ORM models for job persistence and user management."""
-
 from datetime import datetime
 
 from sqlalchemy import Boolean, ForeignKey, Integer, Numeric, String, Text, func

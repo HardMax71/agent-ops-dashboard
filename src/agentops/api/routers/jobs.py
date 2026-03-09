@@ -1,5 +1,3 @@
-"""Jobs router: CRUD, control, SSE streaming, and rate limiting."""
-
 import asyncio
 import hashlib
 import json

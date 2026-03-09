@@ -1,5 +1,3 @@
-"""GitHub API data models."""
-
 from pydantic import BaseModel
 
 

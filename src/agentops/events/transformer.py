@@ -1,5 +1,3 @@
-"""LangGraph event transformer (PRD-003-1 §6) — dispatch table pattern."""
-
 import uuid
 from collections.abc import Callable
 

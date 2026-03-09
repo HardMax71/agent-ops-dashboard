@@ -1,5 +1,3 @@
-"""ARQ worker: triage graph execution with SSE event streaming."""
-
 import json
 import logging
 import time
