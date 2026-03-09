@@ -139,7 +139,7 @@ async def job_timeout_cleaner(ctx: dict) -> None:  # noqa: ANN401 — ARQ ctx is
 
 class WorkerSettings:
     functions = [run_triage, expire_human_input]
-    cron_jobs = [cron(job_timeout_cleaner, minute={0, 15, 30, 45}, unique=True)]
+    cron_jobs = [cron(job_timeout_cleaner, minute={0, 15, 30, 45}, unique=True)]  # type: ignore[arg-type]
     on_startup = on_startup
     on_shutdown = on_shutdown
     max_jobs = 10

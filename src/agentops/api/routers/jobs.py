@@ -4,6 +4,7 @@ import uuid
 from typing import Annotated
 
 from fastapi import APIRouter, HTTPException, status
+from langchain_core.runnables import RunnableConfig
 from langgraph.types import Command
 from pydantic import BaseModel, Field
 
@@ -132,7 +133,7 @@ async def answer_job(
     await arq.abort_job(f"timeout:{job_id}")
 
     # Resume graph execution
-    config = {"configurable": {"thread_id": job_id}}
+    config: RunnableConfig = {"configurable": {"thread_id": job_id}}
     await graph.ainvoke(Command(resume=body.answer), config=config)
 
     data["awaiting_human"] = False
@@ -166,7 +167,7 @@ async def resume_job(
     """Resume a paused job."""
     data = await _load_job_data(redis, job_id)
 
-    config = {"configurable": {"thread_id": job_id}}
+    config: RunnableConfig = {"configurable": {"thread_id": job_id}}
     await graph.ainvoke(Command(resume="resume"), config=config)
 
     data["status"] = "running"
@@ -186,13 +187,14 @@ async def redirect_job(
     """Inject a redirect instruction into a running or paused job."""
     data = await _load_job_data(redis, job_id)
 
-    instructions = data.get("redirect_instructions", [])
+    existing = data.get("redirect_instructions")
+    instructions: list[str] = [*existing] if existing else []  # type: ignore[misc]
     instructions.append(body.instruction)
     data["redirect_instructions"] = instructions
 
     # If paused, resume with redirect
     if data.get("paused"):
-        config = {"configurable": {"thread_id": job_id}}
+        config: RunnableConfig = {"configurable": {"thread_id": job_id}}
         await graph.ainvoke(
             Command(resume={"type": "redirect", "instruction": body.instruction}),
             config=config,
