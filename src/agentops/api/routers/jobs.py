@@ -69,10 +69,4 @@ async def get_job(job_id: str, redis: RedisDep) -> JobResponse:
     if raw is None:
         raise HTTPException(status_code=404, detail="Job not found")
 
-    data = json.loads(raw)
-    return JobResponse(
-        job_id=data["job_id"],
-        status=data["status"],
-        issue_url=data["issue_url"],
-        langsmith_url=data.get("langsmith_url", ""),
-    )
+    return JobResponse.model_validate(json.loads(raw))

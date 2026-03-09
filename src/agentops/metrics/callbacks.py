@@ -2,7 +2,7 @@ import time
 import uuid
 
 from langchain_core.callbacks import BaseCallbackHandler
-from langchain_core.outputs import LLMResult
+from langchain_core.outputs import ChatGeneration, LLMResult
 from opentelemetry.sdk.metrics import MeterProvider
 from pydantic import BaseModel
 
@@ -20,21 +20,6 @@ class CallbackMetadata(BaseModel):
 
     langgraph_node: str = ""
     ls_model_name: str = ""
-
-
-class TokenUsage(BaseModel):
-    """Typed token usage from LLM providers."""
-
-    prompt_tokens: int = 0
-    completion_tokens: int = 0
-    total_tokens: int = 0
-
-
-class LLMOutputInfo(BaseModel):
-    """Typed structure of LLMResult.llm_output from ChatOpenAI."""
-
-    token_usage: TokenUsage = TokenUsage()
-    model_name: str = ""
 
 
 class AgentOpsMetricsCallback(BaseCallbackHandler):
@@ -137,12 +122,12 @@ class AgentOpsMetricsCallback(BaseCallbackHandler):
         agent = meta.langgraph_node or "unknown"
         pricing = MODEL_PRICING.get(model, MODEL_PRICING["gpt-4o-mini"])
 
-        llm_info = LLMOutputInfo.model_validate(response.llm_output or {})
-        input_tokens = llm_info.token_usage.prompt_tokens
-        output_tokens = llm_info.token_usage.completion_tokens
-        cost = input_tokens * pricing["input"] + output_tokens * pricing["output"]
-
-        if input_tokens or output_tokens:
+        generation: ChatGeneration = response.generations[0][0]  # type: ignore[assignment]
+        usage = generation.message.usage_metadata  # type: ignore[unresolved-attribute]
+        if usage:
+            input_tokens = usage["input_tokens"]
+            output_tokens = usage["output_tokens"]
+            cost = input_tokens * pricing["input"] + output_tokens * pricing["output"]
             self._token_usage.add(
                 input_tokens, {"agent": agent, "model": model, "token_type": "input"}
             )

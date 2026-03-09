@@ -21,7 +21,7 @@ async def investigator_node(state: BugTriageState) -> dict:  # noqa: ANN401 — 
         response.raise_for_status()
         raw = response.json()
 
-    finding = AgentFinding.model_validate(raw["output"])
+    finding = AgentFinding.model_validate(raw["output"] | {"agent_name": "investigator"})
     return {
         "findings": state.findings + [finding],
         "current_node": "investigator",
