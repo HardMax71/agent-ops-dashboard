@@ -208,3 +208,6 @@ __marimo__/
 
 # idea
 .idea
+
+# Frontend coverage
+frontend/coverage/

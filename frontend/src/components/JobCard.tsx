@@ -9,7 +9,7 @@ interface JobCardProps {
   onClick: () => void
 }
 
-function formatTimeAgo(dateStr: string | undefined): string {
+export function formatTimeAgo(dateStr: string | undefined): string {
   if (!dateStr) return ''
   const date = new Date(dateStr)
   const diff = Date.now() - date.getTime()
@@ -21,7 +21,7 @@ function formatTimeAgo(dateStr: string | undefined): string {
   return `${Math.floor(hrs / 24)}d ago`
 }
 
-function extractRepo(issueUrl: string): string {
+export function extractRepo(issueUrl: string): string {
   const match = issueUrl.match(/github\.com\/([^/]+\/[^/]+)\/issues/)
   return match ? match[1] : issueUrl
 }
