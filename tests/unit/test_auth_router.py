@@ -8,7 +8,7 @@ from httpx import ASGITransport, AsyncClient
 from agentops.api.deps.arq import get_arq
 from agentops.api.deps.redis import get_redis
 from agentops.api.main import create_app
-from agentops.auth.service import create_access_token
+from agentops.auth.service import create_access_token, decode_access_token
 from agentops.config import Settings, get_settings
 
 pytestmark = pytest.mark.asyncio
@@ -178,18 +178,58 @@ class TestMe:
         resp = await auth_client.get("/auth/me")
         assert resp.status_code == 401
 
+    async def test_revoked_token_returns_401(
+        self,
+        auth_client: AsyncClient,
+        auth_settings: Settings,
+        fake_redis: "FakeAsyncRedis",  # noqa: F821
+    ) -> None:
+        token = create_access_token("12345", "testuser", auth_settings)
+        payload = decode_access_token(token, auth_settings)
+        jti = str(payload["jti"])
+        await fake_redis.setex(f"jti_blacklist:{jti}", 900, "1")
+        resp = await auth_client.get("/auth/me", headers={"Authorization": f"Bearer {token}"})
+        assert resp.status_code == 401
+
+    async def test_me_returns_avatar_when_set(
+        self,
+        auth_client: AsyncClient,
+        auth_settings: Settings,
+        fake_redis: "FakeAsyncRedis",  # noqa: F821
+    ) -> None:
+        await fake_redis.setex(
+            "avatar:12345", 604800, "https://avatars.githubusercontent.com/u/12345"
+        )
+        token = create_access_token("12345", "testuser", auth_settings)
+        resp = await auth_client.get("/auth/me", headers={"Authorization": f"Bearer {token}"})
+        assert resp.status_code == 200
+        assert resp.json()["avatar_url"] == "https://avatars.githubusercontent.com/u/12345"
+
 
 class TestLogout:
     async def test_logout_clears_redis_and_cookie(
         self,
         auth_client: AsyncClient,
+        auth_settings: Settings,
         fake_redis: "FakeAsyncRedis",  # noqa: F821
     ) -> None:
+        token = create_access_token("12345", "testuser", auth_settings)
         await fake_redis.setex("refresh_token:rt-id", 604800, "12345:testuser")
         auth_client.cookies.set("refresh_token", "rt-id")
-        resp = await auth_client.delete("/auth/logout")
+        resp = await auth_client.delete(
+            "/auth/logout", headers={"Authorization": f"Bearer {token}"}
+        )
         assert resp.status_code == 200
         assert resp.json()["status"] == "logged_out"
-        # Token should be deleted from Redis
+        # Refresh token should be deleted from Redis
         stored = await fake_redis.get("refresh_token:rt-id")
         assert stored is None
+        # JTI should be blacklisted
+        payload = decode_access_token(token, auth_settings)
+        jti = str(payload["jti"])
+        blacklisted = await fake_redis.get(f"jti_blacklist:{jti}")
+        assert blacklisted is not None
+
+    async def test_logout_without_token_returns_401(self, auth_client: AsyncClient) -> None:
+        resp = await auth_client.delete("/auth/logout")
+        assert resp.status_code == 401

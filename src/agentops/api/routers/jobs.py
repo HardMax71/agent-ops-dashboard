@@ -41,9 +41,12 @@ class JobResponse(BaseModel):
     job_id: str
     status: str
     issue_url: str
+    issue_title: str = ""
+    repository: str = ""
     langsmith_url: str = ""
     awaiting_human: bool = False
     current_node: str = ""
+    created_at: str = ""
 
 
 class AnswerRequest(BaseModel):
@@ -308,3 +311,12 @@ async def kill_job(
     await redis.decr(f"active_jobs:{owner_id}")
 
     return JobActionResponse(status="killed", job_id=job_id)
+
+
+@router.post("/{job_id}/post-comment")
+async def post_comment(job_id: str, redis: RedisDep) -> dict[str, str]:
+    """Stub: GitHub comment posting not yet implemented."""
+    raw = await redis.get(f"job:{job_id}")
+    if raw is None:
+        raise HTTPException(status_code=404, detail="Job not found")
+    raise HTTPException(status_code=501, detail="Not implemented")
