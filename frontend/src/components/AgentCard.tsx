@@ -1,6 +1,8 @@
 import React from 'react'
 import clsx from 'clsx'
-import type { AgentFinding, AgentCardState } from '../types'
+import type { AgentFinding } from '../store/jobStore'
+
+type AgentCardState = 'idle' | 'running' | 'done' | 'error'
 
 interface AgentCardProps {
   finding: AgentFinding
@@ -18,17 +20,17 @@ const AGENT_COLORS: Record<string, string> = {
 }
 
 export function AgentCard({ finding, state, streamedTokens }: AgentCardProps): React.ReactElement {
-  const colorClass = AGENT_COLORS[finding.agent_name] || 'border-gray-600 bg-gray-800/30'
+  const colorClass = AGENT_COLORS[finding.agentName] || 'border-gray-600 bg-gray-800/30'
 
   return (
     <div
       className={clsx('rounded-lg border p-4 transition-all', colorClass)}
       role="article"
-      aria-label={`${finding.agent_name} agent finding`}
+      aria-label={`${finding.agentName} agent finding`}
     >
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-sm font-semibold text-gray-200 capitalize">
-          {finding.agent_name.replace('_', ' ')}
+          {finding.agentName.replace('_', ' ')}
         </h3>
         <div className="flex items-center gap-2">
           {state === 'running' && (
@@ -56,9 +58,9 @@ export function AgentCard({ finding, state, streamedTokens }: AgentCardProps): R
         </div>
       )}
 
-      {finding.affected_areas && finding.affected_areas.length > 0 && (
+      {finding.affectedAreas && finding.affectedAreas.length > 0 && (
         <div className="mt-2 flex flex-wrap gap-1">
-          {finding.affected_areas.map((area) => (
+          {finding.affectedAreas.map((area) => (
             <span key={area} className="text-xs bg-gray-700 text-gray-300 rounded px-2 py-0.5">
               {area}
             </span>

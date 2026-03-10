@@ -1,15 +1,70 @@
 import { create } from 'zustand'
-import type { Job, SSEEvent } from '../types'
+import type { JobEvent } from '../generated/schema'
+
+export type JobStatus =
+  | 'queued'
+  | 'running'
+  | 'waiting'
+  | 'paused'
+  | 'done'
+  | 'failed'
+  | 'killed'
+
+export interface AgentFinding {
+  agentName: string
+  summary: string
+  confidence: number
+  hypothesis?: string
+  affectedAreas?: string[]
+  keywordsForSearch?: string[]
+  errorMessages?: string[]
+  relevantFiles?: string[]
+  rootCauseLocation?: string
+  verdict?: string
+  gaps?: string[]
+}
+
+export interface HumanExchange {
+  question: string
+  answer: string
+  askedAt?: string
+  answeredAt?: string
+}
+
+export interface TriageReport {
+  severity: 'critical' | 'high' | 'medium' | 'low'
+  rootCause: string
+  relevantFiles: string[]
+  recommendedFix: string
+  confidence: number
+  githubComment: string
+  ticketDraft: Record<string, string>
+}
+
+export interface JobLocal {
+  jobId: string
+  status: JobStatus
+  issueUrl: string
+  issueTitle?: string
+  repository?: string
+  currentNode?: string
+  awaitingHuman?: boolean
+  langsmithUrl?: string
+  findings?: AgentFinding[]
+  report?: TriageReport
+  humanExchanges?: HumanExchange[]
+  createdAt?: string
+}
 
 interface JobStore {
-  jobs: Record<string, Job>
+  jobs: Record<string, JobLocal>
   selectedJobId: string | null
   agentTokens: Record<string, string>
-  setJob: (job: Job) => void
-  updateJob: (jobId: string, updates: Partial<Job>) => void
+  setJob: (job: JobLocal) => void
+  updateJob: (jobId: string, updates: Partial<JobLocal>) => void
   selectJob: (jobId: string) => void
   appendToken: (jobId: string, token: string) => void
-  processSSEEvent: (event: SSEEvent) => void
+  processJobEvent: (jobId: string, event: JobEvent) => void
 }
 
 export const useJobStore = create<JobStore>((set, get) => ({
@@ -18,7 +73,7 @@ export const useJobStore = create<JobStore>((set, get) => ({
   agentTokens: {},
 
   setJob: (job) =>
-    set((state) => ({ jobs: { ...state.jobs, [job.job_id]: job } })),
+    set((state) => ({ jobs: { ...state.jobs, [job.jobId]: job } })),
 
   updateJob: (jobId, updates) =>
     set((state) => {
@@ -42,55 +97,52 @@ export const useJobStore = create<JobStore>((set, get) => ({
       },
     })),
 
-  processSSEEvent: (event) => {
-    const jobId = event.job_id
-    if (!jobId) return
-
+  processJobEvent: (jobId, event) => {
     const { jobs } = get()
     const currentJob = jobs[jobId]
     if (!currentJob) return
 
-    if (event.type === 'agent.spawned') {
+    if (event.__typename === 'AgentSpawnedEvent') {
       set((state) => ({
         jobs: {
           ...state.jobs,
-          [jobId]: { ...state.jobs[jobId]!, current_node: event.node || '', status: 'running' },
+          [jobId]: { ...state.jobs[jobId]!, currentNode: event.node, status: 'running' },
         },
       }))
-    } else if (event.type === 'agent.token' && event.token) {
+    } else if (event.__typename === 'AgentTokenEvent') {
       get().appendToken(jobId, event.token)
-    } else if (event.type === 'graph.node_complete') {
+    } else if (event.__typename === 'OutputTokenEvent') {
+      get().appendToken(jobId, event.token)
+    } else if (event.__typename === 'GraphNodeCompleteEvent') {
       // Node completed
-    } else if (event.type === 'graph.interrupt') {
+    } else if (event.__typename === 'GraphInterruptEvent') {
       set((state) => ({
         jobs: {
           ...state.jobs,
-          [jobId]: { ...state.jobs[jobId]!, awaiting_human: true, status: 'waiting' },
+          [jobId]: { ...state.jobs[jobId]!, awaitingHuman: true, status: 'waiting' },
         },
       }))
-    } else if (event.type === 'job.done') {
+    } else if (event.__typename === 'JobDoneEvent') {
       set((state) => ({
         jobs: {
           ...state.jobs,
           [jobId]: { ...state.jobs[jobId]!, status: 'done' },
         },
       }))
-    } else if (event.type === 'job.failed' || event.type === 'job.timed_out') {
+    } else if (event.__typename === 'JobFailedEvent' || event.__typename === 'JobTimedOutEvent') {
       set((state) => ({
         jobs: {
           ...state.jobs,
           [jobId]: { ...state.jobs[jobId]!, status: 'failed' },
         },
       }))
-    } else if (event.type === 'job.killed') {
+    } else if (event.__typename === 'JobKilledEvent') {
       set((state) => ({
         jobs: {
           ...state.jobs,
           [jobId]: { ...state.jobs[jobId]!, status: 'killed' },
         },
       }))
-    } else if (event.type === 'output.token' && event.token) {
-      get().appendToken(jobId, event.token)
     }
   },
 }))

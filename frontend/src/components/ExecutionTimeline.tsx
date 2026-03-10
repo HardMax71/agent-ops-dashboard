@@ -1,6 +1,6 @@
 import React from 'react'
 import clsx from 'clsx'
-import type { AgentFinding } from '../types'
+import type { AgentFinding } from '../store/jobStore'
 
 interface ExecutionTimelineProps {
   findings: AgentFinding[]
@@ -10,7 +10,7 @@ interface ExecutionTimelineProps {
 const NODE_ORDER = ['supervisor', 'investigator', 'codebase_search', 'web_search', 'critic', 'human_input', 'writer']
 
 export function ExecutionTimeline({ findings, currentNode }: ExecutionTimelineProps): React.ReactElement {
-  const visitedNodes = new Set(findings.map((f) => f.agent_name))
+  const visitedNodes = new Set(findings.map((f) => f.agentName))
 
   return (
     <div

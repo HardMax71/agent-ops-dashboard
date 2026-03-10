@@ -7,17 +7,19 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "test": "vitest",
-    "lint": "eslint src --ext ts,tsx"
+    "lint": "eslint src --ext ts,tsx",
+    "generate": "genql --schema ../schemas/schema.graphql --output src/generated"
   },
   "dependencies": {
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.26.0",
-    "axios": "^1.7.2",
+    "graphql-ws": "^6.0.7",
     "zustand": "^4.5.4",
     "clsx": "^2.1.1"
   },
   "devDependencies": {
+    "@genql/cli": "^6.3.3",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
     "@typescript-eslint/eslint-plugin": "^7.15.0",

@@ -1,4 +1,4 @@
-"""Tests for job creation rate limiting."""
+"""Tests for job creation rate limiting (via GraphQL)."""
 
 from unittest.mock import MagicMock
 
@@ -12,6 +12,12 @@ from agentops.api.main import create_app
 from agentops.config import Settings
 
 pytestmark = pytest.mark.asyncio
+
+_CREATE_MUTATION = """
+    mutation($input: CreateJobInput!) {
+        createJob(input: $input) { jobId status }
+    }
+"""
 
 
 @pytest.fixture
@@ -38,19 +44,24 @@ async def rate_client(
 
 
 class TestRateLimiting:
-    async def test_429_when_limit_exceeded(
+    async def test_error_when_limit_exceeded(
         self,
         rate_client: AsyncClient,
         fake_redis: "FakeAsyncRedis",  # noqa: F821
     ) -> None:
-        # Set active job counter to the limit
         await fake_redis.set("active_jobs:anonymous", "10")
 
         resp = await rate_client.post(
-            "/jobs",
-            json={"issue_url": "https://github.com/a/b/issues/1"},
+            "/graphql",
+            json={
+                "query": _CREATE_MUTATION,
+                "variables": {"input": {"issueUrl": "https://github.com/a/b/issues/1"}},
+            },
         )
-        assert resp.status_code == 429
+        assert resp.status_code == 200
+        body = resp.json()
+        assert body.get("errors") is not None
+        assert "limit" in body["errors"][0]["message"].lower()
 
     async def test_allows_under_limit(
         self,
@@ -60,10 +71,15 @@ class TestRateLimiting:
         await fake_redis.set("active_jobs:anonymous", "5")
 
         resp = await rate_client.post(
-            "/jobs",
-            json={"issue_url": "https://github.com/a/b/issues/1"},
+            "/graphql",
+            json={
+                "query": _CREATE_MUTATION,
+                "variables": {"input": {"issueUrl": "https://github.com/a/b/issues/1"}},
+            },
         )
-        assert resp.status_code == 202
+        assert resp.status_code == 200
+        data = resp.json()["data"]["createJob"]
+        assert data["status"] == "queued"
 
     async def test_counter_incremented_on_creation(
         self,
@@ -71,10 +87,14 @@ class TestRateLimiting:
         fake_redis: "FakeAsyncRedis",  # noqa: F821
     ) -> None:
         resp = await rate_client.post(
-            "/jobs",
-            json={"issue_url": "https://github.com/a/b/issues/1"},
+            "/graphql",
+            json={
+                "query": _CREATE_MUTATION,
+                "variables": {"input": {"issueUrl": "https://github.com/a/b/issues/1"}},
+            },
         )
-        assert resp.status_code == 202
+        assert resp.status_code == 200
+        assert resp.json()["data"]["createJob"]["status"] == "queued"
 
         count = await fake_redis.get("active_jobs:anonymous")
         assert count == "1"

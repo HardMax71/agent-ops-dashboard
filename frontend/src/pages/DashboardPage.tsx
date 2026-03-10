@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { useJobStore } from '../store/jobStore'
-import { jobsApi } from '../api/endpoints'
+import type { JobLocal } from '../store/jobStore'
+import { gql } from '../api/graphqlClient'
 import { JobCard } from '../components/JobCard'
 import { AgentCard } from '../components/AgentCard'
 import { QuestionCard } from '../components/QuestionCard'
@@ -8,7 +9,6 @@ import { ExecutionTimeline } from '../components/ExecutionTimeline'
 import { StatusBadge } from '../components/StatusBadge'
 import { Modal } from '../components/Modal'
 import { useJobStream } from '../hooks/useJobStream'
-import type { Job } from '../types'
 
 function NewJobModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }): React.ReactElement {
   const [issueUrl, setIssueUrl] = useState('')
@@ -20,11 +20,16 @@ function NewJobModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void
     e.preventDefault()
     if (!issueUrl.trim()) return
     setIsSubmitting(true)
-    const response = await jobsApi.create({ issue_url: issueUrl, supervisor_notes: supervisorNotes })
-    const job: Job = {
-      job_id: response.data.job_id,
+    const result = await gql.mutation({
+      createJob: {
+        __args: { input: { issueUrl: issueUrl, supervisorNotes: supervisorNotes } },
+        __scalar: true,
+      },
+    })
+    const job: JobLocal = {
+      jobId: result.createJob.jobId,
       status: 'queued',
-      issue_url: issueUrl,
+      issueUrl: issueUrl,
     }
     setJob(job)
     setIsSubmitting(false)
@@ -80,35 +85,35 @@ function NewJobModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void
   )
 }
 
-function JobWorkspace({ job }: { job: Job }): React.ReactElement {
+function JobWorkspace({ job }: { job: JobLocal }): React.ReactElement {
   const [showRedirectModal, setShowRedirectModal] = useState(false)
   const [showKillModal, setShowKillModal] = useState(false)
   const [redirectInstruction, setRedirectInstruction] = useState('')
-  const agentTokens = useJobStore((s) => s.agentTokens[job.job_id] || '')
+  const agentTokens = useJobStore((s) => s.agentTokens[job.jobId] || '')
   const updateJob = useJobStore((s) => s.updateJob)
 
-  useJobStream(job.job_id)
+  useJobStream(job.jobId)
 
   const handlePause = async (): Promise<void> => {
-    await jobsApi.pause(job.job_id)
-    updateJob(job.job_id, { status: 'paused' })
+    await gql.mutation({ pauseJob: { __args: { jobId: job.jobId }, __scalar: true } })
+    updateJob(job.jobId, { status: 'paused' })
   }
 
   const handleResume = async (): Promise<void> => {
-    await jobsApi.resume(job.job_id)
-    updateJob(job.job_id, { status: 'running' })
+    await gql.mutation({ resumeJob: { __args: { jobId: job.jobId }, __scalar: true } })
+    updateJob(job.jobId, { status: 'running' })
   }
 
   const handleRedirect = async (): Promise<void> => {
     if (!redirectInstruction.trim()) return
-    await jobsApi.redirect(job.job_id, redirectInstruction)
+    await gql.mutation({ redirectJob: { __args: { jobId: job.jobId, instruction: redirectInstruction }, __scalar: true } })
     setShowRedirectModal(false)
     setRedirectInstruction('')
   }
 
   const handleKill = async (): Promise<void> => {
-    await jobsApi.kill(job.job_id)
-    updateJob(job.job_id, { status: 'killed' })
+    await gql.mutation({ killJob: { __args: { jobId: job.jobId }, __scalar: true } })
+    updateJob(job.jobId, { status: 'killed' })
     setShowKillModal(false)
   }
 
@@ -119,7 +124,7 @@ function JobWorkspace({ job }: { job: Job }): React.ReactElement {
         <div className="flex items-center gap-3 min-w-0">
           <StatusBadge status={job.status} />
           <span className="text-sm font-medium text-gray-200 truncate">
-            {job.issue_title || job.issue_url}
+            {job.issueTitle || job.issueUrl}
           </span>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
@@ -159,27 +164,27 @@ function JobWorkspace({ job }: { job: Job }): React.ReactElement {
 
       {/* Timeline */}
       <div className="p-4 border-b border-gray-700 flex-shrink-0">
-        <ExecutionTimeline findings={job.findings || []} currentNode={job.current_node || ''} />
+        <ExecutionTimeline findings={job.findings || []} currentNode={job.currentNode || ''} />
       </div>
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-4 space-y-3">
         {/* Question card */}
-        {job.awaiting_human && job.human_exchanges && job.human_exchanges.length > 0 && (
+        {job.awaitingHuman && job.humanExchanges && job.humanExchanges.length > 0 && (
           <QuestionCard
-            jobId={job.job_id}
-            question={job.human_exchanges[job.human_exchanges.length - 1]?.question || 'Additional context needed'}
-            onAnswered={() => updateJob(job.job_id, { awaiting_human: false })}
+            jobId={job.jobId}
+            question={job.humanExchanges[job.humanExchanges.length - 1]?.question || 'Additional context needed'}
+            onAnswered={() => updateJob(job.jobId, { awaitingHuman: false })}
           />
         )}
 
         {/* Agent cards */}
         {(job.findings || []).map((finding, idx) => (
           <AgentCard
-            key={`${finding.agent_name}-${idx}`}
+            key={`${finding.agentName}-${idx}`}
             finding={finding}
-            state={job.current_node === finding.agent_name ? 'running' : 'done'}
-            streamedTokens={job.current_node === finding.agent_name ? agentTokens : undefined}
+            state={job.currentNode === finding.agentName ? 'running' : 'done'}
+            streamedTokens={job.currentNode === finding.agentName ? agentTokens : undefined}
           />
         ))}
 
@@ -233,8 +238,8 @@ function JobWorkspace({ job }: { job: Job }): React.ReactElement {
   )
 }
 
-function OutputPanel({ job }: { job: Job }): React.ReactElement {
-  const [commentText, setCommentText] = useState(job.report?.github_comment || '')
+function OutputPanel({ job }: { job: JobLocal }): React.ReactElement {
+  const [commentText, setCommentText] = useState(job.report?.githubComment || '')
 
   if (!job.report) {
     return (
@@ -251,6 +256,10 @@ function OutputPanel({ job }: { job: Job }): React.ReactElement {
     low: 'bg-green-900 text-green-200',
   }
 
+  const handlePostComment = async (): Promise<void> => {
+    await gql.mutation({ postComment: { __args: { jobId: job.jobId }, __scalar: true } })
+  }
+
   return (
     <div className="p-4 space-y-4 overflow-y-auto h-full">
       {/* Triage Report */}
@@ -264,12 +273,12 @@ function OutputPanel({ job }: { job: Job }): React.ReactElement {
         <div className="space-y-2">
           <div>
             <p className="text-xs text-gray-500 uppercase tracking-wide">Root Cause</p>
-            <p className="text-sm text-gray-300">{job.report.root_cause}</p>
+            <p className="text-sm text-gray-300">{job.report.rootCause}</p>
           </div>
-          {job.report.relevant_files.length > 0 && (
+          {job.report.relevantFiles.length > 0 && (
             <div>
               <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Relevant Files</p>
-              {job.report.relevant_files.map((f) => (
+              {job.report.relevantFiles.map((f) => (
                 <p key={f} className="text-xs text-blue-300 font-mono">{f}</p>
               ))}
             </div>
@@ -292,7 +301,7 @@ function OutputPanel({ job }: { job: Job }): React.ReactElement {
           aria-label="GitHub comment editor"
         />
         <button
-          onClick={() => jobsApi.postComment(job.job_id)}
+          onClick={handlePostComment}
           className="mt-2 w-full bg-green-700 hover:bg-green-600 text-white text-xs font-medium py-2 rounded transition-colors"
           aria-label="Post comment to GitHub"
         >
@@ -301,9 +310,9 @@ function OutputPanel({ job }: { job: Job }): React.ReactElement {
       </div>
 
       {/* LangSmith Link */}
-      {job.langsmith_url && (
+      {job.langsmithUrl && (
         <a
-          href={job.langsmith_url}
+          href={job.langsmithUrl}
           target="_blank"
           rel="noopener noreferrer"
           className="block w-full text-center text-xs text-blue-400 hover:text-blue-300 border border-blue-800 hover:border-blue-700 rounded p-2 transition-colors"
@@ -375,11 +384,11 @@ export function DashboardPage(): React.ReactElement {
             <p className="text-center text-gray-600 text-xs py-8">No jobs. Press N to create one.</p>
           ) : (
             filteredJobs.map((job) => (
-              <div key={job.job_id} role="listitem">
+              <div key={job.jobId} role="listitem">
                 <JobCard
                   job={job}
-                  isSelected={selectedJobId === job.job_id}
-                  onClick={() => selectJob(job.job_id)}
+                  isSelected={selectedJobId === job.jobId}
+                  onClick={() => selectJob(job.jobId)}
                 />
               </div>
             ))

@@ -29,23 +29,35 @@ async def control_client(settings, fake_redis, mock_graph, mock_arq):
     app.dependency_overrides.clear()
 
 
-async def test_answer_409_when_not_awaiting(control_client, fake_redis, make_job):
+async def test_answer_error_when_not_awaiting(control_client, fake_redis, make_job):
     await make_job("job-1", awaiting_human=False)
-    resp = await control_client.post("/jobs/job-1/answer", json={"answer": "yes"})
-    assert resp.status_code == 409
-
-
-async def test_answer_200_when_awaiting(control_client, fake_redis, mock_graph, mock_arq, make_job):
-    await make_job("job-2", status="waiting", awaiting_human=True)
-    resp = await control_client.post("/jobs/job-2/answer", json={"answer": "the fix is X"})
-    assert resp.status_code == 200
+    resp = await control_client.post(
+        "/graphql",
+        json={
+            "query": 'mutation { answerJob(jobId: "job-1", answer: "yes") { status jobId } }',
+        },
+    )
     body = resp.json()
-    assert body["status"] == "answer_received"
-    assert body["job_id"] == "job-2"
+    assert body.get("errors") is not None
+
+
+async def test_answer_when_awaiting(control_client, fake_redis, mock_graph, mock_arq, make_job):
+    await make_job("job-2", status="waiting", awaiting_human=True)
+    resp = await control_client.post(
+        "/graphql",
+        json={
+            "query": (
+                'mutation { answerJob(jobId: "job-2",' ' answer: "the fix is X") { status jobId } }'
+            ),
+        },
+    )
+    data = resp.json()["data"]["answerJob"]
+    assert data["status"] == "answer_received"
+    assert data["jobId"] == "job-2"
     raw = await fake_redis.get("job:job-2")
-    data = json.loads(raw)
-    assert data["status"] == "running"
-    assert data["awaiting_human"] is False
+    job_data = json.loads(raw)
+    assert job_data["status"] == "running"
+    assert job_data["awaiting_human"] is False
     mock_arq.abort_job.assert_called_once()
     mock_arq.enqueue_job.assert_called_once_with(
         "resume_graph", "job-2", "the fix is X", _job_id="job-2"
@@ -54,60 +66,87 @@ async def test_answer_200_when_awaiting(control_client, fake_redis, mock_graph, 
 
 async def test_pause_sets_flag(control_client, fake_redis, make_job):
     await make_job("job-3", status="running")
-    resp = await control_client.post("/jobs/job-3/pause")
-    assert resp.status_code == 200
-    assert resp.json()["status"] == "pausing"
-    raw = await fake_redis.get("job:job-3")
-    data = json.loads(raw)
-    assert data["paused"] is True
+    resp = await control_client.post(
+        "/graphql",
+        json={
+            "query": 'mutation { pauseJob(jobId: "job-3") { status jobId } }',
+        },
+    )
+    data = resp.json()["data"]["pauseJob"]
     assert data["status"] == "pausing"
+    raw = await fake_redis.get("job:job-3")
+    job_data = json.loads(raw)
+    assert job_data["paused"] is True
+    assert job_data["status"] == "pausing"
 
 
 async def test_resume_clears_flag(control_client, fake_redis, mock_arq, make_job):
     await make_job("job-4", status="paused", paused=True)
-    resp = await control_client.post("/jobs/job-4/resume")
-    assert resp.status_code == 200
-    assert resp.json()["status"] == "resumed"
+    resp = await control_client.post(
+        "/graphql",
+        json={
+            "query": 'mutation { resumeJob(jobId: "job-4") { status jobId } }',
+        },
+    )
+    data = resp.json()["data"]["resumeJob"]
+    assert data["status"] == "resumed"
     raw = await fake_redis.get("job:job-4")
-    data = json.loads(raw)
-    assert data["paused"] is False
-    assert data["status"] == "running"
+    job_data = json.loads(raw)
+    assert job_data["paused"] is False
+    assert job_data["status"] == "running"
     mock_arq.enqueue_job.assert_called_once_with("resume_graph", "job-4", "resume", _job_id="job-4")
 
 
 async def test_kill_sets_status(control_client, fake_redis, mock_arq, make_job):
     await make_job("job-5", status="running")
-    resp = await control_client.delete("/jobs/job-5")
-    assert resp.status_code == 200
-    assert resp.json()["status"] == "killed"
-    raw = await fake_redis.get("job:job-5")
-    data = json.loads(raw)
+    resp = await control_client.post(
+        "/graphql",
+        json={
+            "query": 'mutation { killJob(jobId: "job-5") { status jobId } }',
+        },
+    )
+    data = resp.json()["data"]["killJob"]
     assert data["status"] == "killed"
+    raw = await fake_redis.get("job:job-5")
+    job_data = json.loads(raw)
+    assert job_data["status"] == "killed"
     mock_arq.abort_job.assert_called_once_with("job-5")
 
 
 async def test_redirect_stores_instruction(control_client, fake_redis, make_job):
     await make_job("job-6", status="running")
     resp = await control_client.post(
-        "/jobs/job-6/redirect", json={"instruction": "focus on auth module"}
+        "/graphql",
+        json={
+            "query": (
+                'mutation { redirectJob(jobId: "job-6",'
+                ' instruction: "focus on auth module") { status jobId } }'
+            ),
+        },
     )
-    assert resp.status_code == 200
-    assert resp.json()["status"] == "redirected"
+    data = resp.json()["data"]["redirectJob"]
+    assert data["status"] == "redirected"
     raw = await fake_redis.get("job:job-6")
-    data = json.loads(raw)
-    assert "focus on auth module" in data["redirect_instructions"]
+    job_data = json.loads(raw)
+    assert "focus on auth module" in job_data["redirect_instructions"]
 
 
 async def test_redirect_resumes_paused_job(control_client, fake_redis, mock_arq, make_job):
     await make_job("job-7", status="paused", paused=True)
     resp = await control_client.post(
-        "/jobs/job-7/redirect", json={"instruction": "look at DB layer"}
+        "/graphql",
+        json={
+            "query": (
+                'mutation { redirectJob(jobId: "job-7",'
+                ' instruction: "look at DB layer") { status jobId } }'
+            ),
+        },
     )
-    assert resp.status_code == 200
+    assert resp.json()["data"]["redirectJob"]["status"] == "redirected"
     raw = await fake_redis.get("job:job-7")
-    data = json.loads(raw)
-    assert data["paused"] is False
-    assert data["status"] == "running"
+    job_data = json.loads(raw)
+    assert job_data["paused"] is False
+    assert job_data["status"] == "running"
     mock_arq.enqueue_job.assert_called_once_with(
         "resume_graph",
         "job-7",
@@ -117,15 +156,24 @@ async def test_redirect_resumes_paused_job(control_client, fake_redis, mock_arq,
     )
 
 
-async def test_answer_404_missing_job(control_client):
-    resp = await control_client.post("/jobs/nonexistent/answer", json={"answer": "yes"})
-    assert resp.status_code == 404
+async def test_answer_error_missing_job(control_client):
+    resp = await control_client.post(
+        "/graphql",
+        json={
+            "query": 'mutation { answerJob(jobId: "nonexistent", answer: "yes") { status jobId } }',
+        },
+    )
+    assert resp.json().get("errors") is not None
 
 
 async def test_get_job_includes_new_fields(control_client, fake_redis, make_job):
     await make_job("job-8", awaiting_human=True, current_node="human_input")
-    resp = await control_client.get("/jobs/job-8")
-    assert resp.status_code == 200
-    body = resp.json()
-    assert body["awaiting_human"] is True
-    assert body["current_node"] == "human_input"
+    resp = await control_client.post(
+        "/graphql",
+        json={
+            "query": '{ job(jobId: "job-8") { jobId awaitingHuman currentNode } }',
+        },
+    )
+    data = resp.json()["data"]["job"]
+    assert data["awaitingHuman"] is True
+    assert data["currentNode"] == "human_input"

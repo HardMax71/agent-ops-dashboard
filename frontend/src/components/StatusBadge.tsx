@@ -1,6 +1,6 @@
 import React from 'react'
 import clsx from 'clsx'
-import type { JobStatus } from '../types'
+import type { JobStatus } from '../store/jobStore'
 
 interface StatusBadgeProps {
   status: JobStatus

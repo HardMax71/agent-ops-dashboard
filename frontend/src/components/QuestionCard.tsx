@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { jobsApi } from '../api/endpoints'
+import { gql } from '../api/graphqlClient'
 
 interface QuestionCardProps {
   jobId: string
@@ -20,7 +20,7 @@ export function QuestionCard({ jobId, question, onAnswered }: QuestionCardProps)
     e.preventDefault()
     if (!answer.trim()) return
     setIsSubmitting(true)
-    await jobsApi.answer(jobId, answer)
+    await gql.mutation({ answerJob: { __args: { jobId, answer }, __scalar: true } })
     setIsSubmitting(false)
     setAnswer('')
     onAnswered()

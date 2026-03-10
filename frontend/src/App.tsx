@@ -4,6 +4,7 @@ import { DashboardPage } from './pages/DashboardPage'
 import { LoginPage } from './pages/LoginPage'
 import { SettingsPage } from './pages/SettingsPage'
 import { useAuthStore } from './store/authStore'
+import { gql } from './api/graphqlClient'
 
 function ProtectedRoute({ children }: { children: React.ReactElement }): React.ReactElement {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
@@ -35,11 +36,8 @@ function AuthCallbackPage(): React.ReactElement {
       const data = await response.json() as { access_token: string }
       setToken(data.access_token)
 
-      const userResponse = await fetch('/api/auth/me', {
-        headers: { Authorization: `Bearer ${data.access_token}` },
-      })
-      const userData = await userResponse.json() as { github_id: string; github_login: string; avatar_url?: string }
-      setUser({ github_id: userData.github_id, github_login: userData.github_login, avatar_url: userData.avatar_url })
+      const meResult = await gql.query({ me: { __scalar: true } })
+      setUser(meResult.me)
 
       window.location.href = '/dashboard'
     }

@@ -1,16 +1,16 @@
 import React from 'react'
 import { useAuthStore } from '../store/authStore'
-import { authApi } from '../api/endpoints'
+import { gql } from '../api/graphqlClient'
 
 export function SettingsPage(): React.ReactElement {
   const { user, logout } = useAuthStore()
 
   const handleDisconnectGitHub = async (): Promise<void> => {
-    await authApi.deleteGithubToken()
+    await gql.mutation({ deleteGithubToken: { __scalar: true } })
   }
 
   const handleLogout = async (): Promise<void> => {
-    await authApi.logout()
+    await gql.mutation({ logout: { __scalar: true } })
     logout()
     window.location.href = '/login'
   }
@@ -24,16 +24,16 @@ export function SettingsPage(): React.ReactElement {
           <div className="bg-gray-800 rounded-lg border border-gray-700 p-6 mb-4">
             <h2 className="text-sm font-semibold text-gray-300 mb-4">GitHub Account</h2>
             <div className="flex items-center gap-3 mb-4">
-              {user.avatar_url && (
+              {user.avatarUrl && (
                 <img
-                  src={user.avatar_url}
-                  alt={user.github_login}
+                  src={user.avatarUrl}
+                  alt={user.githubLogin}
                   className="w-10 h-10 rounded-full border border-gray-600"
                 />
               )}
               <div>
-                <p className="text-sm font-medium text-gray-200">{user.github_login}</p>
-                <p className="text-xs text-gray-500">GitHub ID: {user.github_id}</p>
+                <p className="text-sm font-medium text-gray-200">{user.githubLogin}</p>
+                <p className="text-xs text-gray-500">GitHub ID: {user.githubId}</p>
               </div>
             </div>
             <button

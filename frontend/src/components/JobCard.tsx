@@ -1,10 +1,10 @@
 import React from 'react'
 import clsx from 'clsx'
-import type { Job } from '../types'
+import type { JobLocal } from '../store/jobStore'
 import { StatusBadge } from './StatusBadge'
 
 interface JobCardProps {
-  job: Job
+  job: JobLocal
   isSelected: boolean
   onClick: () => void
 }
@@ -37,17 +37,17 @@ export function JobCard({ job, isSelected, onClick }: JobCardProps): React.React
           : 'bg-gray-800 border-gray-700 hover:bg-gray-750 hover:border-gray-600'
       )}
       aria-pressed={isSelected}
-      aria-label={`Job: ${job.issue_title || extractRepo(job.issue_url)}`}
+      aria-label={`Job: ${job.issueTitle || extractRepo(job.issueUrl)}`}
     >
       <div className="flex items-start justify-between gap-2 mb-2">
         <StatusBadge status={job.status} />
-        <span className="text-xs text-gray-500">{formatTimeAgo(job.created_at)}</span>
+        <span className="text-xs text-gray-500">{formatTimeAgo(job.createdAt)}</span>
       </div>
       <p className="text-sm font-medium text-gray-200 truncate mb-1">
-        {job.issue_title || extractRepo(job.issue_url)}
+        {job.issueTitle || extractRepo(job.issueUrl)}
       </p>
       <p className="text-xs text-gray-500 truncate font-mono">
-        {extractRepo(job.issue_url)}
+        {extractRepo(job.issueUrl)}
       </p>
     </button>
   )

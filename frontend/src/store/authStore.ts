@@ -1,6 +1,6 @@
 import { create } from 'zustand'
-import type { UserInfo } from '../types'
-import { setAccessToken } from '../api/client'
+import type { UserInfo } from '../generated/schema'
+import { setAccessToken } from '../api/graphqlClient'
 
 interface AuthState {
   user: UserInfo | null
