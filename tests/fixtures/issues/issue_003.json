@@ -1,6 +1,6 @@
 {
-    "url": "https://github.com/acme/backend/issues/3",
-    "title": "Memory leak in WebSocket handler",
-    "body": "Connections are not cleaned up properly when clients disconnect unexpectedly.",
-    "repository": "acme/backend"
+    "issue_url": "https://github.com/acme/api-gateway/issues/7",
+    "issue_title": "JWT tokens not invalidated on logout",
+    "issue_body": "After calling /auth/logout, the JWT token remains valid until expiry. No token blacklist or revocation mechanism is implemented, violating security requirements.",
+    "repository": "acme/api-gateway"
 }

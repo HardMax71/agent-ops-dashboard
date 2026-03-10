@@ -359,5 +359,5 @@ async def submit_job_feedback(
             org_id=settings.langsmith_org_id,
             project_id=settings.langsmith_project_id,
         )
-        await handler.submit_feedback(run_id, body.key, body.score, body.comment)
+        handler.submit_feedback(run_id, body.key, body.score, body.comment)
     return {"status": "feedback_submitted", "job_id": job_id}

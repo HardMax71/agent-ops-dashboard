@@ -1,6 +1,6 @@
 {
-    "url": "https://github.com/acme/backend/issues/2",
-    "title": "Authentication fails for expired tokens",
-    "body": "When a JWT token expires, the server returns 500 instead of 401.",
-    "repository": "acme/backend"
+    "issue_url": "https://github.com/acme/frontend/issues/42",
+    "issue_title": "Race condition in WebSocket reconnect logic",
+    "issue_body": "The WebSocket client attempts to reconnect before closing the previous connection, causing duplicate event handlers and memory leaks. Observed in production with >100 concurrent users.",
+    "repository": "acme/frontend"
 }

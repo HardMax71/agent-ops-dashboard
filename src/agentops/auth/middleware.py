@@ -8,10 +8,15 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         super().__init__(app)
         self.frontend_origin = frontend_origin
 
-    async def dispatch(self, request: Request, call_next: object) -> Response:
-        response: Response = await call_next(request)  # type: ignore[call-arg]
+    async def dispatch(self, request: Request, call_next: object) -> Response:  # noqa: ANN401 — Starlette dispatch protocol uses untyped callable
+        response = await call_next(request)  # type: ignore[operator]
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["X-Frame-Options"] = "DENY"
         response.headers["X-XSS-Protection"] = "1; mode=block"
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+        response.headers["Content-Security-Policy"] = (
+            f"default-src 'self'; connect-src 'self' {self.frontend_origin}; "
+            "script-src 'self'; style-src 'self' 'unsafe-inline'"
+        )
+        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
         return response
