@@ -50,13 +50,15 @@ export const useJobStore = create<JobStore>((set, get) => ({
     const currentJob = jobs[jobId]
     if (!currentJob) return
 
-    if (event.type === 'graph.node_start') {
+    if (event.type === 'agent.spawned') {
       set((state) => ({
         jobs: {
           ...state.jobs,
           [jobId]: { ...state.jobs[jobId]!, current_node: event.node || '', status: 'running' },
         },
       }))
+    } else if (event.type === 'agent.token' && event.token) {
+      get().appendToken(jobId, event.token)
     } else if (event.type === 'graph.node_complete') {
       // Node completed
     } else if (event.type === 'graph.interrupt') {
@@ -66,25 +68,25 @@ export const useJobStore = create<JobStore>((set, get) => ({
           [jobId]: { ...state.jobs[jobId]!, awaiting_human: true, status: 'waiting' },
         },
       }))
-    } else if (event.type === 'graph.resumed') {
-      set((state) => ({
-        jobs: {
-          ...state.jobs,
-          [jobId]: { ...state.jobs[jobId]!, awaiting_human: false, status: 'running' },
-        },
-      }))
-    } else if (event.type === 'graph.paused') {
-      set((state) => ({
-        jobs: {
-          ...state.jobs,
-          [jobId]: { ...state.jobs[jobId]!, status: 'paused' },
-        },
-      }))
     } else if (event.type === 'job.done') {
       set((state) => ({
         jobs: {
           ...state.jobs,
           [jobId]: { ...state.jobs[jobId]!, status: 'done' },
+        },
+      }))
+    } else if (event.type === 'job.failed' || event.type === 'job.timed_out') {
+      set((state) => ({
+        jobs: {
+          ...state.jobs,
+          [jobId]: { ...state.jobs[jobId]!, status: 'failed' },
+        },
+      }))
+    } else if (event.type === 'job.killed') {
+      set((state) => ({
+        jobs: {
+          ...state.jobs,
+          [jobId]: { ...state.jobs[jobId]!, status: 'killed' },
         },
       }))
     } else if (event.type === 'output.token' && event.token) {
