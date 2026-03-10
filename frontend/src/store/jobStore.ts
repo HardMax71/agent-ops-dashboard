@@ -90,12 +90,16 @@ export const useJobStore = create<JobStore>((set, get) => ({
   selectJob: (jobId) => set({ selectedJobId: jobId }),
 
   appendToken: (jobId, token) =>
-    set((state) => ({
-      agentTokens: {
-        ...state.agentTokens,
-        [jobId]: (state.agentTokens[jobId] || '') + token,
-      },
-    })),
+    set((state) => {
+      const node = state.jobs[jobId]?.currentNode || '_output'
+      const key = `${jobId}:${node}`
+      return {
+        agentTokens: {
+          ...state.agentTokens,
+          [key]: (state.agentTokens[key] || '') + token,
+        },
+      }
+    }),
 
   processJobEvent: (jobId, event) => {
     const { jobs } = get()

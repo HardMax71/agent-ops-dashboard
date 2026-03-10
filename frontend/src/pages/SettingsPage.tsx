@@ -1,23 +1,28 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useAuthStore } from '../store/authStore'
 import { gql, getAccessToken } from '../api/graphqlClient'
 
 export function SettingsPage(): React.ReactElement {
   const { user, logout } = useAuthStore()
+  const [isDisconnected, setIsDisconnected] = useState(false)
 
   const handleDisconnectGitHub = async (): Promise<void> => {
     await gql.mutation({ deleteGithubToken: { __scalar: true } })
+    setIsDisconnected(true)
   }
 
   const handleLogout = async (): Promise<void> => {
     const token = getAccessToken()
-    await fetch('/auth/logout', {
-      method: 'DELETE',
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
-      credentials: 'same-origin',
-    })
-    logout()
-    window.location.href = '/login'
+    try {
+      await fetch('/api/auth/logout', {
+        method: 'DELETE',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        credentials: 'same-origin',
+      })
+    } finally {
+      logout()
+      window.location.href = '/login'
+    }
   }
 
   return (
@@ -41,13 +46,17 @@ export function SettingsPage(): React.ReactElement {
                 <p className="text-xs text-gray-500">GitHub ID: {user.githubId}</p>
               </div>
             </div>
-            <button
-              onClick={handleDisconnectGitHub}
-              className="text-sm text-red-400 hover:text-red-300 border border-red-800 hover:border-red-700 px-3 py-1.5 rounded transition-colors"
-              aria-label="Disconnect GitHub account"
-            >
-              Disconnect GitHub
-            </button>
+            {isDisconnected ? (
+              <span className="text-sm text-gray-500">GitHub token disconnected</span>
+            ) : (
+              <button
+                onClick={handleDisconnectGitHub}
+                className="text-sm text-red-400 hover:text-red-300 border border-red-800 hover:border-red-700 px-3 py-1.5 rounded transition-colors"
+                aria-label="Disconnect GitHub account"
+              >
+                Disconnect GitHub
+              </button>
+            )}
           </div>
         )}
 

@@ -20,22 +20,25 @@ function NewJobModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void
     e.preventDefault()
     if (!issueUrl.trim()) return
     setIsSubmitting(true)
-    const result = await gql.mutation({
-      createJob: {
-        __args: { input: { issueUrl: issueUrl, supervisorNotes: supervisorNotes } },
-        __scalar: true,
-      },
-    })
-    const job: JobLocal = {
-      jobId: result.createJob.jobId,
-      status: 'queued',
-      issueUrl: issueUrl,
+    try {
+      const result = await gql.mutation({
+        createJob: {
+          __args: { input: { issueUrl: issueUrl, supervisorNotes: supervisorNotes } },
+          __scalar: true,
+        },
+      })
+      const job: JobLocal = {
+        jobId: result.createJob.jobId,
+        status: 'queued',
+        issueUrl: issueUrl,
+      }
+      setJob(job)
+      setIssueUrl('')
+      setSupervisorNotes('')
+      onClose()
+    } finally {
+      setIsSubmitting(false)
     }
-    setJob(job)
-    setIsSubmitting(false)
-    setIssueUrl('')
-    setSupervisorNotes('')
-    onClose()
   }
 
   return (
@@ -89,7 +92,7 @@ function JobWorkspace({ job }: { job: JobLocal }): React.ReactElement {
   const [showRedirectModal, setShowRedirectModal] = useState(false)
   const [showKillModal, setShowKillModal] = useState(false)
   const [redirectInstruction, setRedirectInstruction] = useState('')
-  const agentTokens = useJobStore((s) => s.agentTokens[job.jobId] || '')
+  const agentTokens = useJobStore((s) => s.agentTokens[`${job.jobId}:${job.currentNode}`] || '')
   const updateJob = useJobStore((s) => s.updateJob)
 
   useJobStream(job.jobId)
@@ -164,7 +167,7 @@ function JobWorkspace({ job }: { job: JobLocal }): React.ReactElement {
 
       {/* Timeline */}
       <div className="p-4 border-b border-gray-700 flex-shrink-0">
-        <ExecutionTimeline findings={job.findings || []} currentNode={job.currentNode || ''} />
+        <ExecutionTimeline findings={job.findings || []} currentNode={job.currentNode || ''} status={job.status} />
       </div>
 
       {/* Content */}
@@ -416,7 +419,7 @@ export function DashboardPage(): React.ReactElement {
           <h2 className="text-sm font-semibold text-gray-200">Output</h2>
         </div>
         {selectedJob ? (
-          <OutputPanel job={selectedJob} />
+          <OutputPanel key={selectedJob.jobId} job={selectedJob} />
         ) : (
           <div className="p-4 text-center text-gray-600 text-sm">
             Select a job to see output

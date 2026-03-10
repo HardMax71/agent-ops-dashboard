@@ -8,6 +8,22 @@ import { gql } from './api/graphqlClient'
 
 function ProtectedRoute({ children }: { children: React.ReactElement }): React.ReactElement {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
+  const isLoading = useAuthStore((s) => s.isLoading)
+  const restoreSession = useAuthStore((s) => s.restoreSession)
+
+  React.useEffect(() => {
+    if (isLoading) {
+      restoreSession()
+    }
+  }, [isLoading, restoreSession])
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-950">
+        <p className="text-gray-400">Loading...</p>
+      </div>
+    )
+  }
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />
   }
@@ -33,6 +49,10 @@ function AuthCallbackPage(): React.ReactElement {
         credentials: 'include',
         body: JSON.stringify({ code }),
       })
+      if (!response.ok) {
+        window.location.href = '/login'
+        return
+      }
       const data = await response.json() as { access_token: string }
       setToken(data.access_token)
 

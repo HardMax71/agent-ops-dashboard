@@ -5,12 +5,15 @@ import type { AgentFinding } from '../store/jobStore'
 interface ExecutionTimelineProps {
   findings: AgentFinding[]
   currentNode: string
+  status: string
 }
 
 const NODE_ORDER = ['supervisor', 'investigator', 'codebase_search', 'web_search', 'critic', 'human_input', 'writer']
 
-export function ExecutionTimeline({ findings, currentNode }: ExecutionTimelineProps): React.ReactElement {
-  const visitedNodes = new Set(findings.map((f) => f.agentName))
+export function ExecutionTimeline({ findings, currentNode, status }: ExecutionTimelineProps): React.ReactElement {
+  const findingNodes = new Set(findings.map((f) => f.agentName))
+  const currentIdx = NODE_ORDER.indexOf(currentNode)
+  const isTerminal = ['done', 'failed', 'killed'].includes(status)
 
   return (
     <div
@@ -19,8 +22,8 @@ export function ExecutionTimeline({ findings, currentNode }: ExecutionTimelinePr
       aria-label="Execution timeline"
     >
       {NODE_ORDER.map((node, idx) => {
-        const isVisited = visitedNodes.has(node)
-        const isCurrent = currentNode === node
+        const isVisited = findingNodes.has(node) || (currentIdx >= 0 && idx < currentIdx) || (isTerminal && currentIdx >= 0 && idx <= currentIdx)
+        const isCurrent = currentNode === node && !isTerminal
         return (
           <React.Fragment key={node}>
             {idx > 0 && (
