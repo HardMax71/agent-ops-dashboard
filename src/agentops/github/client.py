@@ -39,11 +39,7 @@ async def fetch_issue(
         return None
 
     issue = resp.parsed_data
-    labels: list[str] = [
-        label.name
-        for label in issue.labels
-        if label.name  # type: ignore[union-attr]
-    ]
+    labels: list[str] = [label.name for label in issue.labels if label.name]
     return IssueData(
         title=issue.title,
         body=issue.body or "",

@@ -1,5 +1,5 @@
 from collections.abc import AsyncGenerator
-from contextlib import asynccontextmanager
+from contextlib import AbstractAsyncContextManager, asynccontextmanager
 from http.server import HTTPServer
 
 import redis.asyncio as aioredis
@@ -28,7 +28,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     redis_client: aioredis.Redis | None = None
     arq_pool: ArqRedis | None = None
     httpd: HTTPServer | None = None
-    graph_cm: AsyncGenerator[CompiledStateGraph, None] | None = None
+    graph_cm: AbstractAsyncContextManager[CompiledStateGraph] | None = None
 
     try:
         # Redis pool
