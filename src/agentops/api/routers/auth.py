@@ -1,4 +1,5 @@
 import uuid
+from urllib.parse import quote
 
 import httpx
 from fastapi import APIRouter, HTTPException, Request, Response, status
@@ -20,7 +21,7 @@ _GITHUB_USER_URL = "https://api.github.com/user"
 
 @router.get("/login")
 async def login(settings: SettingsDep, redis: RedisDep) -> RedirectResponse:
-    """Redirect to GitHub OAuth login with CSRF state param."""
+    """Redirect to GitHub OAuth login with CSRF state param and double-submit cookie."""
     state = str(uuid.uuid4())
     await redis.setex(f"oauth_state:{state}", settings.csrf_state_ttl_seconds, "1")
 
@@ -30,26 +31,61 @@ async def login(settings: SettingsDep, redis: RedisDep) -> RedirectResponse:
         f"&scope=read:user repo"
         f"&state={state}"
     )
-    return RedirectResponse(url=f"{_GITHUB_AUTHORIZE_URL}?{params}")
+    response = RedirectResponse(url=f"{_GITHUB_AUTHORIZE_URL}?{params}")
+    secure_cookie = settings.environment == Environment.PRODUCTION
+    response.set_cookie(
+        key="oauth_state",
+        value=state,
+        httponly=True,
+        secure=secure_cookie,
+        samesite="lax",
+        max_age=settings.csrf_state_ttl_seconds,
+    )
+    return response
 
 
 @router.get("/callback")
 async def callback(
-    code: str,
+    request: Request,
     state: str,
     redis: RedisDep,
     settings: SettingsDep,
+    code: str | None = None,
+    error: str | None = None,
+    error_description: str | None = None,
 ) -> RedirectResponse:
     """Handle GitHub OAuth callback — verify CSRF state and exchange code."""
-    # Verify CSRF state
+    # Double-submit CSRF cookie check
+    cookie_state = request.cookies.get("oauth_state", "")
+    if state != cookie_state:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="State mismatch",
+        )
+
+    # Verify CSRF state in Redis
     state_key = f"oauth_state:{state}"
-    stored = await redis.get(state_key)
+    stored = await redis.getdel(state_key)
     if stored is None:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Invalid or expired OAuth state",
         )
-    await redis.delete(state_key)
+
+    # Handle OAuth denial flow
+    if error is not None:
+        desc = quote(error_description or error)
+        redirect = RedirectResponse(
+            url=f"{settings.frontend_origin}/auth/callback?error={quote(error)}&error_description={desc}",
+        )
+        redirect.set_cookie(key="oauth_state", value="", max_age=0, httponly=True)
+        return redirect
+
+    if code is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Missing authorization code",
+        )
 
     async with httpx.AsyncClient() as client:
         token_response = await client.post(
@@ -98,7 +134,9 @@ async def callback(
     auth_value = f"{github_id}:{github_login}"
     await redis.setex(f"auth_code:{auth_code}", settings.auth_code_ttl_seconds, auth_value)
 
-    return RedirectResponse(url=f"{settings.frontend_origin}/auth/callback?code={auth_code}")
+    redirect = RedirectResponse(url=f"{settings.frontend_origin}/auth/callback?code={auth_code}")
+    redirect.set_cookie(key="oauth_state", value="", max_age=0, httponly=True)
+    return redirect
 
 
 @router.post("/token", response_model=AccessTokenResponse)
@@ -110,14 +148,12 @@ async def exchange_token(
 ) -> AccessTokenResponse:
     """Exchange one-time auth code for JWT + refresh token cookie."""
     auth_code_key = f"auth_code:{body.code}"
-    stored = await redis.get(auth_code_key)
+    stored = await redis.getdel(auth_code_key)
     if stored is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid or expired auth code",
         )
-
-    await redis.delete(auth_code_key)
     parts = stored.split(":", 1)
     github_id = parts[0]
     github_login = parts[1] if len(parts) > 1 else ""

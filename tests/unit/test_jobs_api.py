@@ -11,7 +11,9 @@ async def test_create_job_returns_202(api_client: AsyncClient, mock_arq: MagicMo
     data = response.json()
     assert "job_id" in data
     assert data["status"] == "queued"
-    mock_arq.enqueue_job.assert_called_once_with("run_triage", data["job_id"])
+    mock_arq.enqueue_job.assert_called_once_with(
+        "run_triage", data["job_id"], _job_id=data["job_id"]
+    )
 
 
 async def test_create_job_invalid_url_returns_422(api_client: AsyncClient) -> None:

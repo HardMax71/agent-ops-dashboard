@@ -1,5 +1,6 @@
 import logging
 import re
+from urllib.parse import urlparse
 
 from githubkit import GitHub, TokenAuthStrategy, UnauthAuthStrategy
 from githubkit.exception import RequestFailed
@@ -8,12 +9,15 @@ from agentops.github.models import IssueData
 
 _logger = logging.getLogger(__name__)
 
-_ISSUE_URL_RE = re.compile(r"^https://github\.com/([^/]+)/([^/]+)/issues/(\d+)$")
+_ISSUE_PATH_RE = re.compile(r"^/([^/]+)/([^/]+)/issues/(\d+)/?$")
 
 
 def parse_issue_url(url: str) -> tuple[str, str, int] | None:
     """Extract (owner, repo, issue_number) from a GitHub issue URL."""
-    match = _ISSUE_URL_RE.match(url)
+    parsed = urlparse(url)
+    if parsed.scheme != "https" or parsed.netloc != "github.com":
+        return None
+    match = _ISSUE_PATH_RE.match(parsed.path)
     if match is None:
         return None
     return match.group(1), match.group(2), int(match.group(3))

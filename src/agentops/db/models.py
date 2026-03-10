@@ -57,7 +57,9 @@ class Job(Base):
     langsmith_run_id: Mapped[str] = mapped_column(String(36), default="")
     langsmith_url: Mapped[str] = mapped_column(String(512), default="")
     total_tokens: Mapped[int] = mapped_column(Integer, default=0)
-    total_cost_usd: Mapped[float] = mapped_column(Numeric(precision=10, scale=6), default=0.0)
+    total_cost_usd: Mapped[float] = mapped_column(
+        Numeric(precision=10, scale=6, asdecimal=False), default=0.0
+    )
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
@@ -77,8 +79,12 @@ class JobTraceSummary(Base):
         String(36), ForeignKey("jobs.id"), nullable=False, unique=True
     )
     total_tokens: Mapped[int] = mapped_column(Integer, default=0)
-    total_cost_usd: Mapped[float] = mapped_column(Numeric(precision=10, scale=6), default=0.0)
-    duration_seconds: Mapped[float] = mapped_column(Numeric(precision=10, scale=3), default=0.0)
+    total_cost_usd: Mapped[float] = mapped_column(
+        Numeric(precision=10, scale=6, asdecimal=False), default=0.0
+    )
+    duration_seconds: Mapped[float] = mapped_column(
+        Numeric(precision=10, scale=3, asdecimal=False), default=0.0
+    )
     langsmith_deep_link: Mapped[str] = mapped_column(String(512), default="")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 

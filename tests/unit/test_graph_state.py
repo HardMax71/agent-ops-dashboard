@@ -135,3 +135,28 @@ def test_schema_version_migrated_from_old_checkpoint() -> None:
         }
     )
     assert state.schema_version == _CURRENT_SCHEMA_VERSION
+
+
+def test_schema_version_preserved_when_higher() -> None:
+    """Future checkpoints with a higher schema_version are not downgraded."""
+    future_version = _CURRENT_SCHEMA_VERSION + 5
+    state = BugTriageState.model_validate(
+        {
+            "job_id": "test-123",
+            "issue_url": "https://github.com/a/b/issues/1",
+            "schema_version": future_version,
+        }
+    )
+    assert state.schema_version == future_version
+
+
+def test_schema_version_preserved_when_explicit() -> None:
+    """Explicit schema_version equal to current is preserved, not overwritten."""
+    state = BugTriageState.model_validate(
+        {
+            "job_id": "test-123",
+            "issue_url": "https://github.com/a/b/issues/1",
+            "schema_version": _CURRENT_SCHEMA_VERSION,
+        }
+    )
+    assert state.schema_version == _CURRENT_SCHEMA_VERSION

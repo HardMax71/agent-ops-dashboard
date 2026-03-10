@@ -49,8 +49,9 @@ async def internal_client(
 class TestLangSmithAlert:
     async def test_valid_secret_returns_200(self, internal_client: AsyncClient) -> None:
         resp = await internal_client.post(
-            "/internal/langsmith-alert?secret=test-webhook-secret",
+            "/internal/langsmith-alert",
             json=_WEBHOOK_BODY,
+            headers={"X-Webhook-Secret": "test-webhook-secret"},
         )
         assert resp.status_code == 200
         assert resp.json()["status"] == "received"
@@ -58,8 +59,9 @@ class TestLangSmithAlert:
 
     async def test_invalid_secret_returns_403(self, internal_client: AsyncClient) -> None:
         resp = await internal_client.post(
-            "/internal/langsmith-alert?secret=wrong",
+            "/internal/langsmith-alert",
             json=_WEBHOOK_BODY,
+            headers={"X-Webhook-Secret": "wrong"},
         )
         assert resp.status_code == 403
 

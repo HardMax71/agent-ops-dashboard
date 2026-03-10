@@ -1,4 +1,6 @@
-from fastapi import APIRouter, HTTPException, Query, status
+import secrets
+
+from fastapi import APIRouter, Header, HTTPException, status
 from pydantic import BaseModel
 
 from agentops.api.deps.settings import SettingsDep
@@ -17,10 +19,11 @@ class LangSmithAlertBody(BaseModel):
 async def langsmith_alert(
     body: LangSmithAlertBody,
     settings: SettingsDep,
-    secret: str = Query(default=""),
+    secret_header: str = Header(default="", alias="X-Webhook-Secret"),
 ) -> dict[str, str]:
-    """Handle LangSmith webhook alerts. Auth via query param ?secret= (PRD-005-1)."""
-    if not secret or secret != settings.langsmith_webhook_secret:
+    """Handle LangSmith webhook alerts. Auth via X-Webhook-Secret header (PRD-005-1)."""
+    expected = settings.langsmith_webhook_secret
+    if not secret_header or not secrets.compare_digest(secret_header, expected):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Invalid webhook secret",

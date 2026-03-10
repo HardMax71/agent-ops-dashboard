@@ -15,4 +15,7 @@ async def check_for_interrupt(
     state = await graph.aget_state(config)
     if not state.tasks:
         return None
-    return state.tasks[0].interrupts[0].value
+    interrupts = state.tasks[0].interrupts
+    if not interrupts:
+        return None
+    return interrupts[0].value

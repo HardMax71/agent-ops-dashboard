@@ -1,3 +1,6 @@
+from collections.abc import AsyncGenerator
+from contextlib import asynccontextmanager
+
 from langgraph.checkpoint.base import BaseCheckpointSaver
 from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
 from langgraph.graph import END, START, StateGraph
@@ -48,8 +51,11 @@ def build_graph(checkpointer: BaseCheckpointSaver | None = None) -> CompiledStat
     return builder.compile(checkpointer=checkpointer)
 
 
-async def create_graph_with_postgres(conninfo: str) -> CompiledStateGraph:
+@asynccontextmanager
+async def create_graph_with_postgres(
+    conninfo: str,
+) -> AsyncGenerator[CompiledStateGraph, None]:
     """Create graph with PostgreSQL-backed checkpointer for production."""
     async with AsyncPostgresSaver.from_conn_string(conninfo) as saver:
         await saver.setup()
-        return build_graph(checkpointer=saver)
+        yield build_graph(checkpointer=saver)

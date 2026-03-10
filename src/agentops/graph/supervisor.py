@@ -186,8 +186,12 @@ async def supervisor_node(state: BugTriageState) -> dict:  # noqa: ANN401 — La
         "supervisor_confidence": decision.confidence,
         "supervisor_reasoning": decision.reasoning,
     }
-    # Set HITL state when routing to human_input
-    if decision.next_node == "human_input":
+    should_set_hitl = (
+        decision.next_node == "human_input"
+        and state.iterations < state.max_iterations
+        and len(state.human_exchanges) < 2
+    )
+    if should_set_hitl:
         result["pending_exchange"] = HumanExchange(
             question=decision.question or decision.reasoning,
             context=decision.question_context or "",

@@ -38,8 +38,10 @@ class LangGraphEventTransformer:
 
     def transform(self, event: StandardStreamEvent) -> list[SseEvent]:
         match event["event"]:
-            case "on_chat_model_stream" | "on_llm_stream":
-                return self._on_stream(event)
+            case "on_chat_model_stream":
+                return self._on_chat_stream(event)
+            case "on_llm_stream":
+                return self._on_llm_stream(event)
             case "on_tool_start":
                 return self._on_tool_start(event)
             case "on_tool_end":
@@ -51,12 +53,19 @@ class LangGraphEventTransformer:
             case _:
                 return []
 
-    def _on_stream(self, event: StandardStreamEvent) -> list[SseEvent]:
-        meta = self._meta(event)
-        node = meta.get("langgraph_node", "")
+    def _on_chat_stream(self, event: StandardStreamEvent) -> list[SseEvent]:
+        token: str = event["data"]["chunk"].content
+        return self._emit_token(event, token)
+
+    def _on_llm_stream(self, event: StandardStreamEvent) -> list[SseEvent]:
         token: str = event["data"]["chunk"].text
+        return self._emit_token(event, token)
+
+    def _emit_token(self, event: StandardStreamEvent, token: str) -> list[SseEvent]:
         if not token:
             return []
+        meta = self._meta(event)
+        node = meta.get("langgraph_node", "")
         agent_id = self._agents[node]
         if agent_id:
             return [AgentTokenEvent(type="agent.token", agent_id=agent_id, token=token)]

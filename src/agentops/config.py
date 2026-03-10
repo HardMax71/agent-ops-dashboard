@@ -64,7 +64,9 @@ class Settings(BaseSettings):
     @property
     def psycopg_dsn(self) -> str:
         """Derive psycopg-compatible DSN from SQLAlchemy database_url."""
-        return self.database_url.replace("+asyncpg", "")
+        url = self.database_url
+        scheme, sep, rest = url.partition("://")
+        return scheme.replace("+asyncpg", "") + sep + rest
 
     @model_validator(mode="after")
     def _validate_production_secrets(self) -> "Settings":

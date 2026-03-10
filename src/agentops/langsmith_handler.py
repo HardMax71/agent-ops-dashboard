@@ -1,3 +1,5 @@
+import json
+
 from langsmith import Client
 
 
@@ -38,10 +40,11 @@ class LangSmithFeedbackHandler:
 def fetch_runs_for_job(api_key: str, project_name: str, job_id: str) -> list[dict[str, str]]:
     """Fetch LangSmith runs for a given job ID (sync)."""
     client = Client(api_key=api_key)
+    safe_metadata = json.dumps({"job_id": job_id})
     runs = list(
         client.list_runs(
             project_name=project_name,
-            filter=f'has(metadata, \'{{"job_id": "{job_id}"}}\' )',
+            filter=f"has(metadata, '{safe_metadata}' )",
         )
     )
     return [{"id": str(r.id), "name": r.name or "", "status": r.status or ""} for r in runs]

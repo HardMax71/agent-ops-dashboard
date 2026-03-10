@@ -29,6 +29,13 @@ def worker_error_handler(
                 f"jobs:{job_id}:events",
                 json.dumps({"type": "job.failed", "error": str(exc)}),
             )
+            raw = await redis.get(f"job:{job_id}")
+            if raw is not None:
+                data = json.loads(raw)
+                data["status"] = "failed"
+                await redis.setex(f"job:{job_id}", 86400, json.dumps(data))
+                owner_id: str = data.get("owner_id", "anonymous")
+                await redis.decr(f"active_jobs:{owner_id}")
             raise
 
     return wrapper

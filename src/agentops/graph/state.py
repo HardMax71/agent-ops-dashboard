@@ -67,8 +67,10 @@ class BugTriageState(BaseModel):
     @model_validator(mode="before")
     @classmethod
     def migrate_from_checkpoint(cls, data: dict[str, object]) -> dict[str, object]:  # noqa: ANN401
-        """Set schema_version to current when loading old checkpoints."""
-        data["schema_version"] = _CURRENT_SCHEMA_VERSION
+        """Backfill schema_version only when absent; preserve existing values."""
+        version = data.get("schema_version")
+        if version is None:
+            data["schema_version"] = _CURRENT_SCHEMA_VERSION
         return data
 
     issue_url: str

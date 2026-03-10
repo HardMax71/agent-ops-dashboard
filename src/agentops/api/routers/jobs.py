@@ -8,13 +8,10 @@ from typing import Annotated
 
 from fastapi import APIRouter, HTTPException, status
 from fastapi.responses import StreamingResponse
-from langchain_core.runnables import RunnableConfig
-from langgraph.types import Command
 from pydantic import BaseModel, Field
 
 from agentops.api.deps.arq import ArqDep
 from agentops.api.deps.auth import OptionalUserDep
-from agentops.api.deps.graph import GraphDep
 from agentops.api.deps.redis import RedisDep
 from agentops.github.client import fetch_issue, parse_issue_url
 
@@ -70,15 +67,7 @@ async def create_job(
 ) -> CreateJobResponse:
     """Create a new triage job. Idempotent within 24h per issue URL."""
     owner_id = current_user.github_id if current_user else "anonymous"
-
-    # Rate limiting: max active jobs per owner
     active_key = f"active_jobs:{owner_id}"
-    active_count = int(await redis.get(active_key) or "0")
-    if active_count >= _MAX_ACTIVE_JOBS_PER_OWNER:
-        raise HTTPException(
-            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-            detail=f"Active job limit ({_MAX_ACTIVE_JOBS_PER_OWNER}) exceeded",
-        )
 
     # Idempotency key
     idempotency_key = (
@@ -90,6 +79,17 @@ async def create_job(
     if set_result is None:
         existing_job_id = await redis.get(idempotency_key)
         return CreateJobResponse(job_id=existing_job_id or job_id, status="queued")
+
+    # Atomic rate-limit: INCR first, then check
+    new_count: int = await redis.incr(active_key)
+    if new_count == 1:
+        await redis.expire(active_key, 86400)
+    if new_count > _MAX_ACTIVE_JOBS_PER_OWNER:
+        await redis.decr(active_key)
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail=f"Active job limit ({_MAX_ACTIVE_JOBS_PER_OWNER}) exceeded",
+        )
 
     # Fetch issue metadata from GitHub (best-effort)
     issue_title = ""
@@ -119,13 +119,7 @@ async def create_job(
     }
     await redis.setex(f"job:{job_id}", 86400, json.dumps(job_data))
 
-    # Increment active jobs counter
-    pipe = redis.pipeline()
-    pipe.incr(active_key)
-    pipe.expire(active_key, 86400)
-    await pipe.execute()
-
-    await arq.enqueue_job("run_triage", job_id)
+    await arq.enqueue_job("run_triage", job_id, _job_id=job_id)
 
     return CreateJobResponse(job_id=job_id, status="queued")
 
@@ -165,7 +159,7 @@ async def _sse_generator(redis: RedisDep, job_id: str) -> AsyncGenerator[str, No
             # Break on terminal events
             parsed = json.loads(data)
             event_type = parsed.get("type", "")
-            if event_type in ("job.done", "job.failed"):
+            if event_type in ("job.done", "job.failed", "job.killed", "job.timed_out"):
                 break
     except TimeoutError:
         yield ":keepalive\n\n"
@@ -204,7 +198,6 @@ async def answer_job(
     job_id: str,
     body: AnswerRequest,
     redis: RedisDep,
-    graph: GraphDep,
     arq: ArqDep,
 ) -> JobActionResponse:
     """Resume a job waiting for human input by providing an answer."""
@@ -213,16 +206,13 @@ async def answer_job(
     if not data.get("awaiting_human"):
         raise HTTPException(status_code=409, detail="Job is not awaiting human input")
 
-    # Cancel the timeout task
     await arq.abort_job(f"timeout:{job_id}")
-
-    # Resume graph execution
-    config: RunnableConfig = {"configurable": {"thread_id": job_id}}
-    await graph.ainvoke(Command(resume=body.answer), config=config)
 
     data["awaiting_human"] = False
     data["status"] = "running"
     await redis.setex(f"job:{job_id}", 86400, json.dumps(data))
+
+    await arq.enqueue_job("resume_graph", job_id, body.answer, _job_id=job_id)
 
     return JobActionResponse(status="answer_received", job_id=job_id)
 
@@ -246,17 +236,16 @@ async def pause_job(
 async def resume_job(
     job_id: str,
     redis: RedisDep,
-    graph: GraphDep,
+    arq: ArqDep,
 ) -> JobActionResponse:
     """Resume a paused job."""
     data = await _load_job_data(redis, job_id)
 
-    config: RunnableConfig = {"configurable": {"thread_id": job_id}}
-    await graph.ainvoke(Command(resume="resume"), config=config)
-
     data["status"] = "running"
     data["paused"] = False
     await redis.setex(f"job:{job_id}", 86400, json.dumps(data))
+
+    await arq.enqueue_job("resume_graph", job_id, "resume", _job_id=job_id)
 
     return JobActionResponse(status="resumed", job_id=job_id)
 
@@ -266,7 +255,7 @@ async def redirect_job(
     job_id: str,
     body: RedirectRequest,
     redis: RedisDep,
-    graph: GraphDep,
+    arq: ArqDep,
 ) -> JobActionResponse:
     """Inject a redirect instruction into a running or paused job."""
     data = await _load_job_data(redis, job_id)
@@ -276,17 +265,18 @@ async def redirect_job(
     instructions.append(body.instruction)
     data["redirect_instructions"] = instructions
 
-    # If paused, resume with redirect
     if data.get("paused"):
-        config: RunnableConfig = {"configurable": {"thread_id": job_id}}
-        await graph.ainvoke(
-            Command(resume={"type": "redirect", "instruction": body.instruction}),
-            config=config,
-        )
         data["paused"] = False
         data["status"] = "running"
-
-    await redis.setex(f"job:{job_id}", 86400, json.dumps(data))
+        await redis.setex(f"job:{job_id}", 86400, json.dumps(data))
+        await arq.enqueue_job(
+            "resume_graph",
+            job_id,
+            json.dumps({"type": "redirect", "instruction": body.instruction}),
+            _job_id=job_id,
+        )
+    else:
+        await redis.setex(f"job:{job_id}", 86400, json.dumps(data))
 
     return JobActionResponse(status="redirected", job_id=job_id)
 
@@ -305,5 +295,9 @@ async def kill_job(
 
     data["status"] = "killed"
     await redis.setex(f"job:{job_id}", 86400, json.dumps(data))
+    await redis.publish(f"jobs:{job_id}:events", json.dumps({"type": "job.killed"}))
+
+    owner_id = data.get("owner_id", "anonymous")
+    await redis.decr(f"active_jobs:{owner_id}")
 
     return JobActionResponse(status="killed", job_id=job_id)

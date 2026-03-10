@@ -14,6 +14,7 @@ from httpx import ASGITransport, AsyncClient
 
 from agentops.api.deps.arq import get_arq
 from agentops.api.deps.redis import get_redis
+from agentops.api.deps.settings import get_settings
 from agentops.api.main import create_app
 from agentops.auth.service import create_access_token
 from agentops.config import Settings
@@ -114,6 +115,7 @@ async def api_client(
     app = create_app(settings, testing=True)
     app.dependency_overrides[get_redis] = lambda: fake_redis
     app.dependency_overrides[get_arq] = lambda: mock_arq
+    app.dependency_overrides[get_settings] = lambda: settings
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
         yield client
     app.dependency_overrides.clear()
@@ -129,6 +131,7 @@ async def auth_client(
     app = create_app(settings, testing=True)
     app.dependency_overrides[get_redis] = lambda: fake_redis
     app.dependency_overrides[get_arq] = lambda: mock_arq
+    app.dependency_overrides[get_settings] = lambda: settings
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
         yield client
     app.dependency_overrides.clear()

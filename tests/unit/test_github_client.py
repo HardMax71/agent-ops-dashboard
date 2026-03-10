@@ -55,6 +55,21 @@ class TestParseIssueUrl:
     def test_url_with_extra_path(self) -> None:
         assert parse_issue_url("https://github.com/owner/repo/issues/1/comments") is None
 
+    def test_trailing_slash(self) -> None:
+        result = parse_issue_url("https://github.com/owner/repo/issues/42/")
+        assert result == ("owner", "repo", 42)
+
+    def test_query_string(self) -> None:
+        result = parse_issue_url("https://github.com/owner/repo/issues/42?ref=main")
+        assert result == ("owner", "repo", 42)
+
+    def test_fragment(self) -> None:
+        result = parse_issue_url("https://github.com/owner/repo/issues/42#issuecomment-1")
+        assert result == ("owner", "repo", 42)
+
+    def test_http_scheme_rejected(self) -> None:
+        assert parse_issue_url("http://github.com/owner/repo/issues/42") is None
+
 
 class TestFetchIssue:
     async def test_successful_fetch(self) -> None:

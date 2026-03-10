@@ -42,14 +42,14 @@ async def test_answer_200_when_awaiting(control_client, fake_redis, mock_graph, 
     body = resp.json()
     assert body["status"] == "answer_received"
     assert body["job_id"] == "job-2"
-    # Verify Redis updated
     raw = await fake_redis.get("job:job-2")
     data = json.loads(raw)
     assert data["status"] == "running"
     assert data["awaiting_human"] is False
-    # Verify graph resumed
-    mock_graph.ainvoke.assert_called_once()
     mock_arq.abort_job.assert_called_once()
+    mock_arq.enqueue_job.assert_called_once_with(
+        "resume_graph", "job-2", "the fix is X", _job_id="job-2"
+    )
 
 
 async def test_pause_sets_flag(control_client, fake_redis, make_job):
@@ -63,7 +63,7 @@ async def test_pause_sets_flag(control_client, fake_redis, make_job):
     assert data["status"] == "pausing"
 
 
-async def test_resume_clears_flag(control_client, fake_redis, mock_graph, make_job):
+async def test_resume_clears_flag(control_client, fake_redis, mock_arq, make_job):
     await make_job("job-4", status="paused", paused=True)
     resp = await control_client.post("/jobs/job-4/resume")
     assert resp.status_code == 200
@@ -72,7 +72,7 @@ async def test_resume_clears_flag(control_client, fake_redis, mock_graph, make_j
     data = json.loads(raw)
     assert data["paused"] is False
     assert data["status"] == "running"
-    mock_graph.ainvoke.assert_called_once()
+    mock_arq.enqueue_job.assert_called_once_with("resume_graph", "job-4", "resume", _job_id="job-4")
 
 
 async def test_kill_sets_status(control_client, fake_redis, mock_arq, make_job):
@@ -98,7 +98,7 @@ async def test_redirect_stores_instruction(control_client, fake_redis, make_job)
     assert "focus on auth module" in data["redirect_instructions"]
 
 
-async def test_redirect_resumes_paused_job(control_client, fake_redis, mock_graph, make_job):
+async def test_redirect_resumes_paused_job(control_client, fake_redis, mock_arq, make_job):
     await make_job("job-7", status="paused", paused=True)
     resp = await control_client.post(
         "/jobs/job-7/redirect", json={"instruction": "look at DB layer"}
@@ -108,7 +108,7 @@ async def test_redirect_resumes_paused_job(control_client, fake_redis, mock_grap
     data = json.loads(raw)
     assert data["paused"] is False
     assert data["status"] == "running"
-    mock_graph.ainvoke.assert_called_once()
+    mock_arq.enqueue_job.assert_called_once()
 
 
 async def test_answer_404_missing_job(control_client):

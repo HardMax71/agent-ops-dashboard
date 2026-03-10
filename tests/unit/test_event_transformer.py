@@ -24,7 +24,7 @@ class TestStream:
         t = LangGraphEventTransformer()
         t._agents["investigator"] = "agent-1"
         chunk = MagicMock()
-        chunk.text = ""
+        chunk.content = ""
         event = {
             "event": "on_chat_model_stream",
             "data": {"chunk": chunk},
@@ -37,7 +37,7 @@ class TestStream:
         t = LangGraphEventTransformer()
         t._agents["investigator"] = "agent-1"
         chunk = MagicMock()
-        chunk.text = "hello"
+        chunk.content = "hello"
         event = {
             "event": "on_chat_model_stream",
             "data": {"chunk": chunk},
@@ -52,7 +52,7 @@ class TestStream:
     def test_output_token_when_no_agent(self) -> None:
         t = LangGraphEventTransformer()
         chunk = MagicMock()
-        chunk.text = "output"
+        chunk.content = "output"
         event = {
             "event": "on_chat_model_stream",
             "data": {"chunk": chunk},
@@ -62,6 +62,22 @@ class TestStream:
         result = t.transform(event)
         assert len(result) == 1
         assert result[0]["type"] == "output.token"
+
+    def test_llm_stream_uses_text(self) -> None:
+        t = LangGraphEventTransformer()
+        t._agents["investigator"] = "agent-1"
+        chunk = MagicMock()
+        chunk.text = "llm-token"
+        event = {
+            "event": "on_llm_stream",
+            "data": {"chunk": chunk},
+            "metadata": {"langgraph_node": "investigator"},
+            "name": "",
+        }
+        result = t.transform(event)
+        assert len(result) == 1
+        assert result[0]["type"] == "agent.token"
+        assert result[0]["token"] == "llm-token"
 
 
 class TestToolStart:
@@ -170,7 +186,7 @@ class TestTransformer:
         t = LangGraphEventTransformer()
         t._agents["inv"] = "a1"
         chunk = MagicMock()
-        chunk.text = "token"
+        chunk.content = "token"
         event = {
             "event": "on_chat_model_stream",
             "data": {"chunk": chunk},

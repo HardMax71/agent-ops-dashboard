@@ -4,7 +4,7 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from agentops.worker import TIMEOUT_ANSWER, expire_human_input, job_timeout_cleaner, run_triage
+from agentops.worker import expire_human_input, job_timeout_cleaner, run_triage
 
 
 @pytest.fixture
@@ -31,22 +31,16 @@ async def test_expire_provides_timeout_answer(ctx, fake_redis, mock_graph, make_
     """expire_human_input resumes with TIMEOUT_ANSWER when job is still waiting."""
     await make_job("j1", status="waiting", awaiting_human=True)
 
-    # Simulate an active interrupt
-    mock_graph.aget_state.return_value = MagicMock(tasks=["pending_task"])
+    mock_graph.aget_state.side_effect = [
+        MagicMock(tasks=["pending_task"]),
+        MagicMock(tasks=[]),
+    ]
 
     await expire_human_input(ctx, "j1")
 
-    # Verify graph was resumed with timeout answer
-    mock_graph.ainvoke.assert_called_once()
-    call_args = mock_graph.ainvoke.call_args
-    command = call_args[0][0]
-    assert command.resume == TIMEOUT_ANSWER
-
-    # Verify Redis updated
     raw = await fake_redis.get("job:j1")
     data = json.loads(raw)
-    assert data["status"] == "running"
-    assert data["awaiting_human"] is False
+    assert data["status"] == "done"
 
 
 async def test_expire_skips_completed_jobs(ctx, mock_graph, make_job):
@@ -55,19 +49,18 @@ async def test_expire_skips_completed_jobs(ctx, mock_graph, make_job):
 
     await expire_human_input(ctx, "j2")
 
-    mock_graph.ainvoke.assert_not_called()
     mock_graph.aget_state.assert_not_called()
 
 
 async def test_expire_skips_missing_jobs(ctx, mock_graph):
     """expire_human_input does nothing when job doesn't exist."""
     await expire_human_input(ctx, "nonexistent")
-    mock_graph.ainvoke.assert_not_called()
+    mock_graph.aget_state.assert_not_called()
 
 
 async def test_timeout_cleaner_transitions_stale_jobs(ctx, fake_redis, make_job):
     """job_timeout_cleaner transitions waiting jobs older than threshold to timed_out."""
-    stale_time = str(int(time.time()) - 700)  # 700s ago (> 600s threshold)
+    stale_time = str(int(time.time()) - 1900)  # 1900s ago (> 1800s threshold)
     await make_job("j3", status="waiting", awaiting_human=True, waiting_since=stale_time)
 
     await job_timeout_cleaner(ctx)
@@ -79,7 +72,7 @@ async def test_timeout_cleaner_transitions_stale_jobs(ctx, fake_redis, make_job)
 
 async def test_timeout_cleaner_leaves_fresh_jobs(ctx, fake_redis, make_job):
     """job_timeout_cleaner doesn't touch recently-waiting jobs."""
-    fresh_time = str(int(time.time()) - 60)  # 60s ago (< 600s threshold)
+    fresh_time = str(int(time.time()) - 60)  # 60s ago (< 1800s threshold)
     await make_job("j4", status="waiting", awaiting_human=True, waiting_since=fresh_time)
 
     await job_timeout_cleaner(ctx)
@@ -168,9 +161,10 @@ async def test_expire_skips_killed_during_resume(ctx, fake_redis, mock_graph, ma
         data = json.loads(raw)
         data["status"] = "killed"
         await fake_redis.setex("job:j9", 86400, json.dumps(data))
-        return None
+        return
+        yield  # noqa: RET504
 
-    mock_graph.ainvoke = AsyncMock(side_effect=simulate_kill)
+    mock_graph.astream_events = simulate_kill
 
     await expire_human_input(ctx, "j9")
 

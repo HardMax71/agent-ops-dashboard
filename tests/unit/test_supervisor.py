@@ -141,3 +141,45 @@ async def test_no_pending_exchange_for_other_nodes(make_state):
 
     assert "pending_exchange" not in result
     assert "awaiting_human" not in result
+
+
+async def test_g2_no_hitl_state_when_too_many_exchanges(make_state):
+    exchanges = [
+        HumanExchange(question="Q1?", answer="A1"),
+        HumanExchange(question="Q2?", answer="A2"),
+    ]
+    decision = SupervisorDecision(
+        next_node="human_input",
+        reasoning="Need more info",
+        confidence=0.8,
+        question="Another question?",
+        question_context="Some context",
+    )
+
+    state = make_state(iterations=3, human_exchanges=exchanges)
+
+    with patch("agentops.graph.supervisor._invoke_supervisor", return_value=decision):
+        with patch("agentops.graph.supervisor.ChatOpenAI"):
+            result = await supervisor_node(state)
+
+    assert "pending_exchange" not in result
+    assert "awaiting_human" not in result
+
+
+async def test_g3_no_hitl_state_when_max_iterations(make_state):
+    decision = SupervisorDecision(
+        next_node="human_input",
+        reasoning="Need more info",
+        confidence=0.8,
+        question="Another question?",
+        question_context="Some context",
+    )
+
+    state = make_state(iterations=10, max_iterations=10)
+
+    with patch("agentops.graph.supervisor._invoke_supervisor", return_value=decision):
+        with patch("agentops.graph.supervisor.ChatOpenAI"):
+            result = await supervisor_node(state)
+
+    assert "pending_exchange" not in result
+    assert "awaiting_human" not in result

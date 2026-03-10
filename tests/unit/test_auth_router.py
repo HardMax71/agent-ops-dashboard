@@ -2,6 +2,7 @@
 
 import pytest
 import pytest_asyncio
+from cryptography.fernet import Fernet
 from httpx import ASGITransport, AsyncClient
 
 from agentops.api.deps.arq import get_arq
@@ -12,6 +13,8 @@ from agentops.config import Settings, get_settings
 
 pytestmark = pytest.mark.asyncio
 
+_TEST_FERNET_KEY = Fernet.generate_key().decode()
+
 
 @pytest.fixture
 def auth_settings() -> Settings:
@@ -21,6 +24,7 @@ def auth_settings() -> Settings:
         openai_api_key="sk-test",
         github_client_id="test-client-id",
         github_client_secret="test-client-secret",
+        github_token_encryption_key=_TEST_FERNET_KEY,
     )
 
 
@@ -52,6 +56,17 @@ class TestLogin:
         assert "client_id=test-client-id" in location
         assert "scope=read:user" in location
 
+    async def test_login_sets_oauth_state_cookie(
+        self,
+        auth_client: AsyncClient,
+    ) -> None:
+        resp = await auth_client.get("/auth/login", follow_redirects=False)
+        assert resp.status_code == 307
+        cookie_header = resp.headers.get("set-cookie", "")
+        assert "oauth_state=" in cookie_header
+        assert "httponly" in cookie_header.lower()
+        assert "samesite=lax" in cookie_header.lower()
+
 
 class TestCallback:
     async def test_callback_rejects_invalid_state(self, auth_client: AsyncClient) -> None:
@@ -59,6 +74,58 @@ class TestCallback:
             "/auth/callback", params={"code": "test", "state": "invalid"}, follow_redirects=False
         )
         assert resp.status_code == 403
+
+    async def test_callback_rejects_state_mismatch(
+        self,
+        auth_client: AsyncClient,
+        fake_redis: "FakeAsyncRedis",  # noqa: F821
+    ) -> None:
+        state = "valid-state"
+        await fake_redis.setex(f"oauth_state:{state}", 600, "1")
+        auth_client.cookies.set("oauth_state", "different-state")
+        resp = await auth_client.get(
+            "/auth/callback",
+            params={"code": "test", "state": state},
+            follow_redirects=False,
+        )
+        assert resp.status_code == 403
+
+    async def test_callback_handles_oauth_denial(
+        self,
+        auth_client: AsyncClient,
+        fake_redis: "FakeAsyncRedis",  # noqa: F821
+    ) -> None:
+        state = "valid-state"
+        await fake_redis.setex(f"oauth_state:{state}", 600, "1")
+        auth_client.cookies.set("oauth_state", state)
+        resp = await auth_client.get(
+            "/auth/callback",
+            params={
+                "state": state,
+                "error": "access_denied",
+                "error_description": "The user denied access",
+            },
+            follow_redirects=False,
+        )
+        assert resp.status_code == 307
+        location = resp.headers["location"]
+        assert "error=access_denied" in location
+        assert "error_description=" in location
+
+    async def test_callback_missing_code_returns_400(
+        self,
+        auth_client: AsyncClient,
+        fake_redis: "FakeAsyncRedis",  # noqa: F821
+    ) -> None:
+        state = "valid-state"
+        await fake_redis.setex(f"oauth_state:{state}", 600, "1")
+        auth_client.cookies.set("oauth_state", state)
+        resp = await auth_client.get(
+            "/auth/callback",
+            params={"state": state},
+            follow_redirects=False,
+        )
+        assert resp.status_code == 400
 
 
 class TestTokenExchange:
