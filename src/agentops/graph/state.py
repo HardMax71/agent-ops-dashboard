@@ -2,7 +2,9 @@ from __future__ import annotations
 
 from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
+
+_CURRENT_SCHEMA_VERSION = 1
 
 
 class AgentFinding(BaseModel):
@@ -25,6 +27,7 @@ class HumanExchange(BaseModel):
     """A completed Q&A exchange with a human."""
 
     question: str
+    context: str = ""
     answer: str = ""
     asked_at: str = ""
     answered_at: str = ""
@@ -56,8 +59,20 @@ class CriticFeedback(BaseModel):
 class BugTriageState(BaseModel):
     """Full state for the bug triage graph."""
 
+    schema_version: int = Field(default=0)
+
     # Job identification
     job_id: str
+
+    @model_validator(mode="before")
+    @classmethod
+    def migrate_from_checkpoint(cls, data: dict[str, object]) -> dict[str, object]:  # noqa: ANN401
+        """Backfill schema_version only when absent; preserve existing values."""
+        version = data.get("schema_version")
+        if version is None:
+            data["schema_version"] = _CURRENT_SCHEMA_VERSION
+        return data
+
     issue_url: str
     issue_title: str = ""
     issue_body: str = ""
@@ -65,7 +80,9 @@ class BugTriageState(BaseModel):
     owner_id: str = ""
 
     # Orchestration
-    status: Literal["queued", "running", "waiting", "paused", "done", "failed", "killed"] = "queued"
+    status: Literal[
+        "queued", "running", "waiting", "paused", "done", "failed", "killed", "timed_out"
+    ] = "queued"
     current_node: str = ""
     iterations: int = 0
     max_iterations: int = 10
@@ -98,3 +115,6 @@ class BugTriageState(BaseModel):
 
     # Supervisor notes from user
     supervisor_notes: str = ""
+
+    # Redirect instructions from user
+    redirect_instructions: list[str] = Field(default_factory=list)

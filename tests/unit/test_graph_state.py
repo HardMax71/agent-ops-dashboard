@@ -1,4 +1,5 @@
 from agentops.graph.state import (
+    _CURRENT_SCHEMA_VERSION,
     AgentFinding,
     BugTriageState,
     CriticFeedback,
@@ -74,3 +75,88 @@ def test_critic_feedback_from_dict() -> None:
     )
     assert feedback.verdict == "REJECTED"
     assert feedback.gaps == ["missing tests"]
+
+
+def test_human_exchange_context_field() -> None:
+    exchange = HumanExchange(
+        question="What is the error?",
+        context="Occurs during login flow",
+        answer="NullPointerException",
+    )
+    assert exchange.context == "Occurs during login flow"
+
+
+def test_human_exchange_context_default() -> None:
+    exchange = HumanExchange(question="What is the error?")
+    assert exchange.context == ""
+
+
+def test_redirect_instructions_field() -> None:
+    state = BugTriageState(
+        job_id="test-123",
+        issue_url="https://github.com/a/b/issues/1",
+        redirect_instructions=["focus on auth", "check DB"],
+    )
+    assert len(state.redirect_instructions) == 2
+    assert state.redirect_instructions[0] == "focus on auth"
+
+
+def test_redirect_instructions_default() -> None:
+    state = BugTriageState(
+        job_id="test-123",
+        issue_url="https://github.com/a/b/issues/1",
+    )
+    assert state.redirect_instructions == []
+
+
+def test_timed_out_is_valid_status() -> None:
+    state = BugTriageState(
+        job_id="test-123",
+        issue_url="https://github.com/a/b/issues/1",
+        status="timed_out",
+    )
+    assert state.status == "timed_out"
+
+
+def test_schema_version_set_on_construction() -> None:
+    state = BugTriageState(
+        job_id="test-123",
+        issue_url="https://github.com/a/b/issues/1",
+    )
+    assert state.schema_version == _CURRENT_SCHEMA_VERSION
+
+
+def test_schema_version_migrated_from_old_checkpoint() -> None:
+    """Old checkpoints without schema_version get migrated to current version."""
+    state = BugTriageState.model_validate(
+        {
+            "job_id": "test-123",
+            "issue_url": "https://github.com/a/b/issues/1",
+        }
+    )
+    assert state.schema_version == _CURRENT_SCHEMA_VERSION
+
+
+def test_schema_version_preserved_when_higher() -> None:
+    """Future checkpoints with a higher schema_version are not downgraded."""
+    future_version = _CURRENT_SCHEMA_VERSION + 5
+    state = BugTriageState.model_validate(
+        {
+            "job_id": "test-123",
+            "issue_url": "https://github.com/a/b/issues/1",
+            "schema_version": future_version,
+        }
+    )
+    assert state.schema_version == future_version
+
+
+def test_schema_version_preserved_when_explicit() -> None:
+    """Explicit schema_version equal to current is preserved, not overwritten."""
+    state = BugTriageState.model_validate(
+        {
+            "job_id": "test-123",
+            "issue_url": "https://github.com/a/b/issues/1",
+            "schema_version": _CURRENT_SCHEMA_VERSION,
+        }
+    )
+    assert state.schema_version == _CURRENT_SCHEMA_VERSION

@@ -4,9 +4,10 @@ from typing import Literal
 from langchain_core.messages import BaseMessage, HumanMessage
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI
+from langgraph.types import interrupt
 from pydantic import BaseModel, Field, ValidationError
 
-from agentops.graph.state import BugTriageState
+from agentops.graph.state import BugTriageState, HumanExchange
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +23,7 @@ class SupervisorDecision(BaseModel):
 
 
 _SUPERVISOR_PROMPT_TEMPLATE = """You are the supervisor orchestrating a bug triage investigation.
-
+{redirect_instructions_block}
 Current state:
 - Iterations: {iterations}/{max_iterations}
 - Current findings: {findings_count} findings from agents: {agent_names}
@@ -79,6 +80,13 @@ def build_supervisor_context(state: BugTriageState) -> dict[str, object]:  # noq
     agent_names = sorted({f.agent_name for f in state.findings})
     critic_verdict = state.critic_feedback.verdict if state.critic_feedback else "none"
 
+    redirect_block = ""
+    if state.redirect_instructions:
+        lines = "\n".join(f"{i + 1}. {inst}" for i, inst in enumerate(state.redirect_instructions))
+        redirect_block = (
+            f"\n## Active redirect instructions (follow these above all else)\n{lines}\n"
+        )
+
     return {
         "iterations": state.iterations,
         "max_iterations": state.max_iterations,
@@ -88,6 +96,7 @@ def build_supervisor_context(state: BugTriageState) -> dict[str, object]:  # noq
         "critic_verdict": critic_verdict,
         "findings_block": findings_block or "No findings yet",
         "human_exchanges_block": human_exchanges_block or "No exchanges yet",
+        "redirect_instructions_block": redirect_block,
     }
 
 
@@ -162,14 +171,30 @@ async def _invoke_supervisor(
 
 async def supervisor_node(state: BugTriageState) -> dict:  # noqa: ANN401 — LangGraph node returns partial state dict
     """Full supervisor node with LLM routing."""
+    # Pause check — fires interrupt if paused flag is set
+    if state.paused:
+        interrupt("manual_pause")
+
     llm = ChatOpenAI(model="gpt-4o", temperature=0)  # type: ignore[unknown-argument]
     context = build_supervisor_context(state)
     prompt_messages = _SUPERVISOR_PROMPT.format_messages(**context)
     structured_llm = llm.with_structured_output(SupervisorDecision)
 
     decision = await _invoke_supervisor(structured_llm, prompt_messages)
-    return {
+    result: dict[str, object] = {  # noqa: ANN401 — LangGraph partial state dict
         "supervisor_next": decision.next_node,
         "supervisor_confidence": decision.confidence,
         "supervisor_reasoning": decision.reasoning,
     }
+    should_set_hitl = (
+        decision.next_node == "human_input"
+        and state.iterations < state.max_iterations
+        and len(state.human_exchanges) < 2
+    )
+    if should_set_hitl:
+        result["pending_exchange"] = HumanExchange(
+            question=decision.question or decision.reasoning,
+            context=decision.question_context or "",
+        )
+        result["awaiting_human"] = True
+    return result
