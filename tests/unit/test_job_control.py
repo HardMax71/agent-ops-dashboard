@@ -108,7 +108,13 @@ async def test_redirect_resumes_paused_job(control_client, fake_redis, mock_arq,
     data = json.loads(raw)
     assert data["paused"] is False
     assert data["status"] == "running"
-    mock_arq.enqueue_job.assert_called_once()
+    mock_arq.enqueue_job.assert_called_once_with(
+        "resume_graph",
+        "job-7",
+        json.dumps({"type": "redirect", "instruction": "look at DB layer"}),
+        True,
+        _job_id="job-7",
+    )
 
 
 async def test_answer_404_missing_job(control_client):

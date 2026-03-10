@@ -15,7 +15,7 @@ _ISSUE_PATH_RE = re.compile(r"^/([^/]+)/([^/]+)/issues/(\d+)/?$")
 def parse_issue_url(url: str) -> tuple[str, str, int] | None:
     """Extract (owner, repo, issue_number) from a GitHub issue URL."""
     parsed = urlparse(url)
-    if parsed.scheme != "https" or parsed.netloc != "github.com":
+    if parsed.scheme != "https" or parsed.hostname != "github.com":
         return None
     match = _ISSUE_PATH_RE.match(parsed.path)
     if match is None:

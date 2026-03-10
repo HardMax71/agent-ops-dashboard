@@ -154,7 +154,12 @@ async def run_triage(ctx: dict, job_id: str) -> None:  # noqa: ANN401 — ARQ ct
 
 
 @worker_error_handler
-async def resume_graph(ctx: dict, job_id: str, resume_value: str) -> None:  # noqa: ANN401 — ARQ ctx is untyped dict
+async def resume_graph(  # noqa: ANN401 — ARQ ctx is untyped dict
+    ctx: dict,
+    job_id: str,
+    resume_value: str,
+    parse_as_json: bool = False,
+) -> None:
     """Resume a graph from an interrupt (human answer, unpause, redirect)."""
     redis_client: aioredis.Redis = ctx["redis"]
 
@@ -166,9 +171,7 @@ async def resume_graph(ctx: dict, job_id: str, resume_value: str) -> None:  # no
     if data.get("status") in _TERMINAL_STATES:
         return
 
-    parsed_value: str | dict[str, str] = resume_value
-    if resume_value.startswith("{"):
-        parsed_value = json.loads(resume_value)
+    parsed_value: str | dict[str, str] = json.loads(resume_value) if parse_as_json else resume_value
 
     await _stream_and_finalize(ctx, job_id, Command(resume=parsed_value))
 

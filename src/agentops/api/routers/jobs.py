@@ -22,6 +22,7 @@ _logger = logging.getLogger(__name__)
 _GITHUB_ISSUE_URL_PATTERN = r"^https://github\.com/[^/]+/[^/]+/issues/\d+$"
 _MAX_ACTIVE_JOBS_PER_OWNER = 10
 _SSE_KEEPALIVE_SECONDS = 30
+_TERMINAL_STATUSES = frozenset({"killed", "done", "failed", "timed_out"})
 
 GitHubIssueUrl = Annotated[str, Field(pattern=_GITHUB_ISSUE_URL_PATTERN)]
 
@@ -86,6 +87,7 @@ async def create_job(
         await redis.expire(active_key, 86400)
     if new_count > _MAX_ACTIVE_JOBS_PER_OWNER:
         await redis.decr(active_key)
+        await redis.delete(idempotency_key)
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
             detail=f"Active job limit ({_MAX_ACTIVE_JOBS_PER_OWNER}) exceeded",
@@ -273,6 +275,7 @@ async def redirect_job(
             "resume_graph",
             job_id,
             json.dumps({"type": "redirect", "instruction": body.instruction}),
+            True,
             _job_id=job_id,
         )
     else:
@@ -290,6 +293,10 @@ async def kill_job(
     """Kill a running job."""
     data = await _load_job_data(redis, job_id)
 
+    current_status = str(data.get("status", ""))
+    if current_status in _TERMINAL_STATUSES:
+        return JobActionResponse(status=current_status, job_id=job_id)
+
     # Abort the ARQ task
     await arq.abort_job(job_id)
 
@@ -297,7 +304,7 @@ async def kill_job(
     await redis.setex(f"job:{job_id}", 86400, json.dumps(data))
     await redis.publish(f"jobs:{job_id}:events", json.dumps({"type": "job.killed"}))
 
-    owner_id = data.get("owner_id", "anonymous")
+    owner_id = str(data.get("owner_id", "anonymous"))
     await redis.decr(f"active_jobs:{owner_id}")
 
     return JobActionResponse(status="killed", job_id=job_id)

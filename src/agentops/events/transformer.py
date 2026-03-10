@@ -54,7 +54,8 @@ class LangGraphEventTransformer:
                 return []
 
     def _on_chat_stream(self, event: StandardStreamEvent) -> list[SseEvent]:
-        token: str = event["data"]["chunk"].content
+        content = event["data"]["chunk"].content
+        token: str = str(content) if content else ""
         return self._emit_token(event, token)
 
     def _on_llm_stream(self, event: StandardStreamEvent) -> list[SseEvent]:
