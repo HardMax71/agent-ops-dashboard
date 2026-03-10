@@ -56,7 +56,7 @@ export interface DeleteTokenResult {
 
 export interface GraphInterruptEvent {
     question: Scalars['String']
-    jobId: Scalars['String']
+    context: Scalars['String']
     __typename: 'GraphInterruptEvent'
 }
 
@@ -214,7 +214,7 @@ export interface DeleteTokenResultGenqlSelection{
 
 export interface GraphInterruptEventGenqlSelection{
     question?: boolean | number
-    jobId?: boolean | number
+    context?: boolean | number
     __typename?: boolean | number
     __scalar?: boolean | number
 }
@@ -354,7 +354,7 @@ export interface UserInfoGenqlSelection{
       if (!obj?.__typename) throw new Error('__typename is missing in "isAgentDoneEvent"')
       return AgentDoneEvent_possibleTypes.includes(obj.__typename)
     }
-
+    
 
 
     const AgentSpawnedEvent_possibleTypes: string[] = ['AgentSpawnedEvent']
@@ -362,7 +362,7 @@ export interface UserInfoGenqlSelection{
       if (!obj?.__typename) throw new Error('__typename is missing in "isAgentSpawnedEvent"')
       return AgentSpawnedEvent_possibleTypes.includes(obj.__typename)
     }
-
+    
 
 
     const AgentTokenEvent_possibleTypes: string[] = ['AgentTokenEvent']
@@ -370,7 +370,7 @@ export interface UserInfoGenqlSelection{
       if (!obj?.__typename) throw new Error('__typename is missing in "isAgentTokenEvent"')
       return AgentTokenEvent_possibleTypes.includes(obj.__typename)
     }
-
+    
 
 
     const AgentToolCallEvent_possibleTypes: string[] = ['AgentToolCallEvent']
@@ -378,7 +378,7 @@ export interface UserInfoGenqlSelection{
       if (!obj?.__typename) throw new Error('__typename is missing in "isAgentToolCallEvent"')
       return AgentToolCallEvent_possibleTypes.includes(obj.__typename)
     }
-
+    
 
 
     const AgentToolResultEvent_possibleTypes: string[] = ['AgentToolResultEvent']
@@ -386,7 +386,7 @@ export interface UserInfoGenqlSelection{
       if (!obj?.__typename) throw new Error('__typename is missing in "isAgentToolResultEvent"')
       return AgentToolResultEvent_possibleTypes.includes(obj.__typename)
     }
-
+    
 
 
     const CreateJobResult_possibleTypes: string[] = ['CreateJobResult']
@@ -394,7 +394,7 @@ export interface UserInfoGenqlSelection{
       if (!obj?.__typename) throw new Error('__typename is missing in "isCreateJobResult"')
       return CreateJobResult_possibleTypes.includes(obj.__typename)
     }
-
+    
 
 
     const DeleteTokenResult_possibleTypes: string[] = ['DeleteTokenResult']
@@ -402,7 +402,7 @@ export interface UserInfoGenqlSelection{
       if (!obj?.__typename) throw new Error('__typename is missing in "isDeleteTokenResult"')
       return DeleteTokenResult_possibleTypes.includes(obj.__typename)
     }
-
+    
 
 
     const GraphInterruptEvent_possibleTypes: string[] = ['GraphInterruptEvent']
@@ -410,7 +410,7 @@ export interface UserInfoGenqlSelection{
       if (!obj?.__typename) throw new Error('__typename is missing in "isGraphInterruptEvent"')
       return GraphInterruptEvent_possibleTypes.includes(obj.__typename)
     }
-
+    
 
 
     const GraphNodeCompleteEvent_possibleTypes: string[] = ['GraphNodeCompleteEvent']
@@ -418,7 +418,7 @@ export interface UserInfoGenqlSelection{
       if (!obj?.__typename) throw new Error('__typename is missing in "isGraphNodeCompleteEvent"')
       return GraphNodeCompleteEvent_possibleTypes.includes(obj.__typename)
     }
-
+    
 
 
     const Job_possibleTypes: string[] = ['Job']
@@ -426,7 +426,7 @@ export interface UserInfoGenqlSelection{
       if (!obj?.__typename) throw new Error('__typename is missing in "isJob"')
       return Job_possibleTypes.includes(obj.__typename)
     }
-
+    
 
 
     const JobActionResult_possibleTypes: string[] = ['JobActionResult']
@@ -434,7 +434,7 @@ export interface UserInfoGenqlSelection{
       if (!obj?.__typename) throw new Error('__typename is missing in "isJobActionResult"')
       return JobActionResult_possibleTypes.includes(obj.__typename)
     }
-
+    
 
 
     const JobDoneEvent_possibleTypes: string[] = ['JobDoneEvent']
@@ -442,7 +442,7 @@ export interface UserInfoGenqlSelection{
       if (!obj?.__typename) throw new Error('__typename is missing in "isJobDoneEvent"')
       return JobDoneEvent_possibleTypes.includes(obj.__typename)
     }
-
+    
 
 
     const JobEvent_possibleTypes: string[] = ['AgentSpawnedEvent','AgentTokenEvent','OutputTokenEvent','AgentToolCallEvent','AgentToolResultEvent','AgentDoneEvent','OutputSectionDoneEvent','GraphNodeCompleteEvent','GraphInterruptEvent','JobDoneEvent','JobFailedEvent','JobKilledEvent','JobTimedOutEvent']
@@ -450,7 +450,7 @@ export interface UserInfoGenqlSelection{
       if (!obj?.__typename) throw new Error('__typename is missing in "isJobEvent"')
       return JobEvent_possibleTypes.includes(obj.__typename)
     }
-
+    
 
 
     const JobFailedEvent_possibleTypes: string[] = ['JobFailedEvent']
@@ -458,7 +458,7 @@ export interface UserInfoGenqlSelection{
       if (!obj?.__typename) throw new Error('__typename is missing in "isJobFailedEvent"')
       return JobFailedEvent_possibleTypes.includes(obj.__typename)
     }
-
+    
 
 
     const JobKilledEvent_possibleTypes: string[] = ['JobKilledEvent']
@@ -466,7 +466,7 @@ export interface UserInfoGenqlSelection{
       if (!obj?.__typename) throw new Error('__typename is missing in "isJobKilledEvent"')
       return JobKilledEvent_possibleTypes.includes(obj.__typename)
     }
-
+    
 
 
     const JobTimedOutEvent_possibleTypes: string[] = ['JobTimedOutEvent']
@@ -474,7 +474,7 @@ export interface UserInfoGenqlSelection{
       if (!obj?.__typename) throw new Error('__typename is missing in "isJobTimedOutEvent"')
       return JobTimedOutEvent_possibleTypes.includes(obj.__typename)
     }
-
+    
 
 
     const LogoutResult_possibleTypes: string[] = ['LogoutResult']
@@ -482,7 +482,7 @@ export interface UserInfoGenqlSelection{
       if (!obj?.__typename) throw new Error('__typename is missing in "isLogoutResult"')
       return LogoutResult_possibleTypes.includes(obj.__typename)
     }
-
+    
 
 
     const Mutation_possibleTypes: string[] = ['Mutation']
@@ -490,7 +490,7 @@ export interface UserInfoGenqlSelection{
       if (!obj?.__typename) throw new Error('__typename is missing in "isMutation"')
       return Mutation_possibleTypes.includes(obj.__typename)
     }
-
+    
 
 
     const OutputSectionDoneEvent_possibleTypes: string[] = ['OutputSectionDoneEvent']
@@ -498,7 +498,7 @@ export interface UserInfoGenqlSelection{
       if (!obj?.__typename) throw new Error('__typename is missing in "isOutputSectionDoneEvent"')
       return OutputSectionDoneEvent_possibleTypes.includes(obj.__typename)
     }
-
+    
 
 
     const OutputTokenEvent_possibleTypes: string[] = ['OutputTokenEvent']
@@ -506,7 +506,7 @@ export interface UserInfoGenqlSelection{
       if (!obj?.__typename) throw new Error('__typename is missing in "isOutputTokenEvent"')
       return OutputTokenEvent_possibleTypes.includes(obj.__typename)
     }
-
+    
 
 
     const PostCommentResult_possibleTypes: string[] = ['PostCommentResult']
@@ -514,7 +514,7 @@ export interface UserInfoGenqlSelection{
       if (!obj?.__typename) throw new Error('__typename is missing in "isPostCommentResult"')
       return PostCommentResult_possibleTypes.includes(obj.__typename)
     }
-
+    
 
 
     const Query_possibleTypes: string[] = ['Query']
@@ -522,7 +522,7 @@ export interface UserInfoGenqlSelection{
       if (!obj?.__typename) throw new Error('__typename is missing in "isQuery"')
       return Query_possibleTypes.includes(obj.__typename)
     }
-
+    
 
 
     const Subscription_possibleTypes: string[] = ['Subscription']
@@ -530,7 +530,7 @@ export interface UserInfoGenqlSelection{
       if (!obj?.__typename) throw new Error('__typename is missing in "isSubscription"')
       return Subscription_possibleTypes.includes(obj.__typename)
     }
-
+    
 
 
     const UserInfo_possibleTypes: string[] = ['UserInfo']
@@ -538,3 +538,4 @@ export interface UserInfoGenqlSelection{
       if (!obj?.__typename) throw new Error('__typename is missing in "isUserInfo"')
       return UserInfo_possibleTypes.includes(obj.__typename)
     }
+    
