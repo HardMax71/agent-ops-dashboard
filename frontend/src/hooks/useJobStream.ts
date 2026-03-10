@@ -20,6 +20,7 @@ export function useJobStream(jobId: string | null): void {
 
     es.onmessage = (e: MessageEvent<string>) => {
       const event = JSON.parse(e.data) as SSEEvent
+      event.job_id = jobId
       processSSEEvent(event)
     }
 
