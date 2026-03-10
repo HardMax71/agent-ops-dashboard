@@ -38,6 +38,7 @@ async def get_current_user(
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Token has been revoked",
+            headers={"WWW-Authenticate": "Bearer"},
         )
 
     github_id = str(payload["sub"])

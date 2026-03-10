@@ -122,7 +122,7 @@ class GraphNodeCompleteEvent:
 @strawberry.type
 class GraphInterruptEvent:
     question: str
-    job_id: str
+    context: str
 
 
 @strawberry.type
@@ -197,12 +197,13 @@ def event_from_dict(
     | JobFailedEvent
     | JobKilledEvent
     | JobTimedOutEvent
+    | None
 ):
     """Convert a Redis pub/sub JSON dict into the matching Strawberry event type."""
     event_type = str(data.get("type", ""))
     cls = _EVENT_MAP.get(event_type)
     if cls is None:
-        return JobDoneEvent()
+        return None
     # Strip "type" key — Strawberry types don't have it
     fields = {k: v for k, v in data.items() if k != "type"}
     return cls(**fields)

@@ -1,6 +1,6 @@
 import React from 'react'
 import { useAuthStore } from '../store/authStore'
-import { gql } from '../api/graphqlClient'
+import { gql, getAccessToken } from '../api/graphqlClient'
 
 export function SettingsPage(): React.ReactElement {
   const { user, logout } = useAuthStore()
@@ -10,7 +10,12 @@ export function SettingsPage(): React.ReactElement {
   }
 
   const handleLogout = async (): Promise<void> => {
-    await gql.mutation({ logout: { __scalar: true } })
+    const token = getAccessToken()
+    await fetch('/auth/logout', {
+      method: 'DELETE',
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      credentials: 'same-origin',
+    })
     logout()
     window.location.href = '/login'
   }

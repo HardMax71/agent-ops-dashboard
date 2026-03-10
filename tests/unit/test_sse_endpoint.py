@@ -61,10 +61,10 @@ class TestEventFromDict:
         event = event_from_dict(data)
         assert event.__class__.__name__ == "JobFailedEvent"
 
-    def test_unknown_type_returns_job_done(self) -> None:
+    def test_unknown_type_returns_none(self) -> None:
         data = {"type": "unknown.event"}
         event = event_from_dict(data)
-        assert event.__class__.__name__ == "JobDoneEvent"
+        assert event is None
 
 
 class TestGraphQLEndpoint:

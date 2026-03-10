@@ -28,4 +28,4 @@ repos:
         entry: bash -c 'uv run agentops-codegen && git diff --exit-code schemas/'
         language: system
         pass_filenames: false
-        files: ^src/agentops/
+        files: ^(src/agentops/|schemas/)

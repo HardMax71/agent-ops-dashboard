@@ -8,6 +8,7 @@ import logging
 import re
 import uuid
 from collections.abc import AsyncGenerator
+from datetime import UTC, datetime
 
 import redis.asyncio as aioredis
 import strawberry
@@ -141,6 +142,7 @@ class Mutation:
             "awaiting_human": False,
             "current_node": "",
             "owner_id": owner_id,
+            "created_at": datetime.now(UTC).isoformat(),
         }
         await redis.setex(f"job:{job_id}", 86400, json.dumps(job_data))
         await arq.enqueue_job("run_triage", job_id, _job_id=job_id)
@@ -296,7 +298,10 @@ class Subscription:
             async for message in pubsub.listen():
                 if message["type"] == "message":
                     data = json.loads(message["data"])
-                    yield event_from_dict(data)
+                    event = event_from_dict(data)
+                    if event is None:
+                        continue
+                    yield event
                     event_type = data.get("type", "")
                     if event_type in ("job.done", "job.failed", "job.killed", "job.timed_out"):
                         break

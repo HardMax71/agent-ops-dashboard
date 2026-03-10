@@ -256,10 +256,6 @@ function OutputPanel({ job }: { job: JobLocal }): React.ReactElement {
     low: 'bg-green-900 text-green-200',
   }
 
-  const handlePostComment = async (): Promise<void> => {
-    await gql.mutation({ postComment: { __args: { jobId: job.jobId }, __scalar: true } })
-  }
-
   return (
     <div className="p-4 space-y-4 overflow-y-auto h-full">
       {/* Triage Report */}
@@ -301,9 +297,10 @@ function OutputPanel({ job }: { job: JobLocal }): React.ReactElement {
           aria-label="GitHub comment editor"
         />
         <button
-          onClick={handlePostComment}
-          className="mt-2 w-full bg-green-700 hover:bg-green-600 text-white text-xs font-medium py-2 rounded transition-colors"
-          aria-label="Post comment to GitHub"
+          disabled
+          title="Not yet implemented"
+          className="mt-2 w-full bg-gray-700 text-gray-500 text-xs font-medium py-2 rounded cursor-not-allowed"
+          aria-label="Post comment to GitHub (not yet implemented)"
         >
           Post Comment to GitHub
         </button>

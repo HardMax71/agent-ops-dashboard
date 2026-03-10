@@ -116,12 +116,17 @@ export const useJobStore = create<JobStore>((set, get) => ({
     } else if (event.__typename === 'GraphNodeCompleteEvent') {
       // Node completed
     } else if (event.__typename === 'GraphInterruptEvent') {
-      set((state) => ({
-        jobs: {
-          ...state.jobs,
-          [jobId]: { ...state.jobs[jobId]!, awaitingHuman: true, status: 'waiting' },
-        },
-      }))
+      set((state) => {
+        const existing = state.jobs[jobId]!
+        const exchanges = existing.humanExchanges ? [...existing.humanExchanges] : []
+        exchanges.push({ question: event.question, answer: '' })
+        return {
+          jobs: {
+            ...state.jobs,
+            [jobId]: { ...existing, awaitingHuman: true, status: 'waiting', humanExchanges: exchanges },
+          },
+        }
+      })
     } else if (event.__typename === 'JobDoneEvent') {
       set((state) => ({
         jobs: {

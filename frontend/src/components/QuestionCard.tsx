@@ -20,10 +20,13 @@ export function QuestionCard({ jobId, question, onAnswered }: QuestionCardProps)
     e.preventDefault()
     if (!answer.trim()) return
     setIsSubmitting(true)
-    await gql.mutation({ answerJob: { __args: { jobId, answer }, __scalar: true } })
-    setIsSubmitting(false)
-    setAnswer('')
-    onAnswered()
+    try {
+      await gql.mutation({ answerJob: { __args: { jobId, answer }, __scalar: true } })
+      setAnswer('')
+      onAnswered()
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (

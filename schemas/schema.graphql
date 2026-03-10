@@ -42,7 +42,7 @@ type DeleteTokenResult {
 
 type GraphInterruptEvent {
   question: String!
-  jobId: String!
+  context: String!
 }
 
 type GraphNodeCompleteEvent {

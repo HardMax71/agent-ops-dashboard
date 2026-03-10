@@ -38,7 +38,8 @@ async def test_answer_error_when_not_awaiting(control_client, fake_redis, make_j
         },
     )
     body = resp.json()
-    assert body.get("errors") is not None
+    errors = body["errors"]
+    assert any("not awaiting human input" in e["message"] for e in errors)
 
 
 async def test_answer_when_awaiting(control_client, fake_redis, mock_graph, mock_arq, make_job):

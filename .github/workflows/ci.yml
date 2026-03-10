@@ -59,7 +59,9 @@ jobs:
         working-directory: frontend
         run: npm ci && npm run generate
       - name: Check frontend SDK drift
-        run: git diff --exit-code frontend/src/generated/
+        run: |
+          git diff --exit-code frontend/src/generated/
+          test -z "$(git ls-files --others --exclude-standard frontend/src/generated/)"
 
   frontend-build:
     runs-on: ubuntu-latest
