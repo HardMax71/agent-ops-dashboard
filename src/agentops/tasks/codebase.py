@@ -12,9 +12,12 @@ from agentops.index.builder import _chunk_repository
 from agentops.index.collection import collection_name
 
 
-async def build_codebase_index(ctx: dict, repository: str) -> None:  # noqa: ANN001
+async def build_codebase_index(  # noqa: ANN401 — ARQ worker context dict
+    ctx: dict[str, object],
+    repository: str,
+) -> None:
     """Build vector index for a repository."""
-    redis: aioredis.Redis = ctx["redis"]
+    redis: aioredis.Redis = ctx["redis"]  # type: ignore[assignment]
     settings = get_settings()
     col_name = collection_name(repository)
     lock_key = f"index_lock:{col_name}"
@@ -27,18 +30,15 @@ async def build_codebase_index(ctx: dict, repository: str) -> None:  # noqa: ANN
 
     repo_url = f"https://github.com/{repository}.git"
     with tempfile.TemporaryDirectory() as tmpdir:
-        subprocess.run(
-            ["git", "clone", "--depth=1", repo_url, tmpdir],
+        subprocess.run(  # noqa: S603
+            ["git", "clone", "--depth=1", repo_url, tmpdir],  # noqa: S607
             check=True,
             capture_output=True,
         )
         documents_raw = _chunk_repository(Path(tmpdir))
 
     embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
-    docs = [
-        Document(page_content=d["content"], metadata=d["metadata"])
-        for d in documents_raw
-    ]
+    docs = [Document(page_content=d["content"], metadata=d["metadata"]) for d in documents_raw]
     Chroma.from_documents(
         docs,
         embeddings,
@@ -48,17 +48,22 @@ async def build_codebase_index(ctx: dict, repository: str) -> None:  # noqa: ANN
     await lock.release()
 
 
-async def update_codebase_index(ctx: dict, repository: str, base_sha: str, head_sha: str) -> None:  # noqa: ANN001
+async def update_codebase_index(  # noqa: ANN401 — ARQ worker context dict
+    ctx: dict[str, object],
+    repository: str,
+    base_sha: str,
+    head_sha: str,
+) -> None:
     """Update vector index for changed files (incremental on push webhook)."""
     repo_url = f"https://github.com/{repository}.git"
     with tempfile.TemporaryDirectory() as tmpdir:
-        subprocess.run(
-            ["git", "clone", "--depth=50", repo_url, tmpdir],
+        subprocess.run(  # noqa: S603
+            ["git", "clone", "--depth=50", repo_url, tmpdir],  # noqa: S607
             check=True,
             capture_output=True,
         )
-        result = subprocess.run(
-            ["git", "diff", "--name-only", f"{base_sha}..{head_sha}"],
+        result = subprocess.run(  # noqa: S603
+            ["git", "diff", "--name-only", f"{base_sha}..{head_sha}"],  # noqa: S607
             capture_output=True,
             text=True,
             cwd=tmpdir,

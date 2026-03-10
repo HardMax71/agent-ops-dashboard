@@ -14,6 +14,7 @@ def make_finding(agent_name: str, **kwargs: object) -> AgentFinding:
     return AgentFinding(
         agent_name=agent_name,
         summary=f"{agent_name} finding",
+        confidence=0.7,
         hypothesis="test hypothesis",
         affected_areas=["bug"],
         keywords_for_search=["null"],
@@ -66,7 +67,7 @@ def test_g2_too_many_human_exchanges() -> None:
         supervisor_next="human_input",
         human_exchanges=exchanges,
     )
-    assert route_from_supervisor(state) == "investigator"
+    assert route_from_supervisor(state) == "codebase_search"
 
 
 def test_normal_routing_codebase() -> None:

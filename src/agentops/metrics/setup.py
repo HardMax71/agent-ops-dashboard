@@ -1,20 +1,24 @@
+from http.server import HTTPServer
+
 from opentelemetry import metrics
 from opentelemetry.exporter.prometheus import PrometheusMetricReader
 from opentelemetry.sdk.metrics import MeterProvider
 from prometheus_client import start_http_server
 
 
-def configure_api_metrics(port: int = 8001) -> None:
-    """Configure OTel metrics for the API process, exposing on given port."""
+def configure_metrics(port: int) -> tuple[HTTPServer, MeterProvider]:
+    """Start Prometheus HTTP server and configure OTel MeterProvider.
+
+    Returns the HTTPServer and MeterProvider — caller owns their lifecycle.
+    """
+    httpd, _ = start_http_server(port)
     reader = PrometheusMetricReader()
     provider = MeterProvider(metric_readers=[reader])
     metrics.set_meter_provider(provider)
-    start_http_server(port)
+    return httpd, provider
 
 
-def configure_worker_metrics(port: int = 8002) -> None:
-    """Configure OTel metrics for the worker process, exposing on given port."""
-    reader = PrometheusMetricReader()
-    provider = MeterProvider(metric_readers=[reader])
-    metrics.set_meter_provider(provider)
-    start_http_server(port)
+def shutdown_metrics(httpd: HTTPServer) -> None:
+    """Shut down the metrics HTTP server and release the socket."""
+    httpd.shutdown()
+    httpd.server_close()

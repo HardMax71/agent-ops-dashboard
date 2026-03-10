@@ -1,0 +1,46 @@
+import { createClient, generateSubscriptionOp, everything } from '../generated'
+import { createClient as createWsClient } from 'graphql-ws'
+
+let accessToken = ''
+
+export function setAccessToken(token: string): void {
+  accessToken = token
+}
+
+export function getAccessToken(): string {
+  return accessToken
+}
+
+// Queries & mutations — GenQL client with dynamic auth headers
+export const gql = createClient({
+  url: '/graphql',
+  headers: (): Record<string, string> => {
+    return accessToken ? { Authorization: `Bearer ${accessToken}` } : {}
+  },
+})
+
+// Subscriptions — graphql-ws with connectionParams auth
+const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
+const wsClient = createWsClient({
+  url: `${wsProtocol}//${window.location.host}/graphql`,
+  connectionParams: () => ({
+    Authorization: `Bearer ${accessToken}`,
+  }),
+})
+
+export function subscribe<T>(
+  op: { query: string; variables?: Record<string, unknown> },
+  onData: (data: T) => void,
+  onError?: (err: unknown) => void,
+): () => void {
+  const cleanup = wsClient.subscribe(op, {
+    next: (result) => {
+      if (result.data) onData(result.data as T)
+    },
+    error: (err) => onError?.(err),
+    complete: () => {},
+  })
+  return cleanup
+}
+
+export { generateSubscriptionOp, everything }

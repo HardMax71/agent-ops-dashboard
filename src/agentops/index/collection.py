@@ -2,6 +2,7 @@ import hashlib
 
 import chromadb
 from langchain_chroma import Chroma
+from langchain_core.vectorstores import VectorStoreRetriever
 from langchain_openai import OpenAIEmbeddings
 
 from agentops.config import get_settings
@@ -13,7 +14,7 @@ def collection_name(repo_url: str) -> str:
     return f"repo_{hashlib.sha256(normalised.encode()).hexdigest()[:16]}"
 
 
-def get_codebase_retriever(repository: str):  # noqa: ANN201
+def get_codebase_retriever(repository: str) -> VectorStoreRetriever | None:
     """Get a Chroma retriever for the given repository.
 
     Validates that the collection exists before returning a retriever.

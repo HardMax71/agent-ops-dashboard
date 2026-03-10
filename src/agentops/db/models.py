@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import Boolean, Float, ForeignKey, Integer, String, Text, func
+from sqlalchemy import Boolean, ForeignKey, Integer, Numeric, String, Text, func
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from sqlalchemy.types import DateTime
 
@@ -22,14 +22,18 @@ class User(Base):
     )
 
     jobs: Mapped[list["Job"]] = relationship("Job", back_populates="owner")
-    github_token: Mapped["GitHubToken | None"] = relationship("GitHubToken", back_populates="user", uselist=False)
+    github_token: Mapped["GitHubToken | None"] = relationship(
+        "GitHubToken", back_populates="user", uselist=False
+    )
 
 
 class GitHubToken(Base):
     __tablename__ = "github_tokens"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), nullable=False, unique=True)
+    user_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("users.id"), nullable=False, unique=True
+    )
     encrypted_token: Mapped[str] = mapped_column(Text, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
@@ -53,7 +57,9 @@ class Job(Base):
     langsmith_run_id: Mapped[str] = mapped_column(String(36), default="")
     langsmith_url: Mapped[str] = mapped_column(String(512), default="")
     total_tokens: Mapped[int] = mapped_column(Integer, default=0)
-    total_cost_usd: Mapped[float] = mapped_column(Float, default=0.0)
+    total_cost_usd: Mapped[float] = mapped_column(
+        Numeric(precision=10, scale=6, asdecimal=False), default=0.0
+    )
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
@@ -69,10 +75,16 @@ class JobTraceSummary(Base):
     __tablename__ = "job_trace_summaries"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    job_id: Mapped[str] = mapped_column(String(36), ForeignKey("jobs.id"), nullable=False, unique=True)
+    job_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("jobs.id"), nullable=False, unique=True
+    )
     total_tokens: Mapped[int] = mapped_column(Integer, default=0)
-    total_cost_usd: Mapped[float] = mapped_column(Float, default=0.0)
-    duration_seconds: Mapped[float] = mapped_column(Float, default=0.0)
+    total_cost_usd: Mapped[float] = mapped_column(
+        Numeric(precision=10, scale=6, asdecimal=False), default=0.0
+    )
+    duration_seconds: Mapped[float] = mapped_column(
+        Numeric(precision=10, scale=3, asdecimal=False), default=0.0
+    )
     langsmith_deep_link: Mapped[str] = mapped_column(String(512), default="")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
@@ -87,15 +99,3 @@ class RepoIndexMetadata(Base):
     status: Mapped[str] = mapped_column(String(32), default="pending")
     indexed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
-
-
-class DailyEvalResult(Base):
-    __tablename__ = "daily_eval_results"
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    dataset_name: Mapped[str] = mapped_column(String(256), nullable=False)
-    avg_score: Mapped[float] = mapped_column(Float, nullable=False)
-    helpfulness_score: Mapped[float] = mapped_column(Float, default=0.0)
-    file_relevance_score: Mapped[float] = mapped_column(Float, default=0.0)
-    severity_match_score: Mapped[float] = mapped_column(Float, default=0.0)
-    run_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

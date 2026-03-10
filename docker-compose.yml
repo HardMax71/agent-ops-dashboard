@@ -1,16 +1,24 @@
-version: "3.9"
 services:
   api:
     build: .
-    ports: ["8000:8000"]
+    ports: ["8000:8000", "8001:8001"]
     env_file: .env
-    depends_on: [db, redis]
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     command: uvicorn agentops.api.main:app --host 0.0.0.0 --port 8000
 
   worker:
     build: .
+    ports: ["8002:8002"]
     env_file: .env
-    depends_on: [db, redis]
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     command: python -m agentops.worker
 
   db:
@@ -19,43 +27,72 @@ services:
       POSTGRES_USER: agentops
       POSTGRES_PASSWORD: agentops
       POSTGRES_DB: agentops
-    ports: ["5432:5432"]
+    ports: ["127.0.0.1:5432:5432"]
     volumes: ["pgdata:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U agentops -d agentops"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
   redis:
     image: redis:7
-    ports: ["6379:6379"]
+    ports: ["127.0.0.1:6379:6379"]
     volumes: ["redisdata:/data"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
 
   investigator:
     build:
       context: agents/investigator
-    ports: ["8001:8001"]
+    expose: ["8001"]
     env_file: .env
 
   codebase-search:
     build:
       context: agents/codebase_search
-    ports: ["8002:8002"]
+    expose: ["8002"]
     env_file: .env
 
   web-search:
     build:
       context: agents/web_search
-    ports: ["8003:8003"]
+    expose: ["8003"]
     env_file: .env
 
   critic:
     build:
       context: agents/critic
-    ports: ["8004:8004"]
+    expose: ["8004"]
     env_file: .env
 
   writer:
     build:
       context: agents/writer
-    ports: ["8005:8005"]
+    expose: ["8005"]
     env_file: .env
+
+  frontend:
+    build:
+      context: frontend
+      dockerfile: Dockerfile
+    ports:
+      - "5173:80"
+    depends_on:
+      - api
+
+  prometheus:
+    image: prom/prometheus:v2.53.0
+    ports: ["127.0.0.1:9090:9090"]
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    depends_on:
+      - api
+      - worker
 
   langflow:
     image: langflowai/langflow:latest

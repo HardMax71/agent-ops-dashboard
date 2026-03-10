@@ -1,4 +1,11 @@
 from langsmith import Client
+from pydantic import BaseModel
+
+
+class LangSmithRunSummary(BaseModel):
+    id: str
+    name: str
+    status: str
 
 
 class LangSmithFeedbackHandler:
@@ -26,14 +33,24 @@ class LangSmithFeedbackHandler:
 
     def get_deep_link(self, run_id: str) -> str:
         """Construct LangSmith deep link URL."""
-        return f"https://smith.langchain.com/o/{self.org_id}/projects/p/{self.project_id}/r/{run_id}"
+        return (
+            f"https://smith.langchain.com/o/{self.org_id}/projects/p/{self.project_id}/r/{run_id}"
+        )
 
 
-async def fetch_runs_for_job(api_key: str, project_name: str, job_id: str) -> list[dict]:
+async def fetch_runs_for_job(
+    api_key: str,
+    project_name: str,
+    job_id: str,
+) -> list[LangSmithRunSummary]:
     """Fetch LangSmith runs for a given job ID."""
     client = Client(api_key=api_key)
-    runs = list(client.list_runs(
-        project_name=project_name,
-        filter=f'has(metadata, \'{{"job_id": "{job_id}"}}\' )',
-    ))
-    return [{"id": str(r.id), "name": r.name, "status": r.status} for r in runs]
+    runs = list(
+        client.list_runs(
+            project_name=project_name,
+            filter=f'has(metadata, \'{{"job_id": "{job_id}"}}\' )',
+        )
+    )
+    return [
+        LangSmithRunSummary(id=str(r.id), name=r.name or "", status=r.status or "") for r in runs
+    ]

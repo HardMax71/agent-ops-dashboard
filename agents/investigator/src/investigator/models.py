@@ -6,14 +6,13 @@ class AgentFindingBase(BaseModel):
 
     agent_name: str
     summary: str
-    confidence: float = 0.0
+    confidence: float = Field(ge=0.0, le=1.0)
 
 
 class InvestigatorFinding(AgentFindingBase):
     """Output from the investigator agent."""
 
-    agent_name: str = "investigator"
-    hypothesis: str = ""
-    affected_areas: list[str] = Field(default_factory=list)
-    keywords_for_search: list[str] = Field(default_factory=list)
-    error_messages: list[str] = Field(default_factory=list)
+    hypothesis: str
+    affected_areas: list[str]
+    keywords_for_search: list[str]
+    error_messages: list[str]

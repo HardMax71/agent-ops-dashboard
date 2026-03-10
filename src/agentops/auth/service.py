@@ -8,7 +8,7 @@ from agentops.config import Settings
 
 
 def create_access_token(github_id: str, github_login: str, settings: Settings) -> str:
-    """Create a JWT access token."""
+    """Create a JWT access token with sub, login, jti, iat, exp."""
     now = datetime.now(UTC)
     payload = {
         "sub": github_id,
@@ -20,13 +20,14 @@ def create_access_token(github_id: str, github_login: str, settings: Settings) -
     return jwt.encode(payload, settings.jwt_secret, algorithm=settings.jwt_algorithm)
 
 
-def decode_access_token(token: str, settings: Settings) -> dict:
-    """Decode and validate a JWT access token."""
+def decode_access_token(token: str, settings: Settings) -> dict[str, object]:
+    """Decode and validate a JWT access token (30s leeway per PRD-008-1 §10)."""
     return jwt.decode(
         token,
         settings.jwt_secret,
         algorithms=[settings.jwt_algorithm],
         leeway=timedelta(seconds=30),
+        options={"require": ["exp", "sub", "iat", "login", "jti"]},
     )
 
 

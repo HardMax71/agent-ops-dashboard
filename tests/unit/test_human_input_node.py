@@ -1,39 +1,62 @@
+from unittest.mock import patch
+
+import pytest
+
+from agentops.graph.nodes.human_input import human_input_node
 from agentops.graph.state import BugTriageState, HumanExchange
-from agentops.tasks.triage import TIMEOUT_ANSWER
 
 
-def test_bug_triage_state_hitl_fields() -> None:
-    state = BugTriageState(job_id="test-123", issue_url="https://github.com/a/b/issues/1")
-    assert state.awaiting_human is False
-    assert state.pending_exchange is None
-    assert state.human_exchanges == []
-
-
-def test_human_exchange_completed() -> None:
-    exchange = HumanExchange(
-        question="What triggers the error?",
-        answer="It happens when userId is null",
-        asked_at="2024-01-01T00:00:00+00:00",
-        answered_at="2024-01-01T00:01:00+00:00",
+@pytest.fixture
+def base_state():
+    return BugTriageState(
+        job_id="test-1",
+        issue_url="https://github.com/a/b/issues/1",
+        iterations=2,
+        supervisor_reasoning="What is the error message?",
     )
-    assert exchange.question == "What triggers the error?"
-    assert exchange.answer == "It happens when userId is null"
 
 
-def test_state_with_multiple_exchanges() -> None:
-    exchanges = [
-        HumanExchange(question="Q1?", answer="A1"),
-        HumanExchange(question="Q2?", answer="A2"),
-    ]
+async def test_uses_pending_exchange(base_state):
+    pending = HumanExchange(
+        question="Can you reproduce?",
+        context="The bug happens on login",
+        asked_at="2026-01-01T00:00:00Z",
+    )
+    base_state.pending_exchange = pending
+
+    with patch("agentops.graph.nodes.human_input.interrupt", return_value="Yes I can"):
+        result = await human_input_node(base_state)
+
+    assert result["pending_exchange"] is None
+    assert result["awaiting_human"] is False
+    exchanges = result["human_exchanges"]
+    assert len(exchanges) == 1
+    assert exchanges[0].question == "Can you reproduce?"
+    assert exchanges[0].context == "The bug happens on login"
+    assert exchanges[0].answer == "Yes I can"
+    assert exchanges[0].asked_at == "2026-01-01T00:00:00Z"
+
+
+async def test_falls_back_to_supervisor_reasoning(base_state):
+    with patch("agentops.graph.nodes.human_input.interrupt", return_value="NullPointerException"):
+        result = await human_input_node(base_state)
+
+    exchanges = result["human_exchanges"]
+    assert len(exchanges) == 1
+    assert exchanges[0].question == "What is the error message?"
+    assert exchanges[0].context == ""
+    assert exchanges[0].answer == "NullPointerException"
+
+
+async def test_falls_back_to_default_question():
     state = BugTriageState(
-        job_id="test-456",
+        job_id="test-2",
         issue_url="https://github.com/a/b/issues/2",
-        human_exchanges=exchanges,
+        iterations=0,
+        supervisor_reasoning="",
     )
-    assert len(state.human_exchanges) == 2
-    assert state.awaiting_human is False
+    with patch("agentops.graph.nodes.human_input.interrupt", return_value="Sure"):
+        result = await human_input_node(state)
 
-
-def test_timeout_answer_constant() -> None:
-    assert len(TIMEOUT_ANSWER) > 0
-    assert "[no answer provided" in TIMEOUT_ANSWER
+    exchanges = result["human_exchanges"]
+    assert exchanges[0].question == "Please provide clarification."

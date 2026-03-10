@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field
 class WriterOutput(BaseModel):
     agent_name: str = "writer"
     summary: str
-    confidence: float = 0.0
+    confidence: float = Field(ge=0.0, le=1.0)
     severity: Literal["critical", "high", "medium", "low"] = "medium"
     root_cause: str = ""
     relevant_files: list[str] = Field(default_factory=list)

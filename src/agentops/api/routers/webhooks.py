@@ -12,11 +12,14 @@ router = APIRouter(prefix="/webhooks", tags=["webhooks"])
 
 def _verify_github_signature(payload: bytes, signature: str, secret: str) -> bool:
     """Verify GitHub webhook X-Hub-Signature-256 header."""
-    expected = "sha256=" + hmac.new(
-        secret.encode(),
-        payload,
-        hashlib.sha256,
-    ).hexdigest()
+    expected = (
+        "sha256="
+        + hmac.new(
+            secret.encode(),
+            payload,
+            hashlib.sha256,
+        ).hexdigest()
+    )
     return hmac.compare_digest(expected, signature)
 
 
@@ -32,8 +35,16 @@ async def github_webhook(
     body = await request.body()
 
     if settings.github_webhook_secret:
-        if not _verify_github_signature(body, x_hub_signature_256, settings.github_webhook_secret):
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid signature")
+        valid = _verify_github_signature(
+            body,
+            x_hub_signature_256,
+            settings.github_webhook_secret,
+        )
+        if not valid:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid signature",
+            )
 
     if x_github_event != "push":
         return {"status": "ignored", "event": x_github_event}
@@ -50,12 +61,14 @@ async def github_webhook(
     after_sha = payload.get("after", "")
 
     # Enqueue incremental index update
-    await redis.lpush(
+    await redis.lpush(  # type: ignore[misc]
         "arq:queue",
-        json.dumps({
-            "function": "update_codebase_index",
-            "args": [repository, before_sha, after_sha],
-        }),
+        json.dumps(
+            {
+                "function": "update_codebase_index",
+                "args": [repository, before_sha, after_sha],
+            }
+        ),
     )
 
     return {"status": "queued", "repository": repository}

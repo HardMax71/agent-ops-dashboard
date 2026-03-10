@@ -1,37 +1,102 @@
-from agentops.db.models import GitHubToken, Job, JobTraceSummary, RepoIndexMetadata, User
+"""Tests for DB model definitions."""
+
+from agentops.db.models import (
+    Base,
+    GitHubToken,
+    Job,
+    JobTraceSummary,
+    RepoIndexMetadata,
+    User,
+)
 
 
-def test_user_model_has_required_fields() -> None:
-    # Just verify the model class has the expected attributes
-    assert hasattr(User, "github_id")
-    assert hasattr(User, "github_login")
-    assert hasattr(User, "avatar_url")
-    assert hasattr(User, "created_at")
+class TestUser:
+    def test_tablename(self) -> None:
+        assert User.__tablename__ == "users"
+
+    def test_inherits_base(self) -> None:
+        assert issubclass(User, Base)
+
+    def test_columns(self) -> None:
+        columns = {c.name for c in User.__table__.columns}
+        assert columns == {
+            "id",
+            "github_id",
+            "github_login",
+            "avatar_url",
+            "created_at",
+            "updated_at",
+        }
+
+    def test_github_id_unique(self) -> None:
+        col = User.__table__.c.github_id
+        assert col.unique is True
+        assert col.index is True
 
 
-def test_job_model_has_required_fields() -> None:
-    assert hasattr(Job, "id")
-    assert hasattr(Job, "issue_url")
-    assert hasattr(Job, "status")
-    assert hasattr(Job, "current_node")
-    assert hasattr(Job, "awaiting_human")
-    assert hasattr(Job, "langsmith_url")
+class TestGitHubToken:
+    def test_tablename(self) -> None:
+        assert GitHubToken.__tablename__ == "github_tokens"
+
+    def test_user_id_foreign_key(self) -> None:
+        col = GitHubToken.__table__.c.user_id
+        fk = list(col.foreign_keys)[0]
+        assert fk.target_fullname == "users.id"
 
 
-def test_github_token_model() -> None:
-    assert hasattr(GitHubToken, "user_id")
-    assert hasattr(GitHubToken, "encrypted_token")
+class TestJob:
+    def test_tablename(self) -> None:
+        assert Job.__tablename__ == "jobs"
+
+    def test_id_is_string_pk(self) -> None:
+        col = Job.__table__.c.id
+        assert col.primary_key is True
+
+    def test_status_indexed(self) -> None:
+        col = Job.__table__.c.status
+        assert col.index is True
+
+    def test_owner_id_nullable(self) -> None:
+        col = Job.__table__.c.owner_id
+        assert col.nullable is True
+
+    def test_columns(self) -> None:
+        columns = {c.name for c in Job.__table__.columns}
+        expected = {
+            "id",
+            "owner_id",
+            "issue_url",
+            "issue_title",
+            "issue_body",
+            "repository",
+            "status",
+            "current_node",
+            "awaiting_human",
+            "paused",
+            "supervisor_notes",
+            "langsmith_run_id",
+            "langsmith_url",
+            "total_tokens",
+            "total_cost_usd",
+            "created_at",
+            "updated_at",
+        }
+        assert columns == expected
+
+    def test_defaults(self) -> None:
+        col = Job.__table__.c.status
+        assert col.default.arg == "queued"
 
 
-def test_job_trace_summary_model() -> None:
-    assert hasattr(JobTraceSummary, "job_id")
-    assert hasattr(JobTraceSummary, "total_tokens")
-    assert hasattr(JobTraceSummary, "total_cost_usd")
-    assert hasattr(JobTraceSummary, "duration_seconds")
-    assert hasattr(JobTraceSummary, "langsmith_deep_link")
+class TestJobTraceSummary:
+    def test_job_id_foreign_key(self) -> None:
+        col = JobTraceSummary.__table__.c.job_id
+        fk = list(col.foreign_keys)[0]
+        assert fk.target_fullname == "jobs.id"
 
 
-def test_repo_index_metadata_model() -> None:
-    assert hasattr(RepoIndexMetadata, "repository")
-    assert hasattr(RepoIndexMetadata, "status")
-    assert hasattr(RepoIndexMetadata, "indexed_at")
+class TestRepoIndexMetadata:
+    def test_repository_unique_indexed(self) -> None:
+        col = RepoIndexMetadata.__table__.c.repository
+        assert col.unique is True
+        assert col.index is True
