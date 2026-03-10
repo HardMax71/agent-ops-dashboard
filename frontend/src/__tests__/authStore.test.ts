@@ -18,6 +18,7 @@ describe('authStore', () => {
       isLoading: true,
     })
     vi.restoreAllMocks()
+    vi.unstubAllGlobals()
     mockSetAccessToken.mockClear()
     mockQuery.mockClear()
   })
