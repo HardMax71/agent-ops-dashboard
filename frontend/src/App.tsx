@@ -62,7 +62,9 @@ function AuthCallbackPage(): React.ReactElement {
       window.location.href = '/dashboard'
     }
 
-    exchangeCode().catch(console.error)
+    exchangeCode().catch(() => {
+      window.location.href = '/login'
+    })
   }, [setToken, setUser])
 
   return (

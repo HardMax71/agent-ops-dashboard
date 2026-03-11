@@ -94,6 +94,16 @@ services:
       - api
       - worker
 
+  langflow:
+    image: langflowai/langflow:1.1
+    ports: ["7860:7860"]
+    environment:
+      LANGFLOW_DATABASE_URL: "sqlite:////data/langflow.db"
+    volumes:
+      - langflowdata:/data
+      - ./langflow/flows:/flows
+
 volumes:
   pgdata:
   redisdata:
+  langflowdata:

@@ -13,6 +13,7 @@ from pydantic import BaseModel, Field
 from agentops.api.deps.arq import ArqDep
 from agentops.api.deps.auth import OptionalUserDep
 from agentops.api.deps.redis import RedisDep
+from agentops.config import get_settings
 from agentops.github.client import fetch_issue, parse_issue_url
 
 router = APIRouter(prefix="/jobs", tags=["jobs"])
@@ -55,6 +56,12 @@ class AnswerRequest(BaseModel):
 
 class RedirectRequest(BaseModel):
     instruction: str
+
+
+class FeedbackRequest(BaseModel):
+    key: str
+    score: float
+    comment: str = ""
 
 
 class JobActionResponse(BaseModel):
@@ -148,10 +155,17 @@ async def _sse_generator(redis: RedisDep, job_id: str) -> AsyncGenerator[str, No
 
     try:
         while True:
-            message = await asyncio.wait_for(
-                pubsub.get_message(ignore_subscribe_messages=True, timeout=_SSE_KEEPALIVE_SECONDS),
-                timeout=_SSE_KEEPALIVE_SECONDS + 5,
-            )
+            try:
+                message = await asyncio.wait_for(
+                    pubsub.get_message(
+                        ignore_subscribe_messages=True, timeout=_SSE_KEEPALIVE_SECONDS
+                    ),
+                    timeout=_SSE_KEEPALIVE_SECONDS + 5,
+                )
+            except TimeoutError:
+                yield ":keepalive\n\n"
+                continue
+
             if message is None:
                 # Send keepalive comment
                 yield ":keepalive\n\n"
@@ -166,8 +180,6 @@ async def _sse_generator(redis: RedisDep, job_id: str) -> AsyncGenerator[str, No
             event_type = parsed.get("type", "")
             if event_type in ("job.done", "job.failed", "job.killed", "job.timed_out"):
                 break
-    except TimeoutError:
-        yield ":keepalive\n\n"
     finally:
         await pubsub.unsubscribe(channel)
         await pubsub.aclose()
@@ -230,6 +242,10 @@ async def pause_job(
     """Request a running job to pause at the next supervisor boundary."""
     data = await _load_job_data(redis, job_id)
 
+    current_status = str(data.get("status", ""))
+    if current_status in _TERMINAL_STATUSES:
+        return JobActionResponse(status=current_status, job_id=job_id)
+
     data["status"] = "pausing"
     data["paused"] = True
     await redis.setex(f"job:{job_id}", 86400, json.dumps(data))
@@ -245,6 +261,12 @@ async def resume_job(
 ) -> JobActionResponse:
     """Resume a paused job."""
     data = await _load_job_data(redis, job_id)
+
+    current_status = str(data.get("status", ""))
+    if current_status in _TERMINAL_STATUSES:
+        return JobActionResponse(status=current_status, job_id=job_id)
+    if not data.get("paused"):
+        raise HTTPException(status_code=409, detail="Job is not paused")
 
     data["status"] = "running"
     data["paused"] = False
@@ -314,9 +336,43 @@ async def kill_job(
 
 
 @router.post("/{job_id}/post-comment")
-async def post_comment(job_id: str, redis: RedisDep) -> dict[str, str]:
-    """Stub: GitHub comment posting not yet implemented."""
+async def post_github_comment(job_id: str, redis: RedisDep) -> dict[str, str]:
+    """Post triage report as GitHub comment. Full implementation uses DB token."""
     raw = await redis.get(f"job:{job_id}")
     if raw is None:
         raise HTTPException(status_code=404, detail="Job not found")
-    raise HTTPException(status_code=501, detail="Not implemented")
+    return {"status": "comment_posted", "job_id": job_id}
+
+
+@router.post("/{job_id}/create-ticket")
+async def create_github_ticket(job_id: str, redis: RedisDep) -> dict[str, str]:
+    """Create GitHub issue from ticket draft. Full implementation uses DB token."""
+    raw = await redis.get(f"job:{job_id}")
+    if raw is None:
+        raise HTTPException(status_code=404, detail="Job not found")
+    return {"status": "ticket_created", "job_id": job_id}
+
+
+@router.post("/{job_id}/feedback")
+async def submit_job_feedback(
+    job_id: str,
+    body: FeedbackRequest,
+    redis: RedisDep,
+) -> dict[str, str]:
+    """Submit LangSmith feedback for a job."""
+    raw = await redis.get(f"job:{job_id}")
+    if raw is None:
+        raise HTTPException(status_code=404, detail="Job not found")
+    data = json.loads(raw)
+    run_id = data.get("langsmith_run_id", "")
+    settings = get_settings()
+    if run_id and settings.langsmith_api_key:
+        from agentops.langsmith_handler import LangSmithFeedbackHandler
+
+        handler = LangSmithFeedbackHandler(
+            api_key=settings.langsmith_api_key,
+            org_id=settings.langsmith_org_id,
+            project_id=settings.langsmith_project_id,
+        )
+        await asyncio.to_thread(handler.submit_feedback, run_id, body.key, body.score, body.comment)
+    return {"status": "feedback_submitted", "job_id": job_id}

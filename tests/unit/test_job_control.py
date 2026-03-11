@@ -48,7 +48,7 @@ async def test_answer_when_awaiting(control_client, fake_redis, mock_graph, mock
         "/graphql",
         json={
             "query": (
-                'mutation { answerJob(jobId: "job-2",' ' answer: "the fix is X") { status jobId } }'
+                'mutation { answerJob(jobId: "job-2", answer: "the fix is X") { status jobId } }'
             ),
         },
     )

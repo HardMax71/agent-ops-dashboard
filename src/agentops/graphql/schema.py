@@ -289,7 +289,7 @@ class Subscription:
     @strawberry.subscription
     async def job_events(
         self, info: strawberry.Info, job_id: strawberry.ID
-    ) -> AsyncGenerator[JobEvent, None]:  # type: ignore[type-arg]
+    ) -> AsyncGenerator[JobEvent, None]:
         redis: aioredis.Redis = info.context["redis"]
         pubsub = redis.pubsub()
         channel = f"jobs:{job_id}:events"

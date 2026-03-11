@@ -13,6 +13,7 @@ from agentops.events.transformer import LangGraphEventTransformer
 from agentops.graph.graph import create_graph_with_postgres
 from agentops.graph.state import BugTriageState
 from agentops.metrics.setup import configure_metrics, shutdown_metrics
+from agentops.tasks.codebase import build_codebase_index, update_codebase_index
 from agentops.worker_middleware import worker_error_handler
 
 _logger = logging.getLogger(__name__)
@@ -227,7 +228,13 @@ async def job_timeout_cleaner(ctx: dict) -> None:  # noqa: ANN401 — ARQ ctx is
 
 
 class WorkerSettings:
-    functions = [run_triage, expire_human_input, resume_graph]
+    functions = [
+        run_triage,
+        expire_human_input,
+        resume_graph,
+        build_codebase_index,
+        update_codebase_index,
+    ]
     cron_jobs = [cron(job_timeout_cleaner, minute={0, 15, 30, 45}, unique=True)]  # type: ignore[arg-type]
     on_startup = on_startup
     on_shutdown = on_shutdown
