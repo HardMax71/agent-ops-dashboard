@@ -75,6 +75,12 @@ class Settings(BaseSettings):
                 raise ValueError(
                     "internal_service_secret must be explicitly set in non-development environments"
                 )
+            if not self.github_webhook_secret:
+                raise ValueError("github_webhook_secret must be set in production")
+            if not self.langsmith_webhook_secret:
+                raise ValueError("langsmith_webhook_secret must be set in production")
+            if not self.github_token_encryption_key:
+                raise ValueError("github_token_encryption_key must be set in production")
         return self
 
 

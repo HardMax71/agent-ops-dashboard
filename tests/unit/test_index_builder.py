@@ -27,8 +27,12 @@ def test_chunk_repository(tmp_path: Path) -> None:
 
     docs = _chunk_repository(tmp_path)
     assert len(docs) > 0
-    assert all(isinstance(d, dict) for d in docs)
-    assert all("content" in d and "metadata" in d for d in docs)
+    for doc in docs:
+        assert doc["content"] != ""
+        meta = doc["metadata"]
+        assert meta["source"] == "main.py"
+        assert meta["language"] == "python"
+        assert "chunk_index" in meta
 
 
 def test_indexed_extensions() -> None:

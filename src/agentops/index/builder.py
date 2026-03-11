@@ -18,16 +18,17 @@ def _should_index(path: Path) -> bool:
     """Return True if file should be indexed (text file with known extension)."""
     if path.suffix not in INDEXED_EXTENSIONS:
         return False
-    raw = path.read_bytes()
+    # Read only the first 8 KiB for binary detection (avoid loading huge files)
+    with path.open("rb") as fh:
+        raw = fh.read(8192)
     if len(raw) == 0:
         return False
-    # Binary detection via chardet
-    detected = chardet.detect(raw[:8192])
-    confidence = detected.get("confidence") or 0.0
+    detected = chardet.detect(raw)
+    confidence: float = detected.get("confidence") or 0.0
     return confidence >= 0.9
 
 
-def _chunk_repository(repo_dir: Path) -> list[dict]:
+def _chunk_repository(repo_dir: Path) -> list[dict[str, object]]:
     """Walk repo and chunk all indexable files."""
     documents = []
     for file_path in repo_dir.rglob("*"):
@@ -48,12 +49,14 @@ def _chunk_repository(repo_dir: Path) -> list[dict]:
         chunks = splitter.split_text(content)
         rel_path = str(file_path.relative_to(repo_dir))
         for idx, chunk in enumerate(chunks):
-            documents.append({
-                "content": chunk,
-                "metadata": {
-                    "source": rel_path,
-                    "chunk_index": idx,
-                    "language": language.value,
-                },
-            })
+            documents.append(
+                {
+                    "content": chunk,
+                    "metadata": {
+                        "source": rel_path,
+                        "chunk_index": idx,
+                        "language": language.value,
+                    },
+                }
+            )
     return documents

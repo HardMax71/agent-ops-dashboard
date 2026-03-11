@@ -8,17 +8,20 @@ jobs:
   evals:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v3
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: astral-sh/setup-uv@6b9c6f47ec0fa8032023d3c4e14e9bef57a32fc3 # v3.5.4
         with:
           python-version: "3.12"
       - run: uv sync --all-groups
       - name: Run LangSmith evaluations
         env:
-          LANGSMITH_API_KEY: ${{ secrets.LANGSMITH_API_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          LANGSMITH_API_KEY: ${{ secrets.LANGSMITH_API_KEY }}
+          LANGCHAIN_TRACING_V2: "true"
+          LANGCHAIN_PROJECT: agentops-evals
+          TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
         run: |
           uv run python scripts/run_evals.py \
             --dataset agentops-golden-dataset-v1 \
-            --min-score 4.0
+            --min-score 0.8

@@ -337,6 +337,7 @@ export function DashboardPage(): React.ReactElement {
   // Keyboard shortcuts
   const handleKeyDown = useCallback((e: KeyboardEvent): void => {
     if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return
+    if (e.ctrlKey || e.altKey || e.metaKey) return
     if (e.key === 'n' || e.key === 'N') setShowNewJobModal(true)
   }, [])
 

@@ -2,7 +2,7 @@
 """LangSmith evaluation runner for AgentOps Dashboard.
 
 Usage:
-    python scripts/run_evals.py --dataset agentops-golden-dataset-v1 --min-score 4.0
+    python scripts/run_evals.py --dataset agentops-golden-dataset-v1 --min-score 0.8
 """
 
 from __future__ import annotations
@@ -10,13 +10,18 @@ from __future__ import annotations
 import argparse
 import os
 import sys
+import uuid
 
 from langchain_anthropic import ChatAnthropic
 from langchain_core.prompts import ChatPromptTemplate
+from langgraph.checkpoint.memory import MemorySaver
 from langsmith import Client
 from langsmith.evaluation import evaluate
 from langsmith.schemas import Example, Run
 from pydantic import BaseModel, Field
+
+from agentops.graph.graph import build_graph
+from agentops.graph.state import BugTriageState, TriageReport
 
 
 class EvalScore(BaseModel):
@@ -68,13 +73,62 @@ def severity_match_evaluator(run: Run, example: Example) -> dict[str, object]:
     return {"key": "severity_match", "score": 1.0 if predicted == expected else 0.0}
 
 
+def _format_report_text(report: TriageReport) -> str:
+    """Format a TriageReport as readable text for LLM-as-judge evaluation."""
+    parts = [
+        f"Severity: {report.severity}",
+        f"Root Cause: {report.root_cause}",
+        f"Recommended Fix: {report.recommended_fix}",
+    ]
+    if report.relevant_files:
+        parts.append(f"Relevant Files: {', '.join(report.relevant_files)}")
+    return "\n".join(parts)
+
+
+async def _invoke_triage(inputs: dict[str, str]) -> dict[str, object]:
+    """Invoke the full triage graph on a single eval example.
+
+    Builds a fresh graph with an in-memory checkpointer per example so
+    each evaluation run is fully isolated.  The returned dict matches the
+    keys expected by the three evaluators (report, relevant_files,
+    severity).
+    """
+    job_id = f"eval-{uuid.uuid4()}"
+    graph = build_graph(checkpointer=MemorySaver())
+
+    initial_state = BugTriageState(
+        job_id=job_id,
+        issue_url=inputs.get("issue_url", ""),
+        issue_title=inputs.get("issue_title", ""),
+        issue_body=inputs.get("issue_body", ""),
+        repository=inputs.get("repository", ""),
+    )
+
+    result = await graph.ainvoke(
+        initial_state.model_dump(),
+        config={"configurable": {"thread_id": job_id}},
+    )
+
+    final_state = BugTriageState.model_validate(result)
+
+    if final_state.report is not None:
+        report = final_state.report
+        report_text = report.github_comment or _format_report_text(report)
+        return {
+            "report": report_text,
+            "relevant_files": report.relevant_files,
+            "severity": report.severity,
+        }
+    return {"report": "", "relevant_files": [], "severity": "medium"}
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Run LangSmith evaluations")
     parser.add_argument("--dataset", required=True, help="LangSmith dataset name")
     parser.add_argument(
         "--min-score",
         type=float,
-        default=4.0,
+        default=0.8,
         help="Minimum average score",
     )
     args = parser.parse_args()
@@ -92,7 +146,7 @@ def main() -> None:
         sys.exit(0)
 
     results = evaluate(
-        lambda inputs: inputs,  # Placeholder — real evaluations use actual chain
+        _invoke_triage,
         data=args.dataset,
         evaluators=[helpfulness_evaluator, file_relevance_evaluator, severity_match_evaluator],
         experiment_prefix="agentops-eval",

@@ -28,24 +28,28 @@ async def build_codebase_index(  # noqa: ANN401 — ARQ worker context dict
     if not acquired:
         return  # Already building
 
-    repo_url = f"https://github.com/{repository}.git"
-    with tempfile.TemporaryDirectory() as tmpdir:
-        subprocess.run(  # noqa: S603
-            ["git", "clone", "--depth=1", repo_url, tmpdir],  # noqa: S607
-            check=True,
-            capture_output=True,
-        )
-        documents_raw = _chunk_repository(Path(tmpdir))
+    try:
+        repo_url = f"https://github.com/{repository}.git"
+        with tempfile.TemporaryDirectory() as tmpdir:
+            subprocess.run(  # noqa: S603
+                ["git", "clone", "--depth=1", repo_url, tmpdir],  # noqa: S607
+                check=True,
+                capture_output=True,
+            )
+            documents_raw = _chunk_repository(Path(tmpdir))
 
-    embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
-    docs = [Document(page_content=d["content"], metadata=d["metadata"]) for d in documents_raw]
-    Chroma.from_documents(
-        docs,
-        embeddings,
-        collection_name=col_name,
-        persist_directory=settings.chroma_persist_dir,
-    )
-    await lock.release()
+        embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
+        docs = [
+            Document(page_content=str(d["content"]), metadata=d["metadata"]) for d in documents_raw
+        ]
+        Chroma.from_documents(
+            docs,
+            embeddings,
+            collection_name=col_name,
+            persist_directory=settings.chroma_persist_dir,
+        )
+    finally:
+        await lock.release()
 
 
 async def update_codebase_index(  # noqa: ANN401 — ARQ worker context dict
@@ -64,6 +68,7 @@ async def update_codebase_index(  # noqa: ANN401 — ARQ worker context dict
         )
         result = subprocess.run(  # noqa: S603
             ["git", "diff", "--name-only", f"{base_sha}..{head_sha}"],  # noqa: S607
+            check=True,
             capture_output=True,
             text=True,
             cwd=tmpdir,

@@ -24,7 +24,9 @@ def get_codebase_retriever(repository: str) -> VectorStoreRetriever | None:
     col_name = collection_name(repository)
 
     client = chromadb.PersistentClient(path=settings.chroma_persist_dir)
-    client.get_collection(col_name)  # Raises InvalidCollectionException if not found
+    existing = [c.name for c in client.list_collections()]
+    if col_name not in existing:
+        return None
 
     embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
     vectorstore = Chroma(

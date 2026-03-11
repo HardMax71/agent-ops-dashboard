@@ -34,17 +34,21 @@ async def github_webhook(
     """Handle GitHub push webhooks for incremental index updates."""
     body = await request.body()
 
-    if settings.github_webhook_secret:
-        valid = _verify_github_signature(
-            body,
-            x_hub_signature_256,
-            settings.github_webhook_secret,
+    if not settings.github_webhook_secret:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="GitHub webhook secret not configured",
         )
-        if not valid:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid signature",
-            )
+    valid = _verify_github_signature(
+        body,
+        x_hub_signature_256,
+        settings.github_webhook_secret,
+    )
+    if not valid:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid signature",
+        )
 
     if x_github_event != "push":
         return {"status": "ignored", "event": x_github_event}
