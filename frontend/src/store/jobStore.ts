@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import type { JobEvent } from '../generated/schema'
-import { generateSubscriptionOp, subscribe } from '../api/graphqlClient'
+import { gql, generateSubscriptionOp, subscribe } from '../api/graphqlClient'
 
 export type JobStatus =
   | 'queued'
@@ -77,9 +77,21 @@ interface JobStore {
 // Subscription cleanup functions keyed by jobId
 const _subscriptions: Record<string, () => void> = {}
 
-function _ensureSubscription(jobId: string, status: JobStatus, processJobEvent: (jobId: string, event: JobEvent) => void): void {
+function _refreshJobFromApi(jobId: string, setJob: (job: JobLocal) => void): void {
+  gql.query({ job: { __args: { jobId }, __scalar: true } })
+    .then((result) => {
+      setJob({ ...result.job, status: result.job.status as JobStatus })
+    })
+    .catch(() => {})
+}
+
+function _ensureSubscription(
+  jobId: string,
+  status: JobStatus,
+  processJobEvent: (jobId: string, event: JobEvent) => void,
+  setJob: (job: JobLocal) => void,
+): void {
   if (TERMINAL.has(status)) {
-    // Clean up subscription for terminal jobs
     _subscriptions[jobId]?.()
     delete _subscriptions[jobId]
     return
@@ -108,6 +120,10 @@ function _ensureSubscription(jobId: string, status: JobStatus, processJobEvent: 
   _subscriptions[jobId] = subscribe<{ jobEvents: JobEvent }>(op, (data) => {
     processJobEvent(jobId, data.jobEvents)
   })
+
+  // Catch-up fetch: the subscription takes time to establish,
+  // so fetch current state to cover any events missed during handshake
+  setTimeout(() => _refreshJobFromApi(jobId, setJob), 2000)
 }
 
 export const useJobStore = create<JobStore>((set, get) => ({
@@ -117,7 +133,7 @@ export const useJobStore = create<JobStore>((set, get) => ({
 
   setJob: (job) => {
     set((state) => ({ jobs: { ...state.jobs, [job.jobId]: job } }))
-    _ensureSubscription(job.jobId, job.status, get().processJobEvent)
+    _ensureSubscription(job.jobId, job.status, get().processJobEvent, get().setJob)
   },
 
   updateJob: (jobId, updates) =>
@@ -126,7 +142,7 @@ export const useJobStore = create<JobStore>((set, get) => ({
       if (!existing) return state
       const updated = { ...existing, ...updates }
       if (updates.status) {
-        _ensureSubscription(jobId, updated.status, get().processJobEvent)
+        _ensureSubscription(jobId, updated.status, get().processJobEvent, get().setJob)
       }
       return {
         jobs: { ...state.jobs, [jobId]: updated },
@@ -184,7 +200,7 @@ export const useJobStore = create<JobStore>((set, get) => ({
           },
         }
       })
-      _ensureSubscription(jobId, 'waiting', get().processJobEvent)
+      _ensureSubscription(jobId, 'waiting', get().processJobEvent, get().setJob)
     } else if (event.__typename === 'JobDoneEvent') {
       set((state) => ({
         jobs: {
@@ -192,7 +208,7 @@ export const useJobStore = create<JobStore>((set, get) => ({
           [jobId]: { ...state.jobs[jobId]!, status: 'done' },
         },
       }))
-      _ensureSubscription(jobId, 'done', get().processJobEvent)
+      _ensureSubscription(jobId, 'done', get().processJobEvent, get().setJob)
     } else if (event.__typename === 'JobFailedEvent' || event.__typename === 'JobTimedOutEvent') {
       set((state) => ({
         jobs: {
@@ -200,7 +216,7 @@ export const useJobStore = create<JobStore>((set, get) => ({
           [jobId]: { ...state.jobs[jobId]!, status: 'failed' },
         },
       }))
-      _ensureSubscription(jobId, 'failed', get().processJobEvent)
+      _ensureSubscription(jobId, 'failed', get().processJobEvent, get().setJob)
     } else if (event.__typename === 'JobKilledEvent') {
       set((state) => ({
         jobs: {
@@ -208,7 +224,7 @@ export const useJobStore = create<JobStore>((set, get) => ({
           [jobId]: { ...state.jobs[jobId]!, status: 'killed' },
         },
       }))
-      _ensureSubscription(jobId, 'killed', get().processJobEvent)
+      _ensureSubscription(jobId, 'killed', get().processJobEvent, get().setJob)
     }
   },
 }))
