@@ -8,7 +8,7 @@ import { QuestionCard } from '../components/QuestionCard'
 import { ExecutionTimeline } from '../components/ExecutionTimeline'
 import { StatusBadge } from '../components/StatusBadge'
 import { Modal } from '../components/Modal'
-import { useJobStream } from '../hooks/useJobStream'
+// Subscriptions managed by jobStore — no per-component hook needed
 
 function NewJobModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }): React.ReactElement {
   const [issueUrl, setIssueUrl] = useState('')
@@ -96,8 +96,6 @@ function JobWorkspace({ job }: { job: JobLocal }): React.ReactElement {
   const [redirectInstruction, setRedirectInstruction] = useState('')
   const agentTokens = useJobStore((s) => s.agentTokens[`${job.jobId}:${job.currentNode}`] || '')
   const updateJob = useJobStore((s) => s.updateJob)
-
-  useJobStream(job.jobId)
 
   const handlePause = async (): Promise<void> => {
     await gql.mutation({ pauseJob: { __args: { jobId: job.jobId }, __scalar: true } })

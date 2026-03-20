@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import type { JobEvent } from '../generated/schema'
+import { generateSubscriptionOp, subscribe } from '../api/graphqlClient'
 
 export type JobStatus =
   | 'queued'
@@ -11,6 +12,8 @@ export type JobStatus =
   | 'failed'
   | 'killed'
   | 'timed_out'
+
+const TERMINAL: Set<JobStatus> = new Set(['done', 'failed', 'killed', 'timed_out'])
 
 export interface AgentFinding {
   agentName: string
@@ -71,23 +74,62 @@ interface JobStore {
   processJobEvent: (jobId: string, event: JobEvent) => void
 }
 
+// Subscription cleanup functions keyed by jobId
+const _subscriptions: Record<string, () => void> = {}
+
+function _ensureSubscription(jobId: string, status: JobStatus, processJobEvent: (jobId: string, event: JobEvent) => void): void {
+  if (TERMINAL.has(status)) {
+    // Clean up subscription for terminal jobs
+    _subscriptions[jobId]?.()
+    delete _subscriptions[jobId]
+    return
+  }
+  if (_subscriptions[jobId]) return // already subscribed
+
+  const op = generateSubscriptionOp({
+    jobEvents: {
+      __args: { jobId },
+      on_AgentSpawnedEvent: { __scalar: true },
+      on_AgentTokenEvent: { __scalar: true },
+      on_OutputTokenEvent: { __scalar: true },
+      on_AgentToolCallEvent: { __scalar: true },
+      on_AgentToolResultEvent: { __scalar: true },
+      on_AgentDoneEvent: { __scalar: true },
+      on_OutputSectionDoneEvent: { __scalar: true },
+      on_GraphNodeCompleteEvent: { __scalar: true },
+      on_GraphInterruptEvent: { __scalar: true },
+      on_JobDoneEvent: { __scalar: true },
+      on_JobFailedEvent: { __scalar: true },
+      on_JobKilledEvent: { __scalar: true },
+      on_JobTimedOutEvent: { __scalar: true },
+    },
+  })
+
+  _subscriptions[jobId] = subscribe<{ jobEvents: JobEvent }>(op, (data) => {
+    processJobEvent(jobId, data.jobEvents)
+  })
+}
+
 export const useJobStore = create<JobStore>((set, get) => ({
   jobs: {},
   selectedJobId: null,
   agentTokens: {},
 
-  setJob: (job) =>
-    set((state) => ({ jobs: { ...state.jobs, [job.jobId]: job } })),
+  setJob: (job) => {
+    set((state) => ({ jobs: { ...state.jobs, [job.jobId]: job } }))
+    _ensureSubscription(job.jobId, job.status, get().processJobEvent)
+  },
 
   updateJob: (jobId, updates) =>
     set((state) => {
       const existing = state.jobs[jobId]
       if (!existing) return state
+      const updated = { ...existing, ...updates }
+      if (updates.status) {
+        _ensureSubscription(jobId, updated.status, get().processJobEvent)
+      }
       return {
-        jobs: {
-          ...state.jobs,
-          [jobId]: { ...existing, ...updates },
-        },
+        jobs: { ...state.jobs, [jobId]: updated },
       }
     }),
 
@@ -131,10 +173,18 @@ export const useJobStore = create<JobStore>((set, get) => ({
         return {
           jobs: {
             ...state.jobs,
-            [jobId]: { ...existing, awaitingHuman: true, status: 'waiting', humanExchanges: exchanges },
+            [jobId]: {
+              ...existing,
+              awaitingHuman: true,
+              status: 'waiting',
+              pendingQuestion: event.question,
+              pendingQuestionContext: event.context,
+              humanExchanges: exchanges,
+            },
           },
         }
       })
+      _ensureSubscription(jobId, 'waiting', get().processJobEvent)
     } else if (event.__typename === 'JobDoneEvent') {
       set((state) => ({
         jobs: {
@@ -142,6 +192,7 @@ export const useJobStore = create<JobStore>((set, get) => ({
           [jobId]: { ...state.jobs[jobId]!, status: 'done' },
         },
       }))
+      _ensureSubscription(jobId, 'done', get().processJobEvent)
     } else if (event.__typename === 'JobFailedEvent' || event.__typename === 'JobTimedOutEvent') {
       set((state) => ({
         jobs: {
@@ -149,6 +200,7 @@ export const useJobStore = create<JobStore>((set, get) => ({
           [jobId]: { ...state.jobs[jobId]!, status: 'failed' },
         },
       }))
+      _ensureSubscription(jobId, 'failed', get().processJobEvent)
     } else if (event.__typename === 'JobKilledEvent') {
       set((state) => ({
         jobs: {
@@ -156,6 +208,7 @@ export const useJobStore = create<JobStore>((set, get) => ({
           [jobId]: { ...state.jobs[jobId]!, status: 'killed' },
         },
       }))
+      _ensureSubscription(jobId, 'killed', get().processJobEvent)
     }
   },
 }))
