@@ -15,6 +15,7 @@ function NewJobModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void
   const [supervisorNotes, setSupervisorNotes] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const setJob = useJobStore((s) => s.setJob)
+  const selectJob = useJobStore((s) => s.selectJob)
 
   const handleSubmit = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault()
@@ -29,10 +30,11 @@ function NewJobModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void
       })
       const job: JobLocal = {
         jobId: result.createJob.jobId,
-        status: 'queued',
+        status: (result.createJob.status || 'queued') as JobLocal['status'],
         issueUrl: issueUrl,
       }
       setJob(job)
+      selectJob(result.createJob.jobId)
       setIssueUrl('')
       setSupervisorNotes('')
       onClose()

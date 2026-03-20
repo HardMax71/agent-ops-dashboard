@@ -1,4 +1,5 @@
 import functools
+import hashlib
 import json
 import logging
 from collections.abc import Callable, Coroutine
@@ -39,6 +40,10 @@ def worker_error_handler(
                     data.status = "failed"
                     await redis.setex(f"job:{job_id}", 86400, data.model_dump_json())
                     await redis.decr(f"active_jobs:{data.owner_id or 'anonymous'}")
+                    idem_hash = hashlib.sha256(
+                        f"{data.issue_url}{data.owner_id}".encode()
+                    ).hexdigest()
+                    await redis.delete(f"idempotency:{idem_hash}")
             raise
 
     return wrapper
