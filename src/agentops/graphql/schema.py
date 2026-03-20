@@ -14,11 +14,12 @@ import redis.asyncio as aioredis
 import strawberry
 from arq import ArqRedis
 from fastapi import Depends, Request, Response
+from starlette.requests import HTTPConnection
 from strawberry.fastapi import GraphQLRouter
 from strawberry.subscriptions import GRAPHQL_TRANSPORT_WS_PROTOCOL
 
 from agentops.api.deps.arq import get_arq
-from agentops.api.deps.auth import get_optional_user
+from agentops.api.deps.auth import resolve_user_from_token
 from agentops.api.deps.redis import get_redis
 from agentops.config import Settings, get_settings
 from agentops.github.client import fetch_issue, parse_issue_url
@@ -45,6 +46,14 @@ _MAX_ACTIVE_JOBS_PER_OWNER = 10
 
 
 # ── Helpers ────────────────────────────────────────────────────────────
+
+
+def _extract_bearer_token(connection: HTTPConnection) -> str | None:
+    """Extract Bearer token from Authorization header, if present."""
+    auth = connection.headers.get("authorization", "")
+    if auth.startswith("Bearer "):
+        return auth[7:]
+    return None
 
 
 def _job_from_dict(data: JobData) -> Job:
@@ -95,7 +104,7 @@ class Mutation:
     ) -> CreateJobResult:
         redis: aioredis.Redis = info.context["redis"]
         arq: ArqRedis = info.context["arq"]
-        user: UserInfo | None = info.context["user"]
+        user: UserInfo | None = info.context.get("user")
         owner_id = user.github_id if user else "anonymous"
         active_key = f"active_jobs:{owner_id}"
 
@@ -331,32 +340,55 @@ schema = strawberry.Schema(query=Query, mutation=Mutation, subscription=Subscrip
 
 def _require_user(info: strawberry.Info[GraphQLContext]) -> UserInfo:
     """Raise if no authenticated user in context."""
-    user: UserInfo | None = info.context["user"]
+    user: UserInfo | None = info.context.get("user")
     if user is None:
         raise PermissionError("Authentication required")
     return user
 
 
 async def get_context(
-    request: Request,
-    response: Response,
-    user: UserInfo | None = Depends(get_optional_user),
+    connection: HTTPConnection,
     redis: aioredis.Redis = Depends(get_redis),
     arq: ArqRedis = Depends(get_arq),
     settings: Settings = Depends(get_settings),
 ) -> GraphQLContext:
-    return {
-        "request": request,
-        "response": response,
-        "user": user,
+    """Build context for both HTTP and WebSocket.
+
+    Auth for HTTP: extracted from Authorization header.
+    Auth for WebSocket: handled in on_ws_connect via connectionParams.
+    """
+    ctx: GraphQLContext = {
         "redis": redis,
         "arq": arq,
         "settings": settings,
     }
 
+    if connection.scope["type"] == "http":
+        ctx["request"] = connection  # type: ignore[assignment]
+        ctx["response"] = Response()
+        token = _extract_bearer_token(connection)
+        if token:
+            ctx["user"] = await resolve_user_from_token(token, settings, redis)
 
-graphql_app = GraphQLRouter(
+    return ctx
+
+
+class _AuthGraphQLRouter(GraphQLRouter):
+    async def on_ws_connect(  # type: ignore[override]
+        self, context: GraphQLContext
+    ) -> None:
+        params: dict[str, str] = context.get("connection_params") or {}
+        auth_value = params.get("Authorization", "")
+        if auth_value.startswith("Bearer "):
+            token = auth_value[7:]
+            redis: aioredis.Redis = context["redis"]
+            settings: Settings = context["settings"]
+            user = await resolve_user_from_token(token, settings, redis)
+            context["user"] = user
+
+
+graphql_app = _AuthGraphQLRouter(
     schema,
-    context_getter=get_context,
+    context_getter=get_context,  # type: ignore[arg-type]
     subscription_protocols=[GRAPHQL_TRANSPORT_WS_PROTOCOL],
 )

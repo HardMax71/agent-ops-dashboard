@@ -82,5 +82,18 @@ async def get_optional_user(
     return await _resolve_user(payload, redis)
 
 
+async def resolve_user_from_token(
+    token: str,
+    settings: SettingsDep,
+    redis: RedisDep,
+) -> UserInfo | None:
+    """Resolve a user from a raw JWT string. Returns None on any failure."""
+    try:
+        payload = decode_access_token(token, settings)
+    except jwt.InvalidTokenError:
+        return None
+    return await _resolve_user(payload, redis)
+
+
 CurrentUserDep = Annotated[UserInfo, Depends(get_current_user)]
 OptionalUserDep = Annotated[UserInfo | None, Depends(get_optional_user)]

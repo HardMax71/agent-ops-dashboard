@@ -8,7 +8,7 @@ from agentops.config import Settings
 from agentops.graphql.types import UserInfo
 
 
-class GraphQLContext(TypedDict):
+class GraphQLContext(TypedDict, total=False):
     request: Request
     response: Response
     user: UserInfo | None
