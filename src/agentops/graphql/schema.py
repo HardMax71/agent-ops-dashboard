@@ -92,6 +92,26 @@ class Query:
         data = await _load_job_data(info.context["redis"], str(job_id))
         return _job_from_dict(data)
 
+    @strawberry.field
+    async def jobs(self, info: strawberry.Info[GraphQLContext]) -> list[Job]:
+        redis: aioredis.Redis = info.context["redis"]
+        user: UserInfo | None = info.context.get("user")
+        owner_id = user.github_id if user else "anonymous"
+        result: list[Job] = []
+        cursor: int = 0
+        while True:
+            cursor, keys = await redis.scan(cursor=cursor, match="job:*", count=100)
+            for key in keys:
+                raw = await redis.get(key)
+                if raw is None:
+                    continue
+                data = JobData.model_validate_json(raw)
+                if data.owner_id == owner_id:
+                    result.append(_job_from_dict(data))
+            if cursor == 0:
+                break
+        return result
+
 
 # ── Mutation ───────────────────────────────────────────────────────────
 

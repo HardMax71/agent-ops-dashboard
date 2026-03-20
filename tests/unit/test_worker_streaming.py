@@ -97,13 +97,9 @@ class TestRunTriageStreaming:
         )
         await worker_redis.setex("job:j3", 86400, data.model_dump_json())
 
-        # Mock an interrupt
-        interrupt_val = MagicMock()
-        interrupt_val.question = "What should I do?"
-        interrupt_val.context = "Some context"
-
+        # Mock an interrupt — value is a dict matching interrupt() payload
         interrupt_obj = MagicMock()
-        interrupt_obj.value = interrupt_val
+        interrupt_obj.value = {"question": "What should I do?", "context": "Some context"}
 
         task = MagicMock()
         task.interrupts = [interrupt_obj]

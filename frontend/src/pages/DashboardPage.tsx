@@ -358,9 +358,18 @@ function OutputPanel({ job }: { job: JobLocal }): React.ReactElement {
 }
 
 export function DashboardPage(): React.ReactElement {
-  const { jobs, selectedJobId, selectJob } = useJobStore()
+  const { jobs, selectedJobId, selectJob, setJob } = useJobStore()
   const [showNewJobModal, setShowNewJobModal] = useState(false)
   const [filterStatus, setFilterStatus] = useState<string>('all')
+
+  // Load existing jobs from backend on mount
+  useEffect(() => {
+    gql.query({ jobs: { __scalar: true } }).then((result) => {
+      for (const j of result.jobs) {
+        setJob({ ...j, status: j.status as JobLocal['status'] })
+      }
+    }).catch(() => {})
+  }, [setJob])
 
   const jobList = Object.values(jobs)
   const filteredJobs = filterStatus === 'all' ? jobList : jobList.filter((j) => j.status === filterStatus)

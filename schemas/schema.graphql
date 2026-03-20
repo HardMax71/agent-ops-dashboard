@@ -119,6 +119,7 @@ type PostCommentResult {
 type Query {
   me: UserInfo!
   job(jobId: ID!): Job!
+  jobs: [Job!]!
 }
 
 type Subscription {

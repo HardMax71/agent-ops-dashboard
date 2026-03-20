@@ -146,6 +146,7 @@ export interface PostCommentResult {
 export interface Query {
     me: UserInfo
     job: Job
+    jobs: Job[]
     __typename: 'Query'
 }
 
@@ -334,6 +335,7 @@ export interface PostCommentResultGenqlSelection{
 export interface QueryGenqlSelection{
     me?: UserInfoGenqlSelection
     job?: (JobGenqlSelection & { __args: {jobId: Scalars['ID']} })
+    jobs?: JobGenqlSelection
     __typename?: boolean | number
     __scalar?: boolean | number
 }
