@@ -111,6 +111,8 @@ async def _stream_and_finalize(
         data.status = "waiting"
         data.awaiting_human = True
         data.waiting_since = str(int(time.time()))
+        data.pending_question = interrupt_payload.question
+        data.pending_question_context = interrupt_payload.context
         await redis_client.setex(f"job:{job_id}", 86400, data.model_dump_json())
 
         if arq_pool:

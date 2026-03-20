@@ -67,6 +67,8 @@ def _job_from_dict(data: JobData) -> Job:
         awaiting_human=data.awaiting_human,
         current_node=data.current_node,
         created_at=data.created_at,
+        pending_question=data.pending_question,
+        pending_question_context=data.pending_question_context,
         github_comment_url=data.github_comment_url,
     )
 

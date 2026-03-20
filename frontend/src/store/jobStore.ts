@@ -5,10 +5,12 @@ export type JobStatus =
   | 'queued'
   | 'running'
   | 'waiting'
+  | 'pausing'
   | 'paused'
   | 'done'
   | 'failed'
   | 'killed'
+  | 'timed_out'
 
 export interface AgentFinding {
   agentName: string
@@ -49,6 +51,8 @@ export interface JobLocal {
   repository?: string
   currentNode?: string
   awaitingHuman?: boolean
+  pendingQuestion?: string
+  pendingQuestionContext?: string
   langsmithUrl?: string
   findings?: AgentFinding[]
   report?: TriageReport

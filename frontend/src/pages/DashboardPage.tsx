@@ -173,11 +173,15 @@ function JobWorkspace({ job }: { job: JobLocal }): React.ReactElement {
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-4 space-y-3">
         {/* Question card */}
-        {job.awaitingHuman && job.humanExchanges && job.humanExchanges.length > 0 && (
+        {job.awaitingHuman && (
           <QuestionCard
             jobId={job.jobId}
-            question={job.humanExchanges[job.humanExchanges.length - 1]?.question || 'Additional context needed'}
-            onAnswered={() => updateJob(job.jobId, { awaitingHuman: false })}
+            question={
+              job.humanExchanges?.[job.humanExchanges.length - 1]?.question
+              || job.pendingQuestion
+              || 'Additional context needed'
+            }
+            onAnswered={() => updateJob(job.jobId, { awaitingHuman: false, pendingQuestion: '' })}
           />
         )}
 
@@ -191,7 +195,7 @@ function JobWorkspace({ job }: { job: JobLocal }): React.ReactElement {
           />
         ))}
 
-        {job.status === 'queued' && (
+        {job.status === 'queued' && !job.awaitingHuman && (
           <div className="text-center text-gray-500 text-sm py-8">
             Job queued. Waiting for worker...
           </div>

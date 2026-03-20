@@ -32,6 +32,8 @@ class JobData(BaseModel):
     created_at: str = ""
     paused: bool = False
     waiting_since: str = ""
+    pending_question: str = ""
+    pending_question_context: str = ""
     github_comment: str = ""
     github_comment_url: str = ""
     severity: str = ""

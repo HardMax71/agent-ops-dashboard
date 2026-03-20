@@ -76,6 +76,8 @@ export interface Job {
     awaitingHuman: Scalars['Boolean']
     currentNode: Scalars['String']
     createdAt: Scalars['String']
+    pendingQuestion: Scalars['String']
+    pendingQuestionContext: Scalars['String']
     githubCommentUrl: Scalars['String']
     __typename: 'Job'
 }
@@ -239,6 +241,8 @@ export interface JobGenqlSelection{
     awaitingHuman?: boolean | number
     currentNode?: boolean | number
     createdAt?: boolean | number
+    pendingQuestion?: boolean | number
+    pendingQuestionContext?: boolean | number
     githubCommentUrl?: boolean | number
     __typename?: boolean | number
     __scalar?: boolean | number

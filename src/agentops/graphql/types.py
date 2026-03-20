@@ -31,6 +31,8 @@ class Job:
     awaiting_human: bool
     current_node: str
     created_at: str
+    pending_question: str = ""
+    pending_question_context: str = ""
     github_comment_url: str = ""
 
 

@@ -154,6 +154,12 @@ export default {
             "createdAt": [
                 1
             ],
+            "pendingQuestion": [
+                1
+            ],
+            "pendingQuestionContext": [
+                1
+            ],
             "githubCommentUrl": [
                 1
             ],
