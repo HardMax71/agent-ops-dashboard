@@ -125,7 +125,7 @@ services:
 
   langflow:
     image: langflowai/langflow:latest
-    ports: ["7860:7860"]
+    ports: ["127.0.0.1:7860:7860"]
     volumes:
       - langflowdata:/app/langflow
       - ./langflow/flows:/flows
