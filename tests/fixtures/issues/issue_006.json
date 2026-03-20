@@ -1,0 +1,10 @@
+{
+    "issue_url": "https://github.com/acme/backend/issues/156",
+    "issue_title": "Memory leak in connection pool — OOM after 48h",
+    "issue_body": "The application runs out of memory after ~48 hours of continuous operation. Heap dumps show thousands of unreleased database connections. The connection pool's eviction policy is not running because the evictor thread is blocked by a deadlock in the health check routine.\n\nEnvironment: Java 17, HikariCP 5.0.1, PostgreSQL 15",
+    "repository": "acme/backend",
+    "outputs": {
+        "severity": "high",
+        "relevant_files": ["src/main/java/com/acme/config/DatabaseConfig.java", "src/main/java/com/acme/health/DbHealthCheck.java"]
+    }
+}

@@ -4,7 +4,7 @@ import { gql } from '../api/graphqlClient'
 interface QuestionCardProps {
   jobId: string
   question: string
-  onAnswered: () => void
+  onAnswered: (answer: string) => void
 }
 
 export function QuestionCard({ jobId, question, onAnswered }: QuestionCardProps): React.ReactElement {
@@ -22,8 +22,9 @@ export function QuestionCard({ jobId, question, onAnswered }: QuestionCardProps)
     setIsSubmitting(true)
     try {
       await gql.mutation({ answerJob: { __args: { jobId, answer }, __scalar: true } })
+      const submitted = answer
       setAnswer('')
-      onAnswered()
+      onAnswered(submitted)
     } finally {
       setIsSubmitting(false)
     }

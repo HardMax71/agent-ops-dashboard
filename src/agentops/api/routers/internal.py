@@ -23,6 +23,11 @@ async def langsmith_alert(
 ) -> dict[str, str]:
     """Handle LangSmith webhook alerts. Auth via X-Webhook-Secret header (PRD-005-1)."""
     expected = settings.langsmith_webhook_secret
+    if not expected:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="LangSmith webhook secret not configured",
+        )
     if not secret_header or not secrets.compare_digest(secret_header, expected):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,

@@ -48,7 +48,7 @@ async def test_answer_when_awaiting(control_client, fake_redis, mock_graph, mock
         "/graphql",
         json={
             "query": (
-                'mutation { answerJob(jobId: "job-2",' ' answer: "the fix is X") { status jobId } }'
+                'mutation { answerJob(jobId: "job-2", answer: "the fix is X") { status jobId } }'
             ),
         },
     )
@@ -59,7 +59,9 @@ async def test_answer_when_awaiting(control_client, fake_redis, mock_graph, mock
     job_data = json.loads(raw)
     assert job_data["status"] == "running"
     assert job_data["awaiting_human"] is False
-    mock_arq.abort_job.assert_called_once()
+    # abort is now done via Redis zadd, not arq.abort_job
+    abort_score = await fake_redis.zscore("arq:abort", "timeout:job-2")
+    assert abort_score is not None
     mock_arq.enqueue_job.assert_called_once_with(
         "resume_graph", "job-2", "the fix is X", _job_id="job-2"
     )
@@ -111,7 +113,8 @@ async def test_kill_sets_status(control_client, fake_redis, mock_arq, make_job):
     raw = await fake_redis.get("job:job-5")
     job_data = json.loads(raw)
     assert job_data["status"] == "killed"
-    mock_arq.abort_job.assert_called_once_with("job-5")
+    abort_score = await fake_redis.zscore("arq:abort", "job-5")
+    assert abort_score is not None
 
 
 async def test_redirect_stores_instruction(control_client, fake_redis, make_job):

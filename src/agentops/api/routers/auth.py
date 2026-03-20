@@ -104,7 +104,7 @@ async def callback(
         if "error" in token_data:
             description = token_data.get("error_description", token_data["error"])
             raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
+                status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"GitHub OAuth error: {description}",
             )
 

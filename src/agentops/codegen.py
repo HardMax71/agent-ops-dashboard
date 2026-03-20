@@ -16,7 +16,7 @@ def main() -> None:
     project_root = Path(__file__).resolve().parent.parent.parent
     dest = project_root / "schemas" / "schema.graphql"
     dest.parent.mkdir(parents=True, exist_ok=True)
-    dest.write_text(schema.as_str())
+    dest.write_text(schema.as_str() + "\n")
     import sys
 
     sys.stdout.write(f"wrote {dest}\n")

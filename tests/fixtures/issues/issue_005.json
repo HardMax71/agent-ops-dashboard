@@ -1,0 +1,10 @@
+{
+    "issue_url": "https://github.com/acme/frontend/issues/101",
+    "issue_title": "CSS overflow hidden clips dropdown menus in sidebar",
+    "issue_body": "Dropdown menus in the sidebar navigation are clipped because the parent container has overflow: hidden. The menus appear cut off and users cannot see all options.",
+    "repository": "acme/frontend",
+    "outputs": {
+        "severity": "low",
+        "relevant_files": ["src/components/Sidebar.tsx", "src/styles/sidebar.css"]
+    }
+}

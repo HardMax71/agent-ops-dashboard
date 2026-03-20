@@ -1,0 +1,30 @@
+{
+  "id": "flow-investigator-001",
+  "name": "Investigator Agent",
+  "description": "Analyzes GitHub issue metadata and repository context to form an initial hypothesis about root cause, affected areas, and keywords for further search.",
+  "nodes": [
+    {
+      "id": "chat-model-1",
+      "type": "ChatModel",
+      "data": {
+        "model": "gpt-4o-mini",
+        "temperature": 0
+      },
+      "position": { "x": 400, "y": 200 }
+    },
+    {
+      "id": "prompt-1",
+      "type": "Prompt",
+      "data": {
+        "template": "You are a senior software engineer investigating a bug report.\n\nIssue: {issue_title}\nRepository: {repository}\n\nDescription:\n{issue_body}\n\nAnalyze this bug report and produce:\n1. A hypothesis about the root cause\n2. Affected areas of the codebase\n3. Keywords for searching the codebase\n4. Relevant file paths (if identifiable)\n5. A confidence score (0.0-1.0)\n\nBe specific and technical in your analysis."
+      },
+      "position": { "x": 100, "y": 200 }
+    }
+  ],
+  "edges": [
+    {
+      "source": "prompt-1",
+      "target": "chat-model-1"
+    }
+  ]
+}

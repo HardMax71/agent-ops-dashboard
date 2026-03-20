@@ -60,6 +60,14 @@ type Job {
   awaitingHuman: Boolean!
   currentNode: String!
   createdAt: String!
+  pendingQuestion: String!
+  pendingQuestionContext: String!
+  githubCommentUrl: String!
+  severity: String!
+  recommendedFix: String!
+  githubComment: String!
+  relevantFiles: [String!]!
+  ticketTitle: String!
 }
 
 type JobActionResult {
@@ -71,7 +79,7 @@ type JobDoneEvent {
   Empty: Boolean
 }
 
-union JobEvent = AgentSpawnedEvent | AgentTokenEvent | OutputTokenEvent | AgentToolCallEvent | AgentToolResultEvent | AgentDoneEvent | OutputSectionDoneEvent | GraphNodeCompleteEvent | GraphInterruptEvent | JobDoneEvent | JobFailedEvent | JobKilledEvent | JobTimedOutEvent
+union JobEvent = AgentSpawnedEvent | AgentTokenEvent | OutputTokenEvent | AgentToolCallEvent | AgentToolResultEvent | AgentDoneEvent | OutputSectionDoneEvent | GraphNodeCompleteEvent | GraphInterruptEvent | JobDoneEvent | JobFailedEvent | JobKilledEvent | JobTimedOutEvent | JobSnapshotEvent
 
 type JobFailedEvent {
   error: String!
@@ -79,6 +87,14 @@ type JobFailedEvent {
 
 type JobKilledEvent {
   Empty: Boolean
+}
+
+type JobSnapshotEvent {
+  status: String!
+  currentNode: String!
+  awaitingHuman: Boolean!
+  pendingQuestion: String!
+  pendingQuestionContext: String!
 }
 
 type JobTimedOutEvent {
@@ -107,16 +123,18 @@ type OutputSectionDoneEvent {
 
 type OutputTokenEvent {
   token: String!
-  section: String
+  section: String!
 }
 
 type PostCommentResult {
   ok: Boolean!
+  commentUrl: String!
 }
 
 type Query {
   me: UserInfo!
   job(jobId: ID!): Job!
+  jobs: [Job!]!
 }
 
 type Subscription {

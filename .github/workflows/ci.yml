@@ -13,8 +13,6 @@ jobs:
         with:
           python-version: "3.12"
       - run: uv sync --all-groups
-      - name: Auto-fix lint + format (non-dangerous)
-        run: uv run ruff check --fix . && uv run ruff format .
       - run: uv run ruff check .
       - run: uv run ruff format --check .
 

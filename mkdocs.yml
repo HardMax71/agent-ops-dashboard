@@ -1,0 +1,39 @@
+site_name: AgentOps Dashboard
+site_description: AI-powered bug triage system
+docs_dir: docs
+theme:
+  name: material
+  palette:
+    scheme: slate
+    primary: blue
+    accent: blue
+
+nav:
+  - Home: index.md
+  - PRDs:
+    - Master Overview: prd/PRD-001-master-overview.md
+    - Goals & DoD: prd/PRD-001-1-goals-and-dod.md
+    - Frontend UX: prd/PRD-002-frontend-ux.md
+    - Design System: prd/PRD-002-1-design-system.md
+    - Pages & Wireframes: prd/PRD-002-2-pages-and-wireframes.md
+    - Interactions & A11y: prd/PRD-002-3-interactions-and-a11y.md
+    - LangGraph Orchestration: prd/PRD-003-langgraph-orchestration.md
+    - Event Pipeline: prd/PRD-003-1-event-pipeline.md
+    - Supervisor Spec: prd/PRD-003-2-supervisor-spec.md
+    - Agent Layer: prd/PRD-004-agent-layer.md
+    - Agent Chains: prd/PRD-004-1-agent-chains.md
+    - Codebase Index: prd/PRD-004-2-codebase-index.md
+    - LangSmith Observability: prd/PRD-005-langsmith-observability.md
+    - LangSmith API Spec: prd/PRD-005-1-langsmith-api-spec.md
+    - Data Validation: prd/PRD-006-data-validation.md
+    - Developer Tooling: prd/PRD-007-developer-tooling.md
+    - Authentication: prd/PRD-008-authentication.md
+    - Auth Impl Spec: prd/PRD-008-1-auth-impl-spec.md
+    - Documentation Standards: prd/PRD-009-documentation-standards.md
+    - Evaluation Framework: prd/PRD-010-evaluation-framework.md
+    - Metrics Collection: prd/PRD-011-metrics-collection.md
+    - Backend DI: prd/PRD-012-backend-di.md
+    - Testing Strategy: prd/PRD-013-testing-strategy.md
+  - Plans:
+    - Roadmap v1: plans/roadmap-v1.md
+    - Roadmap v2: plans/roadmap-v2.md

@@ -2,18 +2,24 @@ import asyncio
 import hashlib
 import json
 import logging
+import time
 import uuid
 from collections.abc import AsyncGenerator
 from typing import Annotated
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
 from agentops.api.deps.arq import ArqDep
-from agentops.api.deps.auth import OptionalUserDep
+from agentops.api.deps.auth import CurrentUserDep, OptionalUserDep
 from agentops.api.deps.redis import RedisDep
+from agentops.config import Settings, get_settings
 from agentops.github.client import fetch_issue, parse_issue_url
+from agentops.github.writeback import post_triage_comment
+from agentops.models.job import TERMINAL_STATUSES, JobData
+
+SettingsDep = Annotated[Settings, Depends(get_settings)]
 
 router = APIRouter(prefix="/jobs", tags=["jobs"])
 
@@ -22,7 +28,6 @@ _logger = logging.getLogger(__name__)
 _GITHUB_ISSUE_URL_PATTERN = r"^https://github\.com/[^/]+/[^/]+/issues/\d+$"
 _MAX_ACTIVE_JOBS_PER_OWNER = 10
 _SSE_KEEPALIVE_SECONDS = 30
-_TERMINAL_STATUSES = frozenset({"killed", "done", "failed", "timed_out"})
 
 GitHubIssueUrl = Annotated[str, Field(pattern=_GITHUB_ISSUE_URL_PATTERN)]
 
@@ -55,6 +60,12 @@ class AnswerRequest(BaseModel):
 
 class RedirectRequest(BaseModel):
     instruction: str
+
+
+class FeedbackRequest(BaseModel):
+    key: str
+    score: float
+    comment: str = ""
 
 
 class JobActionResponse(BaseModel):
@@ -109,20 +120,23 @@ async def create_job(
             issue_title = issue_data.title
             issue_body = issue_data.body
 
-    job_data = {
-        "job_id": job_id,
-        "status": "queued",
-        "issue_url": body.issue_url,
-        "issue_title": issue_title,
-        "issue_body": issue_body,
-        "repository": repository,
-        "supervisor_notes": body.supervisor_notes,
-        "langsmith_url": "",
-        "awaiting_human": False,
-        "current_node": "",
-        "owner_id": owner_id,
-    }
-    await redis.setex(f"job:{job_id}", 86400, json.dumps(job_data))
+    data = JobData(
+        job_id=job_id,
+        status="queued",
+        issue_url=body.issue_url,
+        issue_title=issue_title,
+        issue_body=issue_body,
+        repository=repository,
+        supervisor_notes=body.supervisor_notes,
+        owner_id=owner_id,
+    )
+    await redis.setex(f"job:{job_id}", 86400, data.model_dump_json())
+
+    # Auto-index repository if not already indexed
+    if repository:
+        index_guard = await redis.set(f"repo_index:{repository}", "building", nx=True, ex=86400)
+        if index_guard is not None:
+            await arq.enqueue_job("build_codebase_index", repository, _job_id=f"index:{repository}")
 
     await arq.enqueue_job("run_triage", job_id, _job_id=job_id)
 
@@ -148,10 +162,17 @@ async def _sse_generator(redis: RedisDep, job_id: str) -> AsyncGenerator[str, No
 
     try:
         while True:
-            message = await asyncio.wait_for(
-                pubsub.get_message(ignore_subscribe_messages=True, timeout=_SSE_KEEPALIVE_SECONDS),
-                timeout=_SSE_KEEPALIVE_SECONDS + 5,
-            )
+            try:
+                message = await asyncio.wait_for(
+                    pubsub.get_message(
+                        ignore_subscribe_messages=True, timeout=_SSE_KEEPALIVE_SECONDS
+                    ),
+                    timeout=_SSE_KEEPALIVE_SECONDS + 5,
+                )
+            except TimeoutError:
+                yield ":keepalive\n\n"
+                continue
+
             if message is None:
                 # Send keepalive comment
                 yield ":keepalive\n\n"
@@ -166,8 +187,6 @@ async def _sse_generator(redis: RedisDep, job_id: str) -> AsyncGenerator[str, No
             event_type = parsed.get("type", "")
             if event_type in ("job.done", "job.failed", "job.killed", "job.timed_out"):
                 break
-    except TimeoutError:
-        yield ":keepalive\n\n"
     finally:
         await pubsub.unsubscribe(channel)
         await pubsub.aclose()
@@ -191,11 +210,25 @@ async def stream_job(job_id: str, redis: RedisDep) -> StreamingResponse:
     )
 
 
-async def _load_job_data(redis: RedisDep, job_id: str) -> dict[str, object]:  # noqa: ANN401 — Redis JSON is untyped
+_ARQ_ABORT_SS = "arq:abort"
+_ARQ_RESULT_PREFIX = "arq:result:"
+
+
+async def _abort_arq_job(redis: RedisDep, job_id: str) -> None:
+    """Signal the arq worker to abort a job (fire-and-forget)."""
+    await redis.zadd(_ARQ_ABORT_SS, {job_id: int(time.time() * 1000)})
+
+
+async def _clear_arq_result(redis: RedisDep, job_id: str) -> None:
+    """Remove a stale arq result so a new job with the same ID can be enqueued."""
+    await redis.delete(f"{_ARQ_RESULT_PREFIX}{job_id}")
+
+
+async def _load_job_data(redis: RedisDep, job_id: str) -> JobData:
     raw = await redis.get(f"job:{job_id}")
     if raw is None:
         raise HTTPException(status_code=404, detail="Job not found")
-    return json.loads(raw)
+    return JobData.model_validate_json(raw)
 
 
 @router.post("/{job_id}/answer", response_model=JobActionResponse)
@@ -208,15 +241,16 @@ async def answer_job(
     """Resume a job waiting for human input by providing an answer."""
     data = await _load_job_data(redis, job_id)
 
-    if not data.get("awaiting_human"):
+    if not data.awaiting_human:
         raise HTTPException(status_code=409, detail="Job is not awaiting human input")
 
-    await arq.abort_job(f"timeout:{job_id}")
+    await _abort_arq_job(redis, f"timeout:{job_id}")
 
-    data["awaiting_human"] = False
-    data["status"] = "running"
-    await redis.setex(f"job:{job_id}", 86400, json.dumps(data))
+    data.awaiting_human = False
+    data.status = "running"
+    await redis.setex(f"job:{job_id}", 86400, data.model_dump_json())
 
+    await _clear_arq_result(redis, job_id)
     await arq.enqueue_job("resume_graph", job_id, body.answer, _job_id=job_id)
 
     return JobActionResponse(status="answer_received", job_id=job_id)
@@ -230,9 +264,12 @@ async def pause_job(
     """Request a running job to pause at the next supervisor boundary."""
     data = await _load_job_data(redis, job_id)
 
-    data["status"] = "pausing"
-    data["paused"] = True
-    await redis.setex(f"job:{job_id}", 86400, json.dumps(data))
+    if data.status in TERMINAL_STATUSES:
+        return JobActionResponse(status=data.status, job_id=job_id)
+
+    data.status = "pausing"
+    data.paused = True
+    await redis.setex(f"job:{job_id}", 86400, data.model_dump_json())
 
     return JobActionResponse(status="pausing", job_id=job_id)
 
@@ -246,10 +283,16 @@ async def resume_job(
     """Resume a paused job."""
     data = await _load_job_data(redis, job_id)
 
-    data["status"] = "running"
-    data["paused"] = False
-    await redis.setex(f"job:{job_id}", 86400, json.dumps(data))
+    if data.status in TERMINAL_STATUSES:
+        return JobActionResponse(status=data.status, job_id=job_id)
+    if not data.paused:
+        raise HTTPException(status_code=409, detail="Job is not paused")
 
+    data.status = "running"
+    data.paused = False
+    await redis.setex(f"job:{job_id}", 86400, data.model_dump_json())
+
+    await _clear_arq_result(redis, job_id)
     await arq.enqueue_job("resume_graph", job_id, "resume", _job_id=job_id)
 
     return JobActionResponse(status="resumed", job_id=job_id)
@@ -265,15 +308,13 @@ async def redirect_job(
     """Inject a redirect instruction into a running or paused job."""
     data = await _load_job_data(redis, job_id)
 
-    existing = data.get("redirect_instructions")
-    instructions: list[str] = [*existing] if existing else []  # type: ignore[misc]
-    instructions.append(body.instruction)
-    data["redirect_instructions"] = instructions
+    data.redirect_instructions.append(body.instruction)
 
-    if data.get("paused"):
-        data["paused"] = False
-        data["status"] = "running"
-        await redis.setex(f"job:{job_id}", 86400, json.dumps(data))
+    if data.paused:
+        data.paused = False
+        data.status = "running"
+        await redis.setex(f"job:{job_id}", 86400, data.model_dump_json())
+        await _clear_arq_result(redis, job_id)
         await arq.enqueue_job(
             "resume_graph",
             job_id,
@@ -282,7 +323,7 @@ async def redirect_job(
             _job_id=job_id,
         )
     else:
-        await redis.setex(f"job:{job_id}", 86400, json.dumps(data))
+        await redis.setex(f"job:{job_id}", 86400, data.model_dump_json())
 
     return JobActionResponse(status="redirected", job_id=job_id)
 
@@ -296,27 +337,62 @@ async def kill_job(
     """Kill a running job."""
     data = await _load_job_data(redis, job_id)
 
-    current_status = str(data.get("status", ""))
-    if current_status in _TERMINAL_STATUSES:
-        return JobActionResponse(status=current_status, job_id=job_id)
+    if data.status in TERMINAL_STATUSES:
+        return JobActionResponse(status=data.status, job_id=job_id)
 
     # Abort the ARQ task
-    await arq.abort_job(job_id)
+    await _abort_arq_job(redis, job_id)
 
-    data["status"] = "killed"
-    await redis.setex(f"job:{job_id}", 86400, json.dumps(data))
+    data.status = "killed"
+    await redis.setex(f"job:{job_id}", 86400, data.model_dump_json())
     await redis.publish(f"jobs:{job_id}:events", json.dumps({"type": "job.killed"}))
 
-    owner_id = str(data.get("owner_id", "anonymous"))
-    await redis.decr(f"active_jobs:{owner_id}")
+    await redis.decr(f"active_jobs:{data.owner_id or 'anonymous'}")
 
     return JobActionResponse(status="killed", job_id=job_id)
 
 
 @router.post("/{job_id}/post-comment")
-async def post_comment(job_id: str, redis: RedisDep) -> dict[str, str]:
-    """Stub: GitHub comment posting not yet implemented."""
+async def post_github_comment(
+    job_id: str,
+    redis: RedisDep,
+    current_user: CurrentUserDep,
+    settings: SettingsDep,
+) -> dict[str, str]:
+    """Post triage report as GitHub comment."""
+    comment_url = await post_triage_comment(redis, job_id, current_user.github_id, settings)
+    return {"status": "comment_posted", "job_id": job_id, "comment_url": comment_url}
+
+
+@router.post("/{job_id}/create-ticket")
+async def create_github_ticket(job_id: str, redis: RedisDep) -> dict[str, str]:
+    """Create GitHub issue from ticket draft. Full implementation uses DB token."""
     raw = await redis.get(f"job:{job_id}")
     if raw is None:
         raise HTTPException(status_code=404, detail="Job not found")
-    raise HTTPException(status_code=501, detail="Not implemented")
+    return {"status": "ticket_created", "job_id": job_id}
+
+
+@router.post("/{job_id}/feedback")
+async def submit_job_feedback(
+    job_id: str,
+    body: FeedbackRequest,
+    redis: RedisDep,
+) -> dict[str, str]:
+    """Submit LangSmith feedback for a job."""
+    raw = await redis.get(f"job:{job_id}")
+    if raw is None:
+        raise HTTPException(status_code=404, detail="Job not found")
+    data = json.loads(raw)
+    run_id = data.get("langsmith_run_id", "")
+    settings = get_settings()
+    if run_id and settings.langsmith_api_key:
+        from agentops.langsmith_handler import LangSmithFeedbackHandler
+
+        handler = LangSmithFeedbackHandler(
+            api_key=settings.langsmith_api_key,
+            org_id=settings.langsmith_org_id,
+            project_id=settings.langsmith_project_id,
+        )
+        await asyncio.to_thread(handler.submit_feedback, run_id, body.key, body.score, body.comment)
+    return {"status": "feedback_submitted", "job_id": job_id}

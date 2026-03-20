@@ -71,7 +71,7 @@ class LangGraphEventTransformer:
         if agent_id:
             return [AgentTokenEvent(type="agent.token", agent_id=agent_id, token=token)]
         section = _section_from_ns(meta.get("langgraph_checkpoint_ns", ""))
-        return [OutputTokenEvent(type="output.token", token=token, section=section or node or None)]
+        return [OutputTokenEvent(type="output.token", token=token, section=section or node or "")]
 
     def _on_tool_start(self, event: StandardStreamEvent) -> list[SseEvent]:
         node = self._meta(event).get("langgraph_node", "")

@@ -1,9 +1,10 @@
 from langgraph.types import interrupt
 
+from agentops.graph.node_results import HumanInputNodeResult
 from agentops.graph.state import BugTriageState, HumanExchange
 
 
-async def human_input_node(state: BugTriageState) -> dict:  # noqa: ANN401 — LangGraph node returns partial state dict
+async def human_input_node(state: BugTriageState) -> HumanInputNodeResult:
     """Pause the graph and ask the human a clarifying question.
 
     Uses LangGraph interrupt() to suspend execution.  When the graph is

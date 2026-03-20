@@ -10,14 +10,18 @@ const STATUS_CONFIG: Record<JobStatus, { label: string; className: string; pulse
   queued: { label: 'Queued', className: 'bg-gray-700 text-gray-300', pulse: false },
   running: { label: 'Running', className: 'bg-blue-900 text-blue-200', pulse: true },
   waiting: { label: 'Waiting', className: 'bg-amber-900 text-amber-200', pulse: true },
+  pausing: { label: 'Pausing', className: 'bg-yellow-900 text-yellow-200', pulse: true },
   paused: { label: 'Paused', className: 'bg-yellow-900 text-yellow-200', pulse: false },
   done: { label: 'Done', className: 'bg-green-900 text-green-200', pulse: false },
   failed: { label: 'Failed', className: 'bg-red-900 text-red-200', pulse: false },
   killed: { label: 'Killed', className: 'bg-gray-800 text-gray-400', pulse: false },
+  timed_out: { label: 'Timed Out', className: 'bg-red-900 text-red-200', pulse: false },
 }
 
+const FALLBACK_CONFIG = { label: 'Unknown', className: 'bg-gray-700 text-gray-300', pulse: false }
+
 export function StatusBadge({ status }: StatusBadgeProps): React.ReactElement {
-  const config = STATUS_CONFIG[status]
+  const config = STATUS_CONFIG[status] || FALLBACK_CONFIG
   return (
     <span
       className={clsx(

@@ -3,18 +3,18 @@ import { useJobStore } from '../store/jobStore'
 import type { JobLocal } from '../store/jobStore'
 import { gql } from '../api/graphqlClient'
 import { JobCard } from '../components/JobCard'
-import { AgentCard } from '../components/AgentCard'
-import { QuestionCard } from '../components/QuestionCard'
+import { ActivityLog } from '../components/ActivityLog'
 import { ExecutionTimeline } from '../components/ExecutionTimeline'
 import { StatusBadge } from '../components/StatusBadge'
 import { Modal } from '../components/Modal'
-import { useJobStream } from '../hooks/useJobStream'
+// Subscriptions managed by jobStore — no per-component hook needed
 
 function NewJobModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }): React.ReactElement {
   const [issueUrl, setIssueUrl] = useState('')
   const [supervisorNotes, setSupervisorNotes] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const setJob = useJobStore((s) => s.setJob)
+  const selectJob = useJobStore((s) => s.selectJob)
 
   const handleSubmit = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault()
@@ -29,10 +29,11 @@ function NewJobModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void
       })
       const job: JobLocal = {
         jobId: result.createJob.jobId,
-        status: 'queued',
+        status: (result.createJob.status || 'queued') as JobLocal['status'],
         issueUrl: issueUrl,
       }
       setJob(job)
+      selectJob(result.createJob.jobId)
       setIssueUrl('')
       setSupervisorNotes('')
       onClose()
@@ -92,10 +93,7 @@ function JobWorkspace({ job }: { job: JobLocal }): React.ReactElement {
   const [showRedirectModal, setShowRedirectModal] = useState(false)
   const [showKillModal, setShowKillModal] = useState(false)
   const [redirectInstruction, setRedirectInstruction] = useState('')
-  const agentTokens = useJobStore((s) => s.agentTokens[`${job.jobId}:${job.currentNode}`] || '')
   const updateJob = useJobStore((s) => s.updateJob)
-
-  useJobStream(job.jobId)
 
   const handlePause = async (): Promise<void> => {
     await gql.mutation({ pauseJob: { __args: { jobId: job.jobId }, __scalar: true } })
@@ -170,32 +168,9 @@ function JobWorkspace({ job }: { job: JobLocal }): React.ReactElement {
         <ExecutionTimeline findings={job.findings || []} currentNode={job.currentNode || ''} status={job.status} />
       </div>
 
-      {/* Content */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-3">
-        {/* Question card */}
-        {job.awaitingHuman && job.humanExchanges && job.humanExchanges.length > 0 && (
-          <QuestionCard
-            jobId={job.jobId}
-            question={job.humanExchanges[job.humanExchanges.length - 1]?.question || 'Additional context needed'}
-            onAnswered={() => updateJob(job.jobId, { awaitingHuman: false })}
-          />
-        )}
-
-        {/* Agent cards */}
-        {(job.findings || []).map((finding, idx) => (
-          <AgentCard
-            key={`${finding.agentName}-${idx}`}
-            finding={finding}
-            state={job.currentNode === finding.agentName ? 'running' : 'done'}
-            streamedTokens={job.currentNode === finding.agentName ? agentTokens : undefined}
-          />
-        ))}
-
-        {job.status === 'queued' && (
-          <div className="text-center text-gray-500 text-sm py-8">
-            Job queued. Waiting for worker...
-          </div>
-        )}
+      {/* Activity Log */}
+      <div className="flex-1 overflow-y-auto p-4">
+        <ActivityLog jobId={job.jobId} />
       </div>
 
       {/* Redirect Modal */}
@@ -243,6 +218,26 @@ function JobWorkspace({ job }: { job: JobLocal }): React.ReactElement {
 
 function OutputPanel({ job }: { job: JobLocal }): React.ReactElement {
   const [commentText, setCommentText] = useState(job.report?.githubComment || '')
+  const [isPostingComment, setIsPostingComment] = useState(false)
+  const [commentUrl, setCommentUrl] = useState('')
+
+  const handlePostComment = async (): Promise<void> => {
+    setIsPostingComment(true)
+    try {
+      const result = await gql.mutation({
+        postComment: {
+          __args: { jobId: job.jobId },
+          ok: true,
+          commentUrl: true,
+        },
+      })
+      if (result.postComment.commentUrl) {
+        setCommentUrl(result.postComment.commentUrl)
+      }
+    } finally {
+      setIsPostingComment(false)
+    }
+  }
 
   if (!job.report) {
     return (
@@ -299,14 +294,26 @@ function OutputPanel({ job }: { job: JobLocal }): React.ReactElement {
           rows={4}
           aria-label="GitHub comment editor"
         />
-        <button
-          disabled
-          title="Not yet implemented"
-          className="mt-2 w-full bg-gray-700 text-gray-500 text-xs font-medium py-2 rounded cursor-not-allowed"
-          aria-label="Post comment to GitHub (not yet implemented)"
-        >
-          Post Comment to GitHub
-        </button>
+        {commentUrl ? (
+          <a
+            href={commentUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-2 block w-full text-center bg-green-800 text-green-200 text-xs font-medium py-2 rounded hover:bg-green-700 transition-colors"
+            aria-label="View posted comment on GitHub"
+          >
+            Comment posted — view on GitHub
+          </a>
+        ) : (
+          <button
+            onClick={handlePostComment}
+            disabled={isPostingComment || !commentText.trim()}
+            className="mt-2 w-full bg-blue-600 hover:bg-blue-500 disabled:bg-gray-700 disabled:text-gray-500 text-white text-xs font-medium py-2 rounded transition-colors"
+            aria-label="Post comment to GitHub"
+          >
+            {isPostingComment ? 'Posting...' : 'Post Comment to GitHub'}
+          </button>
+        )}
       </div>
 
       {/* LangSmith Link */}
@@ -326,9 +333,27 @@ function OutputPanel({ job }: { job: JobLocal }): React.ReactElement {
 }
 
 export function DashboardPage(): React.ReactElement {
-  const { jobs, selectedJobId, selectJob } = useJobStore()
+  const { jobs, selectedJobId, selectJob, setJob } = useJobStore()
   const [showNewJobModal, setShowNewJobModal] = useState(false)
   const [filterStatus, setFilterStatus] = useState<string>('all')
+
+  // Load existing jobs from backend on mount
+  useEffect(() => {
+    gql.query({ jobs: { __scalar: true, relevantFiles: true } }).then((result) => {
+      for (const j of result.jobs) {
+        const report = j.severity ? {
+          severity: j.severity as 'critical' | 'high' | 'medium' | 'low',
+          rootCause: j.recommendedFix || '',
+          relevantFiles: j.relevantFiles || [],
+          recommendedFix: j.recommendedFix || '',
+          confidence: 0,
+          githubComment: j.githubComment || '',
+          ticketDraft: {},
+        } : undefined
+        setJob({ ...j, status: j.status as JobLocal['status'], report })
+      }
+    }).catch(() => {})
+  }, [setJob])
 
   const jobList = Object.values(jobs)
   const filteredJobs = filterStatus === 'all' ? jobList : jobList.filter((j) => j.status === filterStatus)
@@ -337,6 +362,7 @@ export function DashboardPage(): React.ReactElement {
   // Keyboard shortcuts
   const handleKeyDown = useCallback((e: KeyboardEvent): void => {
     if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return
+    if (e.ctrlKey || e.altKey || e.metaKey) return
     if (e.key === 'n' || e.key === 'N') setShowNewJobModal(true)
   }, [])
 
@@ -354,7 +380,21 @@ export function DashboardPage(): React.ReactElement {
       >
         <div className="p-4 border-b border-gray-700">
           <div className="flex items-center justify-between mb-3">
-            <h1 className="text-sm font-semibold text-gray-200">AgentOps</h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-sm font-semibold text-gray-200">AgentOps</h1>
+              <a
+                href="/langflow/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-gray-400 hover:text-gray-200 transition-colors"
+                title="Configure flows in LangFlow"
+                aria-label="Open LangFlow editor"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
+                </svg>
+              </a>
+            </div>
             <button
               onClick={() => setShowNewJobModal(true)}
               className="bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium px-3 py-1.5 rounded transition-colors"

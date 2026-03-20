@@ -47,3 +47,43 @@ async def fetch_issue(
         author=issue.user.login if issue.user else "",
         created_at=issue.created_at.isoformat() if issue.created_at else "",
     )
+
+
+async def post_comment(
+    owner: str,
+    repo: str,
+    number: int,
+    body: str,
+    token: str,
+) -> str:
+    """Post a comment on a GitHub issue. Returns the comment HTML URL."""
+    auth = TokenAuthStrategy(token)
+    try:
+        async with GitHub(auth) as gh:
+            resp = await gh.rest.issues.async_create_comment(
+                owner=owner, repo=repo, issue_number=number, data={"body": body}
+            )
+    except RequestFailed:
+        _logger.warning("GitHub API comment post failed for %s/%s#%d", owner, repo, number)
+        raise
+
+    return str(resp.parsed_data.html_url)
+
+
+async def add_labels(
+    owner: str,
+    repo: str,
+    number: int,
+    labels: list[str],
+    token: str,
+) -> None:
+    """Add labels to a GitHub issue."""
+    auth = TokenAuthStrategy(token)
+    try:
+        async with GitHub(auth) as gh:
+            await gh.rest.issues.async_add_labels(
+                owner=owner, repo=repo, issue_number=number, data={"labels": labels}
+            )
+    except RequestFailed:
+        _logger.warning("GitHub API add_labels failed for %s/%s#%d", owner, repo, number)
+        raise
