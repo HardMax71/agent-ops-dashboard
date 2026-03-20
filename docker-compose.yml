@@ -126,10 +126,8 @@ services:
   langflow:
     image: langflowai/langflow:latest
     ports: ["7860:7860"]
-    environment:
-      LANGFLOW_DATABASE_URL: "sqlite:////data/langflow.db"
     volumes:
-      - langflowdata:/data
+      - langflowdata:/app/langflow
       - ./langflow/flows:/flows
     profiles: ["full"]
 
