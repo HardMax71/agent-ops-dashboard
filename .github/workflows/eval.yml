@@ -8,8 +8,8 @@ jobs:
   evals:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      - uses: astral-sh/setup-uv@6b9c6f47ec0fa8032023d3c4e14e9bef57a32fc3 # v3.5.4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: astral-sh/setup-uv@8d55fbecc275b1c35dbe060458839f8d30439ccf # v3
         with:
           python-version: "3.12"
       - run: uv sync --all-groups
