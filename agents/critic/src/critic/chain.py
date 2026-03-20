@@ -32,7 +32,7 @@ def create_critic_chain() -> RunnableSerializable:
     llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)  # type: ignore[unknown-argument]
     primary = _CRITIC_PROMPT | llm.with_structured_output(CritiqueFinding)
     fallback = _CRITIC_PROMPT | ChatOpenAI(
-        model="gpt-3.5-turbo",
+        model="gpt-4o-mini",
         temperature=0,  # type: ignore[unknown-argument]
     ).with_structured_output(CritiqueFinding)
     return primary.with_retry(
