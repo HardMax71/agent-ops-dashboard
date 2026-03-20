@@ -14,7 +14,8 @@ import { Textarea } from '@/components/ui/textarea'
 import { Separator } from '@/components/ui/separator'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Plus, Pause, Play, CornerDownRight, X, ExternalLink } from 'lucide-react'
+import { cn } from '@/lib/utils'
+import { Plus, Pause, Play, CornerDownRight, X, ExternalLink, Menu, PanelRight } from 'lucide-react'
 
 function NewJobModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }): React.ReactElement {
   const [issueUrl, setIssueUrl] = useState('')
@@ -118,20 +119,20 @@ function JobWorkspace({ job }: { job: JobLocal }): React.ReactElement {
   return (
     <div className="flex flex-col h-full overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b flex-shrink-0">
-        <div className="flex items-center gap-3 min-w-0">
+      <div className="flex items-center justify-between p-3 border-b flex-shrink-0 gap-2">
+        <div className="flex items-center gap-2 min-w-0">
           <StatusBadge status={job.status} />
           <span className="text-sm font-medium truncate">
             {job.issueTitle || job.issueUrl}
           </span>
         </div>
-        <div className="flex items-center gap-2 flex-shrink-0">
+        <div className="flex items-center gap-1.5 flex-shrink-0">
           <Button
             variant="outline"
             size="sm"
             onClick={() => setShowRedirectModal(true)}
             aria-label="Redirect job"
-            className="gap-1"
+            className="gap-1 hidden sm:inline-flex"
           >
             <CornerDownRight className="h-3 w-3" /> Redirect
           </Button>
@@ -143,7 +144,7 @@ function JobWorkspace({ job }: { job: JobLocal }): React.ReactElement {
               aria-label="Pause job"
               className="gap-1 text-amber-600 border-amber-200 hover:bg-amber-50"
             >
-              <Pause className="h-3 w-3" /> Pause
+              <Pause className="h-3 w-3" /> <span className="hidden sm:inline">Pause</span>
             </Button>
           ) : job.status === 'paused' ? (
             <Button
@@ -153,7 +154,7 @@ function JobWorkspace({ job }: { job: JobLocal }): React.ReactElement {
               aria-label="Resume job"
               className="gap-1 text-emerald-600 border-emerald-200 hover:bg-emerald-50"
             >
-              <Play className="h-3 w-3" /> Resume
+              <Play className="h-3 w-3" /> <span className="hidden sm:inline">Resume</span>
             </Button>
           ) : null}
           <Button
@@ -163,13 +164,13 @@ function JobWorkspace({ job }: { job: JobLocal }): React.ReactElement {
             aria-label="Kill job"
             className="gap-1 text-red-600 border-red-200 hover:bg-red-50"
           >
-            <X className="h-3 w-3" /> Kill
+            <X className="h-3 w-3" /> <span className="hidden sm:inline">Kill</span>
           </Button>
         </div>
       </div>
 
       {/* Timeline */}
-      <div className="p-4 border-b flex-shrink-0">
+      <div className="p-3 border-b flex-shrink-0 overflow-x-auto">
         <ExecutionTimeline findings={job.findings || []} currentNode={job.currentNode || ''} status={job.status} />
       </div>
 
@@ -215,12 +216,19 @@ function OutputPanel({ job }: { job: JobLocal }): React.ReactElement {
   const [isPostingComment, setIsPostingComment] = useState(false)
   const [commentUrl, setCommentUrl] = useState('')
 
+  // Sync textarea when report arrives or changes (fixes empty textarea on async load)
+  useEffect(() => {
+    if (job.report?.githubComment) {
+      setCommentText(job.report.githubComment)
+    }
+  }, [job.report?.githubComment])
+
   const handlePostComment = async (): Promise<void> => {
     setIsPostingComment(true)
     try {
       const result = await gql.mutation({
         postComment: {
-          __args: { jobId: job.jobId },
+          __args: { jobId: job.jobId, comment: commentText },
           ok: true,
           commentUrl: true,
         },
@@ -342,6 +350,8 @@ export function DashboardPage(): React.ReactElement {
   const { jobs, selectedJobId, selectJob, setJob } = useJobStore()
   const [showNewJobModal, setShowNewJobModal] = useState(false)
   const [filterStatus, setFilterStatus] = useState<string>('all')
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [outputOpen, setOutputOpen] = useState(false)
 
   useEffect(() => {
     gql.query({ jobs: { __scalar: true, relevantFiles: true } }).then((result) => {
@@ -377,13 +387,29 @@ export function DashboardPage(): React.ReactElement {
 
   return (
     <div className="flex h-screen bg-muted/30 overflow-hidden">
+      {/* Sidebar backdrop (mobile) */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/30 z-30 md:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
       {/* Zone 1: Job Queue Sidebar */}
       <aside
-        className="w-80 flex-shrink-0 bg-background border-r flex flex-col"
+        className={cn(
+          'bg-background border-r flex flex-col z-40 flex-shrink-0',
+          // Desktop: always visible, responsive width
+          'hidden md:flex md:w-56 lg:w-64 xl:w-72',
+          // Mobile: overlay when open
+          sidebarOpen && 'flex w-72 fixed inset-y-0 left-0',
+          // Desktop override (prevent fixed positioning on md+)
+          'md:relative md:inset-auto'
+        )}
         aria-label="Job queue"
       >
-        <div className="p-4 border-b">
-          <div className="flex items-center justify-between mb-3">
+        <div className="p-3 border-b">
+          <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
               <h1 className="text-sm font-bold tracking-tight">AgentOps</h1>
               <a
@@ -425,7 +451,7 @@ export function DashboardPage(): React.ReactElement {
           </select>
         </div>
         <ScrollArea className="flex-1">
-          <div className="p-2 space-y-2" role="list" aria-label="Jobs list">
+          <div className="p-2 space-y-1.5" role="list" aria-label="Jobs list">
             {filteredJobs.length === 0 ? (
               <p className="text-center text-muted-foreground text-xs py-8">No jobs. Press N to create one.</p>
             ) : (
@@ -434,7 +460,7 @@ export function DashboardPage(): React.ReactElement {
                   <JobCard
                     job={job}
                     isSelected={selectedJobId === job.jobId}
-                    onClick={() => selectJob(job.jobId)}
+                    onClick={() => { selectJob(job.jobId); setSidebarOpen(false) }}
                   />
                 </div>
               ))
@@ -445,8 +471,27 @@ export function DashboardPage(): React.ReactElement {
 
       {/* Zone 2: Live Workspace */}
       <main className="flex-1 min-w-0 flex flex-col overflow-hidden bg-background" aria-label="Job workspace">
+        {/* Mobile toolbar */}
+        <div className="flex items-center gap-1 px-2 py-1.5 border-b flex-shrink-0 md:hidden">
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setSidebarOpen(true)} aria-label="Open sidebar">
+            <Menu className="h-4 w-4" />
+          </Button>
+          <span className="text-sm font-bold flex-1">AgentOps</span>
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setOutputOpen(true)} aria-label="Open output panel">
+            <PanelRight className="h-4 w-4" />
+          </Button>
+        </div>
+
         {selectedJob ? (
-          <JobWorkspace job={selectedJob} />
+          <>
+            <JobWorkspace job={selectedJob} />
+            {/* Output toggle for tablet (md-lg) */}
+            <div className="hidden md:flex lg:hidden items-center justify-center p-1.5 border-t flex-shrink-0">
+              <Button variant="ghost" size="sm" className="gap-1.5 text-xs text-muted-foreground" onClick={() => setOutputOpen(!outputOpen)}>
+                <PanelRight className="h-3 w-3" /> {outputOpen ? 'Hide output' : 'Show output'}
+              </Button>
+            </div>
+          </>
         ) : (
           <div className="flex-1 flex items-center justify-center text-muted-foreground">
             <div className="text-center">
@@ -457,13 +502,38 @@ export function DashboardPage(): React.ReactElement {
         )}
       </main>
 
+      {/* Output panel backdrop (mobile/tablet) */}
+      {outputOpen && (
+        <div
+          className="fixed inset-0 bg-black/30 z-30 lg:hidden"
+          onClick={() => setOutputOpen(false)}
+        />
+      )}
+
       {/* Zone 3: Output Panel */}
       <aside
-        className="w-96 flex-shrink-0 bg-background border-l overflow-hidden"
+        className={cn(
+          'bg-background border-l overflow-hidden flex-col flex-shrink-0 z-40',
+          // Desktop (lg+): always visible, responsive width
+          'hidden lg:flex lg:w-64 xl:w-80',
+          // Mobile/tablet: overlay when open
+          outputOpen && 'flex w-80 fixed inset-y-0 right-0',
+          // Desktop override
+          'lg:relative lg:inset-auto'
+        )}
         aria-label="Output panel"
       >
-        <div className="p-4 border-b">
+        <div className="p-3 border-b flex items-center justify-between">
           <h2 className="text-sm font-semibold">Output</h2>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7 lg:hidden"
+            onClick={() => setOutputOpen(false)}
+            aria-label="Close output panel"
+          >
+            <X className="h-3.5 w-3.5" />
+          </Button>
         </div>
         {selectedJob ? (
           <OutputPanel key={selectedJob.jobId} job={selectedJob} />
