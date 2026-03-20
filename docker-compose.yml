@@ -1,41 +1,5 @@
 services:
-  api:
-    build: .
-    ports: ["8000:8000", "8001:8001"]
-    env_file: .env
-    depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    volumes:
-      - chroma_data:/data/chroma
-    command: uvicorn agentops.api.main:app --host 0.0.0.0 --port 8000
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/docs"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 15s
-
-  worker:
-    build: .
-    ports: ["8002:8002"]
-    env_file: .env
-    depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    volumes:
-      - chroma_data:/data/chroma
-    command: python -m agentops.worker
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8002/"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 15s
+  # ── Core stack ────────────────────────────────────────────────────────
 
   db:
     image: postgres:16
@@ -62,11 +26,60 @@ services:
       timeout: 3s
       retries: 5
 
+  api:
+    build:
+      context: .
+      target: api
+    ports: ["8000:8000", "8001:8001"]
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://agentops:agentops@db:5432/agentops
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - chroma_data:/data/chroma
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  worker:
+    build:
+      context: .
+      target: worker
+    ports: ["8002:8002"]
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://agentops:agentops@db:5432/agentops
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      api:
+        condition: service_healthy
+    volumes:
+      - chroma_data:/data/chroma
+
+  frontend:
+    build:
+      context: frontend
+    ports: ["5173:80"]
+    depends_on:
+      api:
+        condition: service_healthy
+
+  # ── Agents (profile: agents) ──────────────────────────────────────────
+
   investigator:
     build:
       context: agents/investigator
     expose: ["8001"]
     env_file: .env
+    profiles: ["agents", "full"]
 
   codebase-search:
     build:
@@ -75,33 +88,30 @@ services:
     env_file: .env
     volumes:
       - chroma_data:/data/chroma
+    profiles: ["agents", "full"]
 
   web-search:
     build:
       context: agents/web_search
     expose: ["8003"]
     env_file: .env
+    profiles: ["agents", "full"]
 
   critic:
     build:
       context: agents/critic
     expose: ["8004"]
     env_file: .env
+    profiles: ["agents", "full"]
 
   writer:
     build:
       context: agents/writer
     expose: ["8005"]
     env_file: .env
+    profiles: ["agents", "full"]
 
-  frontend:
-    build:
-      context: frontend
-      dockerfile: Dockerfile
-    ports:
-      - "5173:80"
-    depends_on:
-      - api
+  # ── Observability (profile: full) ─────────────────────────────────────
 
   prometheus:
     image: prom/prometheus:v2.53.0
@@ -111,6 +121,7 @@ services:
     depends_on:
       - api
       - worker
+    profiles: ["full"]
 
   langflow:
     image: langflowai/langflow:1.1
@@ -120,6 +131,7 @@ services:
     volumes:
       - langflowdata:/data
       - ./langflow/flows:/flows
+    profiles: ["full"]
 
 volumes:
   pgdata:
