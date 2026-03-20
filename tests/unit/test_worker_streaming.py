@@ -6,6 +6,8 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 from fakeredis import FakeAsyncRedis
 
+from agentops.models.job import JobData
+from agentops.models.worker_ctx import WorkerContext
 from agentops.worker import run_triage
 
 pytestmark = pytest.mark.asyncio
@@ -39,13 +41,12 @@ class TestRunTriageStreaming:
     async def test_publishes_done_event(
         self, worker_redis: FakeAsyncRedis, mock_graph: MagicMock
     ) -> None:
-        job_data = {
-            "job_id": "j1",
-            "status": "queued",
-            "issue_url": "https://github.com/a/b/issues/1",
-            "supervisor_notes": "",
-        }
-        await worker_redis.setex("job:j1", 86400, json.dumps(job_data))
+        data = JobData(
+            job_id="j1",
+            status="queued",
+            issue_url="https://github.com/a/b/issues/1",
+        )
+        await worker_redis.setex("job:j1", 86400, data.model_dump_json())
 
         # Track published messages
         published: list[str] = []
@@ -57,7 +58,7 @@ class TestRunTriageStreaming:
 
         worker_redis.publish = _track_publish  # type: ignore[assignment]
 
-        ctx: dict[str, object] = {"redis": worker_redis, "graph": mock_graph}
+        ctx: WorkerContext = {"redis": worker_redis, "graph": mock_graph}  # type: ignore[assignment]
         await run_triage(ctx, "j1")
 
         # Should have published job.done
@@ -72,14 +73,14 @@ class TestRunTriageStreaming:
     async def test_skips_terminal_state(
         self, worker_redis: FakeAsyncRedis, mock_graph: MagicMock
     ) -> None:
-        job_data = {
-            "job_id": "j2",
-            "status": "killed",
-            "issue_url": "https://github.com/a/b/issues/1",
-        }
-        await worker_redis.setex("job:j2", 86400, json.dumps(job_data))
+        data = JobData(
+            job_id="j2",
+            status="killed",
+            issue_url="https://github.com/a/b/issues/1",
+        )
+        await worker_redis.setex("job:j2", 86400, data.model_dump_json())
 
-        ctx: dict[str, object] = {"redis": worker_redis, "graph": mock_graph}
+        ctx: WorkerContext = {"redis": worker_redis, "graph": mock_graph}  # type: ignore[assignment]
         await run_triage(ctx, "j2")
 
         raw = await worker_redis.get("job:j2")
@@ -89,21 +90,16 @@ class TestRunTriageStreaming:
     async def test_publishes_interrupt_event(
         self, worker_redis: FakeAsyncRedis, mock_graph: MagicMock
     ) -> None:
-        job_data = {
-            "job_id": "j3",
-            "status": "queued",
-            "issue_url": "https://github.com/a/b/issues/1",
-            "supervisor_notes": "",
-        }
-        await worker_redis.setex("job:j3", 86400, json.dumps(job_data))
+        data = JobData(
+            job_id="j3",
+            status="queued",
+            issue_url="https://github.com/a/b/issues/1",
+        )
+        await worker_redis.setex("job:j3", 86400, data.model_dump_json())
 
-        # Mock an interrupt
-        interrupt_val = MagicMock()
-        interrupt_val.question = "What should I do?"
-        interrupt_val.context = "Some context"
-
+        # Mock an interrupt — value is a dict matching interrupt() payload
         interrupt_obj = MagicMock()
-        interrupt_obj.value = interrupt_val
+        interrupt_obj.value = {"question": "What should I do?", "context": "Some context"}
 
         task = MagicMock()
         task.interrupts = [interrupt_obj]
@@ -121,7 +117,7 @@ class TestRunTriageStreaming:
 
         worker_redis.publish = _track_publish  # type: ignore[assignment]
 
-        ctx: dict[str, object] = {"redis": worker_redis, "graph": mock_graph}
+        ctx: WorkerContext = {"redis": worker_redis, "graph": mock_graph}  # type: ignore[assignment]
         await run_triage(ctx, "j3")
 
         interrupt_events = [p for p in published if "graph.interrupt" in p]
@@ -129,6 +125,6 @@ class TestRunTriageStreaming:
 
         raw = await worker_redis.get("job:j3")
         assert raw is not None
-        data = json.loads(raw)
-        assert data["status"] == "waiting"
-        assert data["awaiting_human"] is True
+        data_raw = json.loads(raw)
+        assert data_raw["status"] == "waiting"
+        assert data_raw["awaiting_human"] is True

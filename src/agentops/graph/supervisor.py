@@ -7,6 +7,7 @@ from langchain_openai import ChatOpenAI
 from langgraph.types import interrupt
 from pydantic import BaseModel, Field, ValidationError
 
+from agentops.graph.node_results import SupervisorNodeResult, SupervisorPromptContext
 from agentops.graph.state import BugTriageState, HumanExchange
 
 logger = logging.getLogger(__name__)
@@ -70,7 +71,7 @@ _FORCED_FALLBACK = SupervisorDecision(
 )
 
 
-def build_supervisor_context(state: BugTriageState) -> dict[str, object]:  # noqa: ANN401 — LangGraph prompt template requires heterogeneous dict
+def build_supervisor_context(state: BugTriageState) -> SupervisorPromptContext:
     findings_block = "\n".join(
         f"- [{f.agent_name}] {f.summary} (confidence: {f.confidence:.2f})" for f in state.findings
     )
@@ -169,19 +170,19 @@ async def _invoke_supervisor(
     return _FORCED_FALLBACK
 
 
-async def supervisor_node(state: BugTriageState) -> dict:  # noqa: ANN401 — LangGraph node returns partial state dict
+async def supervisor_node(state: BugTriageState) -> SupervisorNodeResult:
     """Full supervisor node with LLM routing."""
     # Pause check — fires interrupt if paused flag is set
     if state.paused:
         interrupt("manual_pause")
 
-    llm = ChatOpenAI(model="gpt-4o", temperature=0)  # type: ignore[unknown-argument]
+    llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)  # type: ignore[unknown-argument]
     context = build_supervisor_context(state)
     prompt_messages = _SUPERVISOR_PROMPT.format_messages(**context)
     structured_llm = llm.with_structured_output(SupervisorDecision)
 
     decision = await _invoke_supervisor(structured_llm, prompt_messages)
-    result: dict[str, object] = {  # noqa: ANN401 — LangGraph partial state dict
+    result: SupervisorNodeResult = {
         "supervisor_next": decision.next_node,
         "supervisor_confidence": decision.confidence,
         "supervisor_reasoning": decision.reasoning,

@@ -1,18 +1,21 @@
+import json
+
 import httpx
 
+from agentops.graph.node_results import CriticNodeResult
 from agentops.graph.state import AgentFinding, BugTriageState, CriticFeedback
 
 
-async def critic_node(state: BugTriageState) -> dict:  # noqa: ANN401 — LangGraph node returns partial state dict
+async def critic_node(state: BugTriageState) -> CriticNodeResult:
     """Call critic LangServe endpoint."""
     inv_finding = next(
         (f for f in reversed(state.findings) if f.agent_name == "investigator"), None
     )
     payload = {
         "input": {
-            "findings": [f.model_dump() for f in state.findings],
+            "findings": json.dumps([f.model_dump() for f in state.findings]),
             "hypothesis": inv_finding.hypothesis if inv_finding else "",
-            "human_exchanges": [e.model_dump() for e in state.human_exchanges],
+            "human_exchanges": json.dumps([e.model_dump() for e in state.human_exchanges]),
         }
     }
     async with httpx.AsyncClient(timeout=60.0) as client:

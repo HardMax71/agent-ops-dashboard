@@ -1,0 +1,10 @@
+{
+    "issue_url": "https://github.com/acme/backend/issues/89",
+    "issue_title": "Race condition in concurrent order processing",
+    "issue_body": "Two threads processing the same order simultaneously can cause double-charging. The order status check and update are not atomic. Happens under high load (~500 req/s).\n\nSteps to reproduce:\n1. Submit order via API\n2. Trigger retry before first request completes\n3. Both requests pass the 'pending' status check and process payment",
+    "repository": "acme/backend",
+    "outputs": {
+        "severity": "critical",
+        "relevant_files": ["src/main/java/com/acme/OrderService.java", "src/main/java/com/acme/PaymentProcessor.java"]
+    }
+}

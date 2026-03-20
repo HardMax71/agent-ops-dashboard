@@ -1,0 +1,10 @@
+{
+    "issue_url": "https://github.com/acme/frontend/issues/55",
+    "issue_title": "Using deprecated React.findDOMNode — breaks in StrictMode",
+    "issue_body": "Several components use React.findDOMNode which is deprecated and triggers warnings in StrictMode. This will break entirely in React 19. Affected components: Tooltip, Popover, and DragHandle.\n\nWarning: findDOMNode is deprecated in StrictMode. findDOMNode was passed an instance of Tooltip which is inside StrictMode.",
+    "repository": "acme/frontend",
+    "outputs": {
+        "severity": "low",
+        "relevant_files": ["src/components/Tooltip.tsx", "src/components/Popover.tsx", "src/components/DragHandle.tsx"]
+    }
+}

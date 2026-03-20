@@ -27,7 +27,7 @@ def create_web_search_chain() -> RunnableSerializable:
     llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)  # type: ignore[unknown-argument]
     primary = _SEARCH_PROMPT | llm.with_structured_output(WebSearchFinding)
     fallback = _SEARCH_PROMPT | ChatOpenAI(
-        model="gpt-3.5-turbo",
+        model="gpt-4o-mini",
         temperature=0,  # type: ignore[unknown-argument]
     ).with_structured_output(WebSearchFinding)
     return primary.with_retry(

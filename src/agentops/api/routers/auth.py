@@ -8,9 +8,10 @@ from fastapi.responses import RedirectResponse
 from agentops.api.deps.auth import CurrentUserDep
 from agentops.api.deps.redis import RedisDep
 from agentops.api.deps.settings import SettingsDep
-from agentops.auth.models import AccessTokenResponse, AuthCodeRequest, UserInfoResponse
+from agentops.auth.models import AccessTokenResponse, AuthCodeRequest
 from agentops.auth.service import create_access_token, encrypt_github_token
 from agentops.config import Environment
+from agentops.graphql.types import UserInfo
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -103,7 +104,7 @@ async def callback(
         if "error" in token_data:
             description = token_data.get("error_description", token_data["error"])
             raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
+                status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"GitHub OAuth error: {description}",
             )
 
@@ -123,6 +124,11 @@ async def callback(
 
     github_id = str(user_data["id"])
     github_login: str = user_data["login"]
+
+    # Store avatar URL (refreshed on every OAuth login)
+    avatar_url: str = user_data.get("avatar_url", "")
+    if avatar_url:
+        await redis.setex(f"avatar:{github_id}", settings.refresh_token_expire_seconds, avatar_url)
 
     # Store encrypted GitHub token (PRD-008-1 §5 — 365-day TTL)
     if settings.github_token_encryption_key and github_access_token:
@@ -219,8 +225,8 @@ async def refresh_token(
     )
 
 
-@router.get("/me", response_model=UserInfoResponse)
-async def me(current_user: CurrentUserDep) -> UserInfoResponse:
+@router.get("/me")
+async def me(current_user: CurrentUserDep) -> UserInfo:
     """Get current user info from JWT via CurrentUserDep."""
     return current_user
 
@@ -230,8 +236,16 @@ async def logout(
     request: Request,
     response: Response,
     redis: RedisDep,
+    current_user: CurrentUserDep,
+    settings: SettingsDep,
 ) -> dict[str, str]:
-    """Delete refresh token from Redis and clear cookie."""
+    """Blacklist access token JTI, delete refresh token, and clear cookie."""
+    await redis.setex(
+        f"jti_blacklist:{current_user.jti}",
+        settings.access_token_expire_seconds,
+        "1",
+    )
+
     refresh_token_id = request.cookies.get("refresh_token")
     if refresh_token_id:
         await redis.delete(f"refresh_token:{refresh_token_id}")

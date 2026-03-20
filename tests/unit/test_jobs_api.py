@@ -3,50 +3,92 @@ from unittest.mock import MagicMock
 from httpx import AsyncClient
 
 
-async def test_create_job_returns_202(api_client: AsyncClient, mock_arq: MagicMock) -> None:
-    response = await api_client.post(
-        "/jobs", json={"issue_url": "https://github.com/acme/backend/issues/1"}
+async def test_create_job_returns_200(api_client: AsyncClient, mock_arq: MagicMock) -> None:
+    resp = await api_client.post(
+        "/graphql",
+        json={
+            "query": """
+                mutation($input: CreateJobInput!) {
+                    createJob(input: $input) { jobId status }
+                }
+            """,
+            "variables": {"input": {"issueUrl": "https://github.com/acme/backend/issues/1"}},
+        },
     )
-    assert response.status_code == 202
-    data = response.json()
-    assert "job_id" in data
+    assert resp.status_code == 200
+    data = resp.json()["data"]["createJob"]
+    assert "jobId" in data
     assert data["status"] == "queued"
-    mock_arq.enqueue_job.assert_called_once_with(
-        "run_triage", data["job_id"], _job_id=data["job_id"]
+    mock_arq.enqueue_job.assert_any_call("run_triage", data["jobId"], _job_id=data["jobId"])
+
+
+async def test_create_job_invalid_url_returns_error(api_client: AsyncClient) -> None:
+    resp = await api_client.post(
+        "/graphql",
+        json={
+            "query": """
+                mutation($input: CreateJobInput!) {
+                    createJob(input: $input) { jobId status }
+                }
+            """,
+            "variables": {"input": {"issueUrl": "https://not-github.com/x"}},
+        },
     )
-
-
-async def test_create_job_invalid_url_returns_422(api_client: AsyncClient) -> None:
-    response = await api_client.post("/jobs", json={"issue_url": "https://not-github.com/x"})
-    assert response.status_code == 422
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body.get("errors") is not None
 
 
 async def test_create_job_idempotency(api_client: AsyncClient, mock_arq: MagicMock) -> None:
-    payload = {"issue_url": "https://github.com/acme/backend/issues/99"}
-    r1 = await api_client.post("/jobs", json=payload)
-    r2 = await api_client.post("/jobs", json=payload)
-    assert r1.status_code == 202
-    assert r2.status_code == 202
-    assert r1.json()["job_id"] == r2.json()["job_id"]
-    # enqueue_job should only be called once (not for the idempotent duplicate)
-    mock_arq.enqueue_job.assert_called_once()
+    query = """
+        mutation($input: CreateJobInput!) {
+            createJob(input: $input) { jobId status }
+        }
+    """
+    variables = {"input": {"issueUrl": "https://github.com/acme/backend/issues/99"}}
+    r1 = await api_client.post("/graphql", json={"query": query, "variables": variables})
+    r2 = await api_client.post("/graphql", json={"query": query, "variables": variables})
+    assert r1.status_code == 200
+    assert r2.status_code == 200
+    assert r1.json()["data"]["createJob"]["jobId"] == r2.json()["data"]["createJob"]["jobId"]
+    # Only the first request triggers enqueue; index + triage = up to 2 calls
+    assert mock_arq.enqueue_job.call_count <= 2
 
 
 async def test_get_job_not_found(api_client: AsyncClient) -> None:
-    response = await api_client.get("/jobs/nonexistent-id")
-    assert response.status_code == 404
+    resp = await api_client.post(
+        "/graphql",
+        json={
+            "query": '{ job(jobId: "nonexistent-id") { jobId status } }',
+        },
+    )
+    assert resp.status_code == 200
+    assert resp.json().get("errors") is not None
 
 
 async def test_get_job_found(api_client: AsyncClient) -> None:
     create_resp = await api_client.post(
-        "/jobs", json={"issue_url": "https://github.com/acme/backend/issues/5"}
+        "/graphql",
+        json={
+            "query": """
+                mutation($input: CreateJobInput!) {
+                    createJob(input: $input) { jobId status }
+                }
+            """,
+            "variables": {"input": {"issueUrl": "https://github.com/acme/backend/issues/5"}},
+        },
     )
-    job_id = create_resp.json()["job_id"]
-    get_resp = await api_client.get(f"/jobs/{job_id}")
-    assert get_resp.status_code == 200
-    data = get_resp.json()
-    assert data["job_id"] == job_id
-    assert data["issue_url"] == "https://github.com/acme/backend/issues/5"
+    job_id = create_resp.json()["data"]["createJob"]["jobId"]
+    get_resp = await api_client.post(
+        "/graphql",
+        json={
+            "query": "query($id: ID!) { job(jobId: $id) { jobId issueUrl status } }",
+            "variables": {"id": job_id},
+        },
+    )
+    data = get_resp.json()["data"]["job"]
+    assert data["jobId"] == job_id
+    assert data["issueUrl"] == "https://github.com/acme/backend/issues/5"
 
 
 async def test_health_check(api_client: AsyncClient) -> None:

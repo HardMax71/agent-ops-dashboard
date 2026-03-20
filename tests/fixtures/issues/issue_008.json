@@ -1,0 +1,10 @@
+{
+    "issue_url": "https://github.com/acme/frontend/issues/78",
+    "issue_title": "Pagination breaks when filtering by date range",
+    "issue_body": "When a date range filter is applied, the pagination component resets to page 1 on every render cycle. Navigating to page 2+ causes the filter to re-trigger, which resets the page back to 1, making it impossible to browse beyond the first page of filtered results.",
+    "repository": "acme/frontend",
+    "outputs": {
+        "severity": "medium",
+        "relevant_files": ["src/components/DataTable.tsx", "src/hooks/usePagination.ts", "src/hooks/useDateFilter.ts"]
+    }
+}

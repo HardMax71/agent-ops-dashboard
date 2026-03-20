@@ -1,6 +1,13 @@
 import json
 
 from langsmith import Client
+from pydantic import BaseModel
+
+
+class LangSmithRunSummary(BaseModel):
+    id: str
+    name: str
+    status: str
 
 
 class LangSmithFeedbackHandler:
@@ -37,7 +44,11 @@ class LangSmithFeedbackHandler:
         )
 
 
-def fetch_runs_for_job(api_key: str, project_name: str, job_id: str) -> list[dict[str, str]]:
+def fetch_runs_for_job(
+    api_key: str,
+    project_name: str,
+    job_id: str,
+) -> list[LangSmithRunSummary]:
     """Fetch LangSmith runs for a given job ID (sync)."""
     client = Client(api_key=api_key)
     safe_metadata = json.dumps({"job_id": job_id})
@@ -47,4 +58,6 @@ def fetch_runs_for_job(api_key: str, project_name: str, job_id: str) -> list[dic
             filter=f"has(metadata, '{safe_metadata}' )",
         )
     )
-    return [{"id": str(r.id), "name": r.name or "", "status": r.status or ""} for r in runs]
+    return [
+        LangSmithRunSummary(id=str(r.id), name=r.name or "", status=r.status or "") for r in runs
+    ]

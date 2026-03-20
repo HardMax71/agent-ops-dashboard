@@ -1,0 +1,30 @@
+{
+  "id": "flow-codebase-search-001",
+  "name": "Codebase Search Agent",
+  "description": "Searches the repository codebase using keywords and hypothesis from the investigator to find relevant files and code patterns.",
+  "nodes": [
+    {
+      "id": "chat-model-1",
+      "type": "ChatModel",
+      "data": {
+        "model": "gpt-4o-mini",
+        "temperature": 0
+      },
+      "position": { "x": 400, "y": 200 }
+    },
+    {
+      "id": "prompt-1",
+      "type": "Prompt",
+      "data": {
+        "template": "You are a codebase search specialist. Given a hypothesis and keywords, analyze the repository to find relevant code.\n\nRepository: {repository}\nKeywords: {keywords}\nHypothesis: {hypothesis}\nAffected Areas: {affected_areas}\n\nLocal context from vector index:\n{local_context}\n\nIdentify:\n1. Specific files likely involved in the bug\n2. Code patterns that match the hypothesis\n3. Root cause location (file:line if possible)\n4. Any gaps in the analysis that need further investigation"
+      },
+      "position": { "x": 100, "y": 200 }
+    }
+  ],
+  "edges": [
+    {
+      "source": "prompt-1",
+      "target": "chat-model-1"
+    }
+  ]
+}

@@ -9,10 +9,13 @@ repos:
     rev: v5.0.0
     hooks:
       - id: trailing-whitespace
+        exclude: ^frontend/src/generated/
       - id: end-of-file-fixer
+        exclude: (\.graphql$|^frontend/src/generated/)
       - id: check-yaml
       - id: check-added-large-files
         args: [--maxkb=200]
+        exclude: (uv\.lock|package-lock\.json)$
       - id: check-merge-conflict
   - repo: local
     hooks:
@@ -22,3 +25,9 @@ repos:
         language: system
         pass_filenames: false
         types: [python]
+      - id: schema-drift-check
+        name: check GraphQL schema drift
+        entry: bash -c 'uv run agentops-codegen && git diff --exit-code schemas/ && cd frontend && npm run generate --silent 2>/dev/null && git diff --exit-code src/generated/ && test -z "$(git ls-files --others --exclude-standard src/generated/)"'
+        language: system
+        pass_filenames: false
+        files: ^(src/agentops/|schemas/|frontend/src/generated/)

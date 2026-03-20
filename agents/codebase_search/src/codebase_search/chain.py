@@ -26,7 +26,7 @@ def create_codebase_search_chain() -> RunnableSerializable:
     llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)  # type: ignore[unknown-argument]
     primary = _ANALYSIS_PROMPT | llm.with_structured_output(CodebaseFinding)
     fallback = _ANALYSIS_PROMPT | ChatOpenAI(
-        model="gpt-3.5-turbo",
+        model="gpt-4o-mini",
         temperature=0,  # type: ignore[unknown-argument]
     ).with_structured_output(CodebaseFinding)
     return primary.with_retry(

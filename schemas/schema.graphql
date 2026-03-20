@@ -1,0 +1,148 @@
+type AgentDoneEvent {
+  agentId: String!
+  node: String!
+}
+
+type AgentSpawnedEvent {
+  agentId: String!
+  agentName: String!
+  node: String!
+}
+
+type AgentTokenEvent {
+  agentId: String!
+  token: String!
+}
+
+type AgentToolCallEvent {
+  agentId: String!
+  toolName: String!
+  inputPreview: String!
+}
+
+type AgentToolResultEvent {
+  agentId: String!
+  toolName: String!
+  resultSummary: String!
+}
+
+input CreateJobInput {
+  issueUrl: String!
+  supervisorNotes: String! = ""
+}
+
+type CreateJobResult {
+  jobId: ID!
+  status: String!
+}
+
+type DeleteTokenResult {
+  ok: Boolean!
+}
+
+type GraphInterruptEvent {
+  question: String!
+  context: String!
+}
+
+type GraphNodeCompleteEvent {
+  node: String!
+  step: Int
+}
+
+type Job {
+  jobId: ID!
+  status: String!
+  issueUrl: String!
+  issueTitle: String!
+  repository: String!
+  langsmithUrl: String!
+  awaitingHuman: Boolean!
+  currentNode: String!
+  createdAt: String!
+  pendingQuestion: String!
+  pendingQuestionContext: String!
+  githubCommentUrl: String!
+  severity: String!
+  recommendedFix: String!
+  githubComment: String!
+  relevantFiles: [String!]!
+  ticketTitle: String!
+}
+
+type JobActionResult {
+  status: String!
+  jobId: ID!
+}
+
+type JobDoneEvent {
+  Empty: Boolean
+}
+
+union JobEvent = AgentSpawnedEvent | AgentTokenEvent | OutputTokenEvent | AgentToolCallEvent | AgentToolResultEvent | AgentDoneEvent | OutputSectionDoneEvent | GraphNodeCompleteEvent | GraphInterruptEvent | JobDoneEvent | JobFailedEvent | JobKilledEvent | JobTimedOutEvent | JobSnapshotEvent
+
+type JobFailedEvent {
+  error: String!
+}
+
+type JobKilledEvent {
+  Empty: Boolean
+}
+
+type JobSnapshotEvent {
+  status: String!
+  currentNode: String!
+  awaitingHuman: Boolean!
+  pendingQuestion: String!
+  pendingQuestionContext: String!
+}
+
+type JobTimedOutEvent {
+  Empty: Boolean
+}
+
+type LogoutResult {
+  ok: Boolean!
+}
+
+type Mutation {
+  createJob(input: CreateJobInput!): CreateJobResult!
+  killJob(jobId: ID!): JobActionResult!
+  answerJob(jobId: ID!, answer: String!): JobActionResult!
+  pauseJob(jobId: ID!): JobActionResult!
+  resumeJob(jobId: ID!): JobActionResult!
+  redirectJob(jobId: ID!, instruction: String!): JobActionResult!
+  postComment(jobId: ID!): PostCommentResult!
+  logout: LogoutResult!
+  deleteGithubToken: DeleteTokenResult!
+}
+
+type OutputSectionDoneEvent {
+  section: String!
+}
+
+type OutputTokenEvent {
+  token: String!
+  section: String!
+}
+
+type PostCommentResult {
+  ok: Boolean!
+  commentUrl: String!
+}
+
+type Query {
+  me: UserInfo!
+  job(jobId: ID!): Job!
+  jobs: [Job!]!
+}
+
+type Subscription {
+  jobEvents(jobId: ID!): JobEvent!
+}
+
+type UserInfo {
+  githubId: String!
+  githubLogin: String!
+  avatarUrl: String!
+}

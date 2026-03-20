@@ -4,6 +4,7 @@ from datetime import UTC, datetime, timedelta
 import jwt
 from cryptography.fernet import Fernet
 
+from agentops.auth.types import JwtPayload
 from agentops.config import Settings
 
 
@@ -20,15 +21,16 @@ def create_access_token(github_id: str, github_login: str, settings: Settings) -
     return jwt.encode(payload, settings.jwt_secret, algorithm=settings.jwt_algorithm)
 
 
-def decode_access_token(token: str, settings: Settings) -> dict[str, object]:
+def decode_access_token(token: str, settings: Settings) -> JwtPayload:
     """Decode and validate a JWT access token (30s leeway per PRD-008-1 §10)."""
-    return jwt.decode(
+    payload: JwtPayload = jwt.decode(  # type: ignore[assignment]
         token,
         settings.jwt_secret,
         algorithms=[settings.jwt_algorithm],
         leeway=timedelta(seconds=30),
         options={"require": ["exp", "sub", "iat", "login", "jti"]},
     )
+    return payload
 
 
 def encrypt_github_token(token: str, settings: Settings) -> str:
