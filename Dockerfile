@@ -19,6 +19,8 @@ COPY alembic/ alembic/
 COPY alembic.ini .
 RUN uv sync --no-dev
 
+ENV PATH="/app/.venv/bin:$PATH"
+
 RUN groupadd --system appuser && useradd --system --gid appuser appuser \
     && chown -R appuser:appuser /app
 USER appuser
@@ -26,9 +28,9 @@ USER appuser
 # ── API target ────────────────────────────────────────────────────────
 FROM base AS api
 EXPOSE 8000 8001
-CMD ["sh", "-c", "uv run alembic upgrade head && uv run uvicorn agentops.api.main:app --host 0.0.0.0 --port 8000"]
+CMD ["sh", "-c", "alembic upgrade head && uvicorn agentops.api.main:app --host 0.0.0.0 --port 8000"]
 
 # ── Worker target ─────────────────────────────────────────────────────
 FROM base AS worker
 EXPOSE 8002
-CMD ["uv", "run", "python", "-m", "agentops.worker"]
+CMD ["python", "-m", "agentops.worker"]
