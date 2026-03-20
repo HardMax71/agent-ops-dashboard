@@ -4,6 +4,7 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
+from agentops.models.worker_ctx import WorkerContext
 from agentops.worker import expire_human_input, job_timeout_cleaner, run_triage
 
 
@@ -23,8 +24,8 @@ def mock_graph():
 
 
 @pytest.fixture
-def ctx(fake_redis, mock_graph):
-    return {"redis": fake_redis, "graph": mock_graph}
+def ctx(fake_redis, mock_graph) -> WorkerContext:
+    return {"redis": fake_redis, "graph": mock_graph}  # type: ignore[return-value]
 
 
 async def test_expire_provides_timeout_answer(ctx, fake_redis, mock_graph, make_job):

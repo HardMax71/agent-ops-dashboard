@@ -7,27 +7,28 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from agentops.api.deps.redis import RedisDep
 from agentops.api.deps.settings import SettingsDep
 from agentops.auth.service import decode_access_token
+from agentops.auth.types import JwtPayload
 from agentops.graphql.types import UserInfo
 
 _scheme = HTTPBearer()
 
 
 async def _resolve_user(
-    payload: dict[str, object],
+    payload: JwtPayload,
     redis: RedisDep,
 ) -> UserInfo | None:
     """Return a ``UserInfo`` from a decoded JWT payload, or ``None`` if the
     token's JTI has been revoked."""
-    jti = str(payload["jti"])
+    jti = payload["jti"]
     revoked = await redis.get(f"jti_blacklist:{jti}")
     if revoked is not None:
         return None
 
-    github_id = str(payload["sub"])
+    github_id = payload["sub"]
     avatar_url = await redis.get(f"avatar:{github_id}") or ""
     return UserInfo(
         github_id=github_id,
-        github_login=str(payload["login"]),
+        github_login=payload["login"],
         avatar_url=avatar_url,
         jti=jti,
     )

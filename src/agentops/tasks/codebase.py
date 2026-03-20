@@ -10,14 +10,15 @@ from langchain_openai import OpenAIEmbeddings
 from agentops.config import get_settings
 from agentops.index.builder import _chunk_repository
 from agentops.index.collection import collection_name
+from agentops.models.worker_ctx import WorkerContext
 
 
-async def build_codebase_index(  # noqa: ANN401 — ARQ worker context dict
-    ctx: dict[str, object],
+async def build_codebase_index(
+    ctx: WorkerContext,
     repository: str,
 ) -> None:
     """Build vector index for a repository."""
-    redis: aioredis.Redis = ctx["redis"]  # type: ignore[assignment]
+    redis: aioredis.Redis = ctx["redis"]
     settings = get_settings()
     col_name = collection_name(repository)
     lock_key = f"index_lock:{col_name}"
@@ -52,8 +53,8 @@ async def build_codebase_index(  # noqa: ANN401 — ARQ worker context dict
         await lock.release()
 
 
-async def update_codebase_index(  # noqa: ANN401 — ARQ worker context dict
-    ctx: dict[str, object],
+async def update_codebase_index(
+    ctx: WorkerContext,
     repository: str,
     base_sha: str,
     head_sha: str,

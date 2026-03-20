@@ -16,6 +16,7 @@ from agentops.api.deps.redis import RedisDep
 from agentops.config import Settings, get_settings
 from agentops.github.client import fetch_issue, parse_issue_url
 from agentops.github.writeback import post_triage_comment
+from agentops.models.job import TERMINAL_STATUSES, JobData
 
 SettingsDep = Annotated[Settings, Depends(get_settings)]
 
@@ -26,7 +27,6 @@ _logger = logging.getLogger(__name__)
 _GITHUB_ISSUE_URL_PATTERN = r"^https://github\.com/[^/]+/[^/]+/issues/\d+$"
 _MAX_ACTIVE_JOBS_PER_OWNER = 10
 _SSE_KEEPALIVE_SECONDS = 30
-_TERMINAL_STATUSES = frozenset({"killed", "done", "failed", "timed_out"})
 
 GitHubIssueUrl = Annotated[str, Field(pattern=_GITHUB_ISSUE_URL_PATTERN)]
 
@@ -119,20 +119,17 @@ async def create_job(
             issue_title = issue_data.title
             issue_body = issue_data.body
 
-    job_data = {
-        "job_id": job_id,
-        "status": "queued",
-        "issue_url": body.issue_url,
-        "issue_title": issue_title,
-        "issue_body": issue_body,
-        "repository": repository,
-        "supervisor_notes": body.supervisor_notes,
-        "langsmith_url": "",
-        "awaiting_human": False,
-        "current_node": "",
-        "owner_id": owner_id,
-    }
-    await redis.setex(f"job:{job_id}", 86400, json.dumps(job_data))
+    data = JobData(
+        job_id=job_id,
+        status="queued",
+        issue_url=body.issue_url,
+        issue_title=issue_title,
+        issue_body=issue_body,
+        repository=repository,
+        supervisor_notes=body.supervisor_notes,
+        owner_id=owner_id,
+    )
+    await redis.setex(f"job:{job_id}", 86400, data.model_dump_json())
 
     # Auto-index repository if not already indexed
     if repository:
@@ -212,11 +209,11 @@ async def stream_job(job_id: str, redis: RedisDep) -> StreamingResponse:
     )
 
 
-async def _load_job_data(redis: RedisDep, job_id: str) -> dict[str, object]:  # noqa: ANN401 — Redis JSON is untyped
+async def _load_job_data(redis: RedisDep, job_id: str) -> JobData:
     raw = await redis.get(f"job:{job_id}")
     if raw is None:
         raise HTTPException(status_code=404, detail="Job not found")
-    return json.loads(raw)
+    return JobData.model_validate_json(raw)
 
 
 @router.post("/{job_id}/answer", response_model=JobActionResponse)
@@ -229,14 +226,14 @@ async def answer_job(
     """Resume a job waiting for human input by providing an answer."""
     data = await _load_job_data(redis, job_id)
 
-    if not data.get("awaiting_human"):
+    if not data.awaiting_human:
         raise HTTPException(status_code=409, detail="Job is not awaiting human input")
 
     await arq.abort_job(f"timeout:{job_id}")
 
-    data["awaiting_human"] = False
-    data["status"] = "running"
-    await redis.setex(f"job:{job_id}", 86400, json.dumps(data))
+    data.awaiting_human = False
+    data.status = "running"
+    await redis.setex(f"job:{job_id}", 86400, data.model_dump_json())
 
     await arq.enqueue_job("resume_graph", job_id, body.answer, _job_id=job_id)
 
@@ -251,13 +248,12 @@ async def pause_job(
     """Request a running job to pause at the next supervisor boundary."""
     data = await _load_job_data(redis, job_id)
 
-    current_status = str(data.get("status", ""))
-    if current_status in _TERMINAL_STATUSES:
-        return JobActionResponse(status=current_status, job_id=job_id)
+    if data.status in TERMINAL_STATUSES:
+        return JobActionResponse(status=data.status, job_id=job_id)
 
-    data["status"] = "pausing"
-    data["paused"] = True
-    await redis.setex(f"job:{job_id}", 86400, json.dumps(data))
+    data.status = "pausing"
+    data.paused = True
+    await redis.setex(f"job:{job_id}", 86400, data.model_dump_json())
 
     return JobActionResponse(status="pausing", job_id=job_id)
 
@@ -271,15 +267,14 @@ async def resume_job(
     """Resume a paused job."""
     data = await _load_job_data(redis, job_id)
 
-    current_status = str(data.get("status", ""))
-    if current_status in _TERMINAL_STATUSES:
-        return JobActionResponse(status=current_status, job_id=job_id)
-    if not data.get("paused"):
+    if data.status in TERMINAL_STATUSES:
+        return JobActionResponse(status=data.status, job_id=job_id)
+    if not data.paused:
         raise HTTPException(status_code=409, detail="Job is not paused")
 
-    data["status"] = "running"
-    data["paused"] = False
-    await redis.setex(f"job:{job_id}", 86400, json.dumps(data))
+    data.status = "running"
+    data.paused = False
+    await redis.setex(f"job:{job_id}", 86400, data.model_dump_json())
 
     await arq.enqueue_job("resume_graph", job_id, "resume", _job_id=job_id)
 
@@ -296,15 +291,12 @@ async def redirect_job(
     """Inject a redirect instruction into a running or paused job."""
     data = await _load_job_data(redis, job_id)
 
-    existing = data.get("redirect_instructions")
-    instructions: list[str] = [*existing] if existing else []  # type: ignore[misc]
-    instructions.append(body.instruction)
-    data["redirect_instructions"] = instructions
+    data.redirect_instructions.append(body.instruction)
 
-    if data.get("paused"):
-        data["paused"] = False
-        data["status"] = "running"
-        await redis.setex(f"job:{job_id}", 86400, json.dumps(data))
+    if data.paused:
+        data.paused = False
+        data.status = "running"
+        await redis.setex(f"job:{job_id}", 86400, data.model_dump_json())
         await arq.enqueue_job(
             "resume_graph",
             job_id,
@@ -313,7 +305,7 @@ async def redirect_job(
             _job_id=job_id,
         )
     else:
-        await redis.setex(f"job:{job_id}", 86400, json.dumps(data))
+        await redis.setex(f"job:{job_id}", 86400, data.model_dump_json())
 
     return JobActionResponse(status="redirected", job_id=job_id)
 
@@ -327,19 +319,17 @@ async def kill_job(
     """Kill a running job."""
     data = await _load_job_data(redis, job_id)
 
-    current_status = str(data.get("status", ""))
-    if current_status in _TERMINAL_STATUSES:
-        return JobActionResponse(status=current_status, job_id=job_id)
+    if data.status in TERMINAL_STATUSES:
+        return JobActionResponse(status=data.status, job_id=job_id)
 
     # Abort the ARQ task
     await arq.abort_job(job_id)
 
-    data["status"] = "killed"
-    await redis.setex(f"job:{job_id}", 86400, json.dumps(data))
+    data.status = "killed"
+    await redis.setex(f"job:{job_id}", 86400, data.model_dump_json())
     await redis.publish(f"jobs:{job_id}:events", json.dumps({"type": "job.killed"}))
 
-    owner_id = str(data.get("owner_id", "anonymous"))
-    await redis.decr(f"active_jobs:{owner_id}")
+    await redis.decr(f"active_jobs:{data.owner_id or 'anonymous'}")
 
     return JobActionResponse(status="killed", job_id=job_id)
 

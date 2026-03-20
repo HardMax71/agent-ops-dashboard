@@ -5,9 +5,10 @@ from collections.abc import Callable, Coroutine
 
 import redis.asyncio as aioredis
 
-_logger = logging.getLogger(__name__)
+from agentops.models.job import TERMINAL_STATUSES, JobData
+from agentops.models.worker_ctx import WorkerContext
 
-_TERMINAL_STATUSES = frozenset({"killed", "done", "failed", "timed_out"})
+_logger = logging.getLogger(__name__)
 
 
 def worker_error_handler(
@@ -21,24 +22,23 @@ def worker_error_handler(
     fn_name = fn.__name__  # type: ignore[attr-defined]
 
     @functools.wraps(fn)
-    async def wrapper(ctx: dict[str, object], job_id: str, *args: object, **kwargs: object) -> None:
+    async def wrapper(ctx: WorkerContext, job_id: str, *args: object, **kwargs: object) -> None:
         try:
             await fn(ctx, job_id, *args, **kwargs)
         except Exception as exc:
-            redis: aioredis.Redis = ctx["redis"]  # type: ignore[assignment]
+            redis: aioredis.Redis = ctx["redis"]
             _logger.exception("Worker function %s failed for job %s", fn_name, job_id)
             raw = await redis.get(f"job:{job_id}")
             if raw is not None:
-                data = json.loads(raw)
-                if data.get("status") not in _TERMINAL_STATUSES:
+                data = JobData.model_validate_json(raw)
+                if data.status not in TERMINAL_STATUSES:
                     await redis.publish(
                         f"jobs:{job_id}:events",
                         json.dumps({"type": "job.failed", "error": str(exc)}),
                     )
-                    data["status"] = "failed"
-                    await redis.setex(f"job:{job_id}", 86400, json.dumps(data))
-                    owner_id: str = data.get("owner_id", "anonymous")
-                    await redis.decr(f"active_jobs:{owner_id}")
+                    data.status = "failed"
+                    await redis.setex(f"job:{job_id}", 86400, data.model_dump_json())
+                    await redis.decr(f"active_jobs:{data.owner_id or 'anonymous'}")
             raise
 
     return wrapper

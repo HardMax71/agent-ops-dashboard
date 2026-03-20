@@ -23,6 +23,7 @@ from agentops.api.deps.redis import get_redis
 from agentops.config import Settings, get_settings
 from agentops.github.client import fetch_issue, parse_issue_url
 from agentops.github.writeback import post_triage_comment
+from agentops.graphql.context import GraphQLContext
 from agentops.graphql.types import (
     CreateJobInput,
     CreateJobResult,
@@ -35,6 +36,7 @@ from agentops.graphql.types import (
     UserInfo,
     event_from_dict,
 )
+from agentops.models.job import TERMINAL_STATUSES, JobData
 
 _logger = logging.getLogger(__name__)
 
@@ -45,26 +47,26 @@ _MAX_ACTIVE_JOBS_PER_OWNER = 10
 # ── Helpers ────────────────────────────────────────────────────────────
 
 
-def _job_from_dict(data: dict[str, str | int | bool | None]) -> Job:
+def _job_from_dict(data: JobData) -> Job:
     return Job(
-        job_id=strawberry.ID(str(data.get("job_id", ""))),
-        status=str(data.get("status", "")),
-        issue_url=str(data.get("issue_url", "")),
-        issue_title=str(data.get("issue_title", "")),
-        repository=str(data.get("repository", "")),
-        langsmith_url=str(data.get("langsmith_url", "")),
-        awaiting_human=bool(data.get("awaiting_human", False)),
-        current_node=str(data.get("current_node", "")),
-        created_at=str(data.get("created_at", "")),
-        github_comment_url=str(data.get("github_comment_url", "")),
+        job_id=strawberry.ID(data.job_id),
+        status=data.status,
+        issue_url=data.issue_url,
+        issue_title=data.issue_title,
+        repository=data.repository,
+        langsmith_url=data.langsmith_url,
+        awaiting_human=data.awaiting_human,
+        current_node=data.current_node,
+        created_at=data.created_at,
+        github_comment_url=data.github_comment_url,
     )
 
 
-async def _load_job_data(redis: aioredis.Redis, job_id: str) -> dict[str, str | int | bool | None]:
+async def _load_job_data(redis: aioredis.Redis, job_id: str) -> JobData:
     raw = await redis.get(f"job:{job_id}")
     if raw is None:
         raise ValueError(f"Job {job_id} not found")
-    return json.loads(raw)
+    return JobData.model_validate_json(raw)
 
 
 # ── Query ──────────────────────────────────────────────────────────────
@@ -73,13 +75,12 @@ async def _load_job_data(redis: aioredis.Redis, job_id: str) -> dict[str, str | 
 @strawberry.type
 class Query:
     @strawberry.field
-    async def me(self, info: strawberry.Info) -> UserInfo:
+    async def me(self, info: strawberry.Info[GraphQLContext]) -> UserInfo:
         return _require_user(info)
 
     @strawberry.field
-    async def job(self, info: strawberry.Info, job_id: strawberry.ID) -> Job:
-        redis: aioredis.Redis = info.context["redis"]
-        data = await _load_job_data(redis, str(job_id))
+    async def job(self, info: strawberry.Info[GraphQLContext], job_id: strawberry.ID) -> Job:
+        data = await _load_job_data(info.context["redis"], str(job_id))
         return _job_from_dict(data)
 
 
@@ -89,7 +90,9 @@ class Query:
 @strawberry.type
 class Mutation:
     @strawberry.mutation
-    async def create_job(self, info: strawberry.Info, input: CreateJobInput) -> CreateJobResult:
+    async def create_job(
+        self, info: strawberry.Info[GraphQLContext], input: CreateJobInput
+    ) -> CreateJobResult:
         redis: aioredis.Redis = info.context["redis"]
         arq: ArqRedis = info.context["arq"]
         user: UserInfo | None = info.context["user"]
@@ -132,21 +135,18 @@ class Mutation:
                 issue_title = issue_data.title
                 issue_body = issue_data.body
 
-        job_data = {
-            "job_id": job_id,
-            "status": "queued",
-            "issue_url": input.issue_url,
-            "issue_title": issue_title,
-            "issue_body": issue_body,
-            "repository": repository,
-            "supervisor_notes": input.supervisor_notes,
-            "langsmith_url": "",
-            "awaiting_human": False,
-            "current_node": "",
-            "owner_id": owner_id,
-            "created_at": datetime.now(UTC).isoformat(),
-        }
-        await redis.setex(f"job:{job_id}", 86400, json.dumps(job_data))
+        data = JobData(
+            job_id=job_id,
+            status="queued",
+            issue_url=input.issue_url,
+            issue_title=issue_title,
+            issue_body=issue_body,
+            repository=repository,
+            supervisor_notes=input.supervisor_notes,
+            owner_id=owner_id,
+            created_at=datetime.now(UTC).isoformat(),
+        )
+        await redis.setex(f"job:{job_id}", 86400, data.model_dump_json())
 
         # Auto-index repository if not already indexed
         if repository:
@@ -161,88 +161,88 @@ class Mutation:
         return CreateJobResult(job_id=strawberry.ID(job_id), status="queued")
 
     @strawberry.mutation
-    async def kill_job(self, info: strawberry.Info, job_id: strawberry.ID) -> JobActionResult:
-        redis: aioredis.Redis = info.context["redis"]
-        arq: ArqRedis = info.context["arq"]
-        data = await _load_job_data(redis, str(job_id))
-
-        terminal = frozenset({"killed", "done", "failed", "timed_out"})
-        current_status = str(data.get("status", ""))
-        if current_status in terminal:
-            return JobActionResult(status=current_status, job_id=job_id)
-
-        await arq.abort_job(str(job_id))
-
-        data["status"] = "killed"
-        await redis.setex(f"job:{job_id}", 86400, json.dumps(data))
-        await redis.publish(f"jobs:{job_id}:events", json.dumps({"type": "job.killed"}))
-
-        owner_id = str(data.get("owner_id", "anonymous"))
-        await redis.decr(f"active_jobs:{owner_id}")
-
-        return JobActionResult(status="killed", job_id=job_id)
-
-    @strawberry.mutation
-    async def answer_job(
-        self, info: strawberry.Info, job_id: strawberry.ID, answer: str
+    async def kill_job(
+        self, info: strawberry.Info[GraphQLContext], job_id: strawberry.ID
     ) -> JobActionResult:
         redis: aioredis.Redis = info.context["redis"]
         arq: ArqRedis = info.context["arq"]
         data = await _load_job_data(redis, str(job_id))
 
-        if not data.get("awaiting_human"):
+        if data.status in TERMINAL_STATUSES:
+            return JobActionResult(status=data.status, job_id=job_id)
+
+        await arq.abort_job(str(job_id))
+
+        data.status = "killed"
+        await redis.setex(f"job:{job_id}", 86400, data.model_dump_json())
+        await redis.publish(f"jobs:{job_id}:events", json.dumps({"type": "job.killed"}))
+
+        await redis.decr(f"active_jobs:{data.owner_id or 'anonymous'}")
+
+        return JobActionResult(status="killed", job_id=job_id)
+
+    @strawberry.mutation
+    async def answer_job(
+        self, info: strawberry.Info[GraphQLContext], job_id: strawberry.ID, answer: str
+    ) -> JobActionResult:
+        redis: aioredis.Redis = info.context["redis"]
+        arq: ArqRedis = info.context["arq"]
+        data = await _load_job_data(redis, str(job_id))
+
+        if not data.awaiting_human:
             raise ValueError("Job is not awaiting human input")
 
         await arq.abort_job(f"timeout:{job_id}")
 
-        data["awaiting_human"] = False
-        data["status"] = "running"
-        await redis.setex(f"job:{job_id}", 86400, json.dumps(data))
+        data.awaiting_human = False
+        data.status = "running"
+        await redis.setex(f"job:{job_id}", 86400, data.model_dump_json())
         await arq.enqueue_job("resume_graph", str(job_id), answer, _job_id=str(job_id))
 
         return JobActionResult(status="answer_received", job_id=job_id)
 
     @strawberry.mutation
-    async def pause_job(self, info: strawberry.Info, job_id: strawberry.ID) -> JobActionResult:
+    async def pause_job(
+        self, info: strawberry.Info[GraphQLContext], job_id: strawberry.ID
+    ) -> JobActionResult:
         redis: aioredis.Redis = info.context["redis"]
         data = await _load_job_data(redis, str(job_id))
 
-        data["status"] = "pausing"
-        data["paused"] = True
-        await redis.setex(f"job:{job_id}", 86400, json.dumps(data))
+        data.status = "pausing"
+        data.paused = True
+        await redis.setex(f"job:{job_id}", 86400, data.model_dump_json())
 
         return JobActionResult(status="pausing", job_id=job_id)
 
     @strawberry.mutation
-    async def resume_job(self, info: strawberry.Info, job_id: strawberry.ID) -> JobActionResult:
+    async def resume_job(
+        self, info: strawberry.Info[GraphQLContext], job_id: strawberry.ID
+    ) -> JobActionResult:
         redis: aioredis.Redis = info.context["redis"]
         arq: ArqRedis = info.context["arq"]
         data = await _load_job_data(redis, str(job_id))
 
-        data["status"] = "running"
-        data["paused"] = False
-        await redis.setex(f"job:{job_id}", 86400, json.dumps(data))
+        data.status = "running"
+        data.paused = False
+        await redis.setex(f"job:{job_id}", 86400, data.model_dump_json())
         await arq.enqueue_job("resume_graph", str(job_id), "resume", _job_id=str(job_id))
 
         return JobActionResult(status="resumed", job_id=job_id)
 
     @strawberry.mutation
     async def redirect_job(
-        self, info: strawberry.Info, job_id: strawberry.ID, instruction: str
+        self, info: strawberry.Info[GraphQLContext], job_id: strawberry.ID, instruction: str
     ) -> JobActionResult:
         redis: aioredis.Redis = info.context["redis"]
         arq: ArqRedis = info.context["arq"]
         data = await _load_job_data(redis, str(job_id))
 
-        existing = data.get("redirect_instructions")
-        instructions: list[str] = [*existing] if existing else []  # type: ignore[misc]
-        instructions.append(instruction)
-        data["redirect_instructions"] = instructions  # type: ignore[assignment]
+        data.redirect_instructions.append(instruction)
 
-        if data.get("paused"):
-            data["paused"] = False
-            data["status"] = "running"
-            await redis.setex(f"job:{job_id}", 86400, json.dumps(data))
+        if data.paused:
+            data.paused = False
+            data.status = "running"
+            await redis.setex(f"job:{job_id}", 86400, data.model_dump_json())
             await arq.enqueue_job(
                 "resume_graph",
                 str(job_id),
@@ -251,20 +251,23 @@ class Mutation:
                 _job_id=str(job_id),
             )
         else:
-            await redis.setex(f"job:{job_id}", 86400, json.dumps(data))
+            await redis.setex(f"job:{job_id}", 86400, data.model_dump_json())
 
         return JobActionResult(status="redirected", job_id=job_id)
 
     @strawberry.mutation
-    async def post_comment(self, info: strawberry.Info, job_id: strawberry.ID) -> PostCommentResult:
+    async def post_comment(
+        self, info: strawberry.Info[GraphQLContext], job_id: strawberry.ID
+    ) -> PostCommentResult:
         user = _require_user(info)
-        redis: aioredis.Redis = info.context["redis"]
         settings: Settings = info.context["settings"]
-        comment_url = await post_triage_comment(redis, str(job_id), user.github_id, settings)
+        comment_url = await post_triage_comment(
+            info.context["redis"], str(job_id), user.github_id, settings
+        )
         return PostCommentResult(ok=True, comment_url=comment_url)
 
     @strawberry.mutation
-    async def logout(self, info: strawberry.Info) -> LogoutResult:
+    async def logout(self, info: strawberry.Info[GraphQLContext]) -> LogoutResult:
         user = _require_user(info)
         request: Request = info.context["request"]
         response: Response = info.context["response"]
@@ -285,7 +288,7 @@ class Mutation:
         return LogoutResult(ok=True)
 
     @strawberry.mutation
-    async def delete_github_token(self, info: strawberry.Info) -> DeleteTokenResult:
+    async def delete_github_token(self, info: strawberry.Info[GraphQLContext]) -> DeleteTokenResult:
         user = _require_user(info)
         redis: aioredis.Redis = info.context["redis"]
         await redis.delete(f"github_token:{user.github_id}")
@@ -299,7 +302,7 @@ class Mutation:
 class Subscription:
     @strawberry.subscription
     async def job_events(
-        self, info: strawberry.Info, job_id: strawberry.ID
+        self, info: strawberry.Info[GraphQLContext], job_id: strawberry.ID
     ) -> AsyncGenerator[JobEvent, None]:
         redis: aioredis.Redis = info.context["redis"]
         pubsub = redis.pubsub()
@@ -326,7 +329,7 @@ class Subscription:
 schema = strawberry.Schema(query=Query, mutation=Mutation, subscription=Subscription)
 
 
-def _require_user(info: strawberry.Info) -> UserInfo:
+def _require_user(info: strawberry.Info[GraphQLContext]) -> UserInfo:
     """Raise if no authenticated user in context."""
     user: UserInfo | None = info.context["user"]
     if user is None:
@@ -341,7 +344,7 @@ async def get_context(
     redis: aioredis.Redis = Depends(get_redis),
     arq: ArqRedis = Depends(get_arq),
     settings: Settings = Depends(get_settings),
-) -> dict[str, Request | Response | UserInfo | None | aioredis.Redis | ArqRedis | Settings]:
+) -> GraphQLContext:
     return {
         "request": request,
         "response": response,

@@ -19,6 +19,7 @@ from agentops.api.main import create_app
 from agentops.auth.service import create_access_token
 from agentops.config import Settings
 from agentops.graph.state import AgentFinding, BugTriageState
+from agentops.models.job import JobData
 
 
 @pytest.fixture
@@ -70,18 +71,16 @@ def make_finding() -> Callable[..., AgentFinding]:
 
 
 @pytest.fixture
-def make_job(fake_redis: FakeAsyncRedis) -> Callable[..., Coroutine[None, None, dict[str, object]]]:
-    async def _factory(job_id: str = "job-1", **overrides: object) -> dict[str, object]:
-        data: dict[str, object] = {
+def make_job(fake_redis: FakeAsyncRedis) -> Callable[..., Coroutine[None, None, JobData]]:
+    async def _factory(job_id: str = "job-1", **overrides: object) -> JobData:
+        defaults: dict[str, object] = {
             "job_id": job_id,
             "status": "running",
             "issue_url": "https://github.com/a/b/issues/1",
-            "langsmith_url": "",
-            "awaiting_human": False,
-            "current_node": "",
-            **overrides,
         }
-        await fake_redis.setex(f"job:{job_id}", 86400, json.dumps(data))
+        defaults.update(overrides)
+        data = JobData(**defaults)  # type: ignore[arg-type]
+        await fake_redis.setex(f"job:{job_id}", 86400, data.model_dump_json())
         return data
 
     return _factory

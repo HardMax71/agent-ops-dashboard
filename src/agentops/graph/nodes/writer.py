@@ -1,9 +1,10 @@
 import httpx
 
+from agentops.graph.node_results import WriterNodeResult
 from agentops.graph.state import BugTriageState, TriageReport
 
 
-async def writer_node(state: BugTriageState) -> dict:  # noqa: ANN401 — LangGraph node returns partial state dict
+async def writer_node(state: BugTriageState) -> WriterNodeResult:
     """Call writer LangServe endpoint."""
     payload = {
         "input": {
