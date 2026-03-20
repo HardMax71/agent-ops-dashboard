@@ -1,3 +1,4 @@
+import json
 import logging
 
 import httpx
@@ -46,10 +47,10 @@ async def codebase_search_node(state: BugTriageState) -> AgentNodeResult:
     payload = {
         "input": {
             "repository": state.repository,
-            "keywords": _get_keywords(state),
+            "keywords": json.dumps(_get_keywords(state)),
             "hypothesis": _get_hypothesis(state),
-            "affected_areas": _get_affected_areas(state),
-            "local_context": local_context,
+            "affected_areas": json.dumps(_get_affected_areas(state)),
+            "local_context": json.dumps(local_context),
         }
     }
     async with httpx.AsyncClient(timeout=60.0) as client:

@@ -1,3 +1,5 @@
+import json
+
 import httpx
 
 from agentops.graph.node_results import AgentNodeResult
@@ -9,12 +11,14 @@ async def web_search_node(state: BugTriageState) -> AgentNodeResult:
     inv_finding = next(
         (f for f in reversed(state.findings) if f.agent_name == "investigator"), None
     )
+    keywords = inv_finding.keywords_for_search if inv_finding else []
+    errors = inv_finding.error_messages if inv_finding else []
     payload = {
         "input": {
             "issue_title": state.issue_title,
             "hypothesis": inv_finding.hypothesis if inv_finding else "",
-            "keywords_for_search": inv_finding.keywords_for_search if inv_finding else [],
-            "error_messages": inv_finding.error_messages if inv_finding else [],
+            "keywords_for_search": json.dumps(keywords),
+            "error_messages": json.dumps(errors),
         }
     }
     async with httpx.AsyncClient(timeout=60.0) as client:
