@@ -18,4 +18,8 @@ async def check_for_interrupt(
     interrupts = state.tasks[0].interrupts
     if not interrupts:
         return None
-    return interrupts[0].value
+    value = interrupts[0].value
+    return HumanExchange(
+        question=value.get("question", ""),
+        context=value.get("context", ""),
+    )
