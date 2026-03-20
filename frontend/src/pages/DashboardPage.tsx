@@ -305,16 +305,20 @@ function OutputPanel({ job }: { job: JobLocal }): React.ReactElement {
               aria-label="GitHub comment editor"
             />
             {commentUrl ? (
-              <a
-                href={commentUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="View posted comment on GitHub"
+              <Button
+                variant="outline"
+                className="w-full gap-2 text-emerald-700 border-emerald-200"
+                asChild
               >
-                <Button variant="outline" className="w-full gap-2 text-emerald-700 border-emerald-200">
+                <a
+                  href={commentUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="View posted comment on GitHub"
+                >
                   <ExternalLink className="h-3 w-3" /> Comment posted — view on GitHub
-                </Button>
-              </a>
+                </a>
+              </Button>
             ) : (
               <Button
                 onClick={handlePostComment}
@@ -330,16 +334,16 @@ function OutputPanel({ job }: { job: JobLocal }): React.ReactElement {
 
         {/* LangSmith Link */}
         {job.langsmithUrl && (
-          <a
-            href={job.langsmithUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="View trace in LangSmith"
-          >
-            <Button variant="outline" className="w-full gap-2">
+          <Button variant="outline" className="w-full gap-2" asChild>
+            <a
+              href={job.langsmithUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="View trace in LangSmith"
+            >
               <ExternalLink className="h-3 w-3" /> View in LangSmith
-            </Button>
-          </a>
+            </a>
+          </Button>
         )}
       </div>
     </ScrollArea>

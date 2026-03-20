@@ -192,7 +192,7 @@ export function LandingPage(): React.ReactElement {
                   {agent.name}
                 </span>
                 <span className="text-[11px] text-muted-foreground font-mono">
-                  {agent.tools.join(' &middot; ')}
+                  {agent.tools.join(' \u00b7 ')}
                 </span>
               </div>
               <p className="text-sm text-muted-foreground mt-1">{agent.desc}</p>
