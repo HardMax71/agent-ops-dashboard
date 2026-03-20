@@ -1,5 +1,6 @@
 import React from 'react'
-import clsx from 'clsx'
+import { Card } from '@/components/ui/card'
+import { cn } from '@/lib/utils'
 import type { JobLocal } from '../store/jobStore'
 import { StatusBadge } from './StatusBadge'
 
@@ -28,27 +29,28 @@ export function extractRepo(issueUrl: string): string {
 
 export function JobCard({ job, isSelected, onClick }: JobCardProps): React.ReactElement {
   return (
-    <button
-      onClick={onClick}
-      className={clsx(
-        'w-full text-left p-4 rounded-lg border transition-colors cursor-pointer',
+    <Card
+      className={cn(
+        'cursor-pointer transition-all p-3',
         isSelected
-          ? 'bg-gray-700 border-blue-500'
-          : 'bg-gray-800 border-gray-700 hover:bg-gray-750 hover:border-gray-600'
+          ? 'ring-2 ring-primary shadow-sm'
+          : 'hover:shadow-sm hover:border-border/80'
       )}
+      onClick={onClick}
+      role="button"
       aria-pressed={isSelected}
       aria-label={`Job: ${job.issueTitle || extractRepo(job.issueUrl)}`}
     >
       <div className="flex items-start justify-between gap-2 mb-2">
         <StatusBadge status={job.status} />
-        <span className="text-xs text-gray-500">{formatTimeAgo(job.createdAt)}</span>
+        <span className="text-xs text-muted-foreground">{formatTimeAgo(job.createdAt)}</span>
       </div>
-      <p className="text-sm font-medium text-gray-200 truncate mb-1">
+      <p className="text-sm font-medium truncate mb-1">
         {job.issueTitle || extractRepo(job.issueUrl)}
       </p>
-      <p className="text-xs text-gray-500 truncate font-mono">
+      <p className="text-xs text-muted-foreground truncate font-mono">
         {extractRepo(job.issueUrl)}
       </p>
-    </button>
+    </Card>
   )
 }

@@ -339,7 +339,7 @@ export interface MutationGenqlSelection{
     pauseJob?: (JobActionResultGenqlSelection & { __args: {jobId: Scalars['ID']} })
     resumeJob?: (JobActionResultGenqlSelection & { __args: {jobId: Scalars['ID']} })
     redirectJob?: (JobActionResultGenqlSelection & { __args: {jobId: Scalars['ID'], instruction: Scalars['String']} })
-    postComment?: (PostCommentResultGenqlSelection & { __args: {jobId: Scalars['ID']} })
+    postComment?: (PostCommentResultGenqlSelection & { __args: {jobId: Scalars['ID'], comment?: (Scalars['String'] | null)} })
     logout?: LogoutResultGenqlSelection
     deleteGithubToken?: DeleteTokenResultGenqlSelection
     __typename?: boolean | number

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react'
-import clsx from 'clsx'
+import { cn } from '@/lib/utils'
 
 interface ModalProps {
   isOpen: boolean
@@ -36,18 +36,18 @@ export function Modal({ isOpen, onClose, title, children, className }: ModalProp
       <div
         ref={dialogRef}
         tabIndex={-1}
-        className={clsx(
-          'bg-gray-800 rounded-lg shadow-xl border border-gray-700 p-6 w-full max-w-md outline-none',
+        className={cn(
+          'bg-background rounded-lg shadow-xl border p-6 w-full max-w-md outline-none',
           className
         )}
       >
         <div className="flex items-center justify-between mb-4">
-          <h2 id="modal-title" className="text-lg font-semibold text-gray-100">
+          <h2 id="modal-title" className="text-lg font-semibold">
             {title}
           </h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-200 transition-colors"
+            className="text-muted-foreground hover:text-foreground transition-colors"
             aria-label="Close modal"
           >
             ✕

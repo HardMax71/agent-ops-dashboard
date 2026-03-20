@@ -2,6 +2,7 @@ import React from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { DashboardPage } from './pages/DashboardPage'
 import { LoginPage } from './pages/LoginPage'
+import { LandingPage } from './pages/LandingPage'
 import { SettingsPage } from './pages/SettingsPage'
 import { useAuthStore } from './store/authStore'
 import { gql } from './api/graphqlClient'
@@ -19,8 +20,8 @@ function ProtectedRoute({ children }: { children: React.ReactElement }): React.R
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-950">
-        <p className="text-gray-400">Loading...</p>
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-muted-foreground">Loading...</p>
       </div>
     )
   }
@@ -68,8 +69,8 @@ function AuthCallbackPage(): React.ReactElement {
   }, [setToken, setUser])
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-950">
-      <p className="text-gray-400">Signing in...</p>
+    <div className="min-h-screen flex items-center justify-center">
+      <p className="text-muted-foreground">Signing in...</p>
     </div>
   )
 }
@@ -78,6 +79,7 @@ export default function App(): React.ReactElement {
   return (
     <BrowserRouter>
       <Routes>
+        <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route
           path="/dashboard"
@@ -95,7 +97,6 @@ export default function App(): React.ReactElement {
             </ProtectedRoute>
           }
         />
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route path="/auth/callback" element={<AuthCallbackPage />} />
       </Routes>
     </BrowserRouter>

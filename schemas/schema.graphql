@@ -112,7 +112,7 @@ type Mutation {
   pauseJob(jobId: ID!): JobActionResult!
   resumeJob(jobId: ID!): JobActionResult!
   redirectJob(jobId: ID!, instruction: String!): JobActionResult!
-  postComment(jobId: ID!): PostCommentResult!
+  postComment(jobId: ID!, comment: String = null): PostCommentResult!
   logout: LogoutResult!
   deleteGithubToken: DeleteTokenResult!
 }

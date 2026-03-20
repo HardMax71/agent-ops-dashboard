@@ -369,6 +369,9 @@ export default {
                     "jobId": [
                         8,
                         "ID!"
+                    ],
+                    "comment": [
+                        1
                     ]
                 }
             ],

@@ -1,6 +1,8 @@
 import React, { useState } from 'react'
 import { useAuthStore } from '../store/authStore'
 import { gql, getAccessToken } from '../api/graphqlClient'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 
 export function SettingsPage(): React.ReactElement {
   const { user, logout } = useAuthStore()
@@ -26,50 +28,60 @@ export function SettingsPage(): React.ReactElement {
   }
 
   return (
-    <div className="min-h-screen bg-gray-950 p-8">
-      <div className="max-w-lg mx-auto">
-        <h1 className="text-xl font-bold text-gray-100 mb-6">Settings</h1>
+    <div className="min-h-screen bg-muted/30 p-8">
+      <div className="max-w-lg mx-auto space-y-4">
+        <h1 className="text-xl font-bold mb-6">Settings</h1>
 
         {user && (
-          <div className="bg-gray-800 rounded-lg border border-gray-700 p-6 mb-4">
-            <h2 className="text-sm font-semibold text-gray-300 mb-4">GitHub Account</h2>
-            <div className="flex items-center gap-3 mb-4">
-              {user.avatarUrl && (
-                <img
-                  src={user.avatarUrl}
-                  alt={user.githubLogin}
-                  className="w-10 h-10 rounded-full border border-gray-600"
-                />
-              )}
-              <div>
-                <p className="text-sm font-medium text-gray-200">{user.githubLogin}</p>
-                <p className="text-xs text-gray-500">GitHub ID: {user.githubId}</p>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm">GitHub Account</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center gap-3 mb-4">
+                {user.avatarUrl && (
+                  <img
+                    src={user.avatarUrl}
+                    alt={user.githubLogin}
+                    className="w-10 h-10 rounded-full border"
+                  />
+                )}
+                <div>
+                  <p className="text-sm font-medium">{user.githubLogin}</p>
+                  <p className="text-xs text-muted-foreground">GitHub ID: {user.githubId}</p>
+                </div>
               </div>
-            </div>
-            {isDisconnected ? (
-              <span className="text-sm text-gray-500">GitHub token disconnected</span>
-            ) : (
-              <button
-                onClick={handleDisconnectGitHub}
-                className="text-sm text-red-400 hover:text-red-300 border border-red-800 hover:border-red-700 px-3 py-1.5 rounded transition-colors"
-                aria-label="Disconnect GitHub account"
-              >
-                Disconnect GitHub
-              </button>
-            )}
-          </div>
+              {isDisconnected ? (
+                <span className="text-sm text-muted-foreground">GitHub token disconnected</span>
+              ) : (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleDisconnectGitHub}
+                  className="text-red-600 border-red-200 hover:bg-red-50"
+                  aria-label="Disconnect GitHub account"
+                >
+                  Disconnect GitHub
+                </Button>
+              )}
+            </CardContent>
+          </Card>
         )}
 
-        <div className="bg-gray-800 rounded-lg border border-gray-700 p-6">
-          <h2 className="text-sm font-semibold text-gray-300 mb-4">Session</h2>
-          <button
-            onClick={handleLogout}
-            className="text-sm text-gray-300 hover:text-gray-100 border border-gray-600 hover:border-gray-500 px-4 py-2 rounded transition-colors"
-            aria-label="Log out"
-          >
-            Log out
-          </button>
-        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm">Session</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Button
+              variant="outline"
+              onClick={handleLogout}
+              aria-label="Log out"
+            >
+              Log out
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     </div>
   )
