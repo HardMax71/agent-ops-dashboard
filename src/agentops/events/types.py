@@ -24,7 +24,7 @@ class AgentTokenEvent(TypedDict):
 class OutputTokenEvent(TypedDict):
     type: Literal["output.token"]
     token: str
-    section: str | None
+    section: str
 
 
 class AgentToolCallEvent(TypedDict):

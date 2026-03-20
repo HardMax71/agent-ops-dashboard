@@ -2,6 +2,7 @@ import asyncio
 import hashlib
 import json
 import logging
+import time
 import uuid
 from collections.abc import AsyncGenerator
 from typing import Annotated
@@ -209,6 +210,20 @@ async def stream_job(job_id: str, redis: RedisDep) -> StreamingResponse:
     )
 
 
+_ARQ_ABORT_SS = "arq:abort"
+_ARQ_RESULT_PREFIX = "arq:result:"
+
+
+async def _abort_arq_job(redis: RedisDep, job_id: str) -> None:
+    """Signal the arq worker to abort a job (fire-and-forget)."""
+    await redis.zadd(_ARQ_ABORT_SS, {job_id: int(time.time() * 1000)})
+
+
+async def _clear_arq_result(redis: RedisDep, job_id: str) -> None:
+    """Remove a stale arq result so a new job with the same ID can be enqueued."""
+    await redis.delete(f"{_ARQ_RESULT_PREFIX}{job_id}")
+
+
 async def _load_job_data(redis: RedisDep, job_id: str) -> JobData:
     raw = await redis.get(f"job:{job_id}")
     if raw is None:
@@ -229,12 +244,13 @@ async def answer_job(
     if not data.awaiting_human:
         raise HTTPException(status_code=409, detail="Job is not awaiting human input")
 
-    await arq.abort_job(f"timeout:{job_id}")
+    await _abort_arq_job(redis, f"timeout:{job_id}")
 
     data.awaiting_human = False
     data.status = "running"
     await redis.setex(f"job:{job_id}", 86400, data.model_dump_json())
 
+    await _clear_arq_result(redis, job_id)
     await arq.enqueue_job("resume_graph", job_id, body.answer, _job_id=job_id)
 
     return JobActionResponse(status="answer_received", job_id=job_id)
@@ -276,6 +292,7 @@ async def resume_job(
     data.paused = False
     await redis.setex(f"job:{job_id}", 86400, data.model_dump_json())
 
+    await _clear_arq_result(redis, job_id)
     await arq.enqueue_job("resume_graph", job_id, "resume", _job_id=job_id)
 
     return JobActionResponse(status="resumed", job_id=job_id)
@@ -297,6 +314,7 @@ async def redirect_job(
         data.paused = False
         data.status = "running"
         await redis.setex(f"job:{job_id}", 86400, data.model_dump_json())
+        await _clear_arq_result(redis, job_id)
         await arq.enqueue_job(
             "resume_graph",
             job_id,
@@ -323,7 +341,7 @@ async def kill_job(
         return JobActionResponse(status=data.status, job_id=job_id)
 
     # Abort the ARQ task
-    await arq.abort_job(job_id)
+    await _abort_arq_job(redis, job_id)
 
     data.status = "killed"
     await redis.setex(f"job:{job_id}", 86400, data.model_dump_json())

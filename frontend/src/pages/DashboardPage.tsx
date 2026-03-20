@@ -3,8 +3,7 @@ import { useJobStore } from '../store/jobStore'
 import type { JobLocal } from '../store/jobStore'
 import { gql } from '../api/graphqlClient'
 import { JobCard } from '../components/JobCard'
-import { AgentCard } from '../components/AgentCard'
-import { QuestionCard } from '../components/QuestionCard'
+import { ActivityLog } from '../components/ActivityLog'
 import { ExecutionTimeline } from '../components/ExecutionTimeline'
 import { StatusBadge } from '../components/StatusBadge'
 import { Modal } from '../components/Modal'
@@ -94,7 +93,6 @@ function JobWorkspace({ job }: { job: JobLocal }): React.ReactElement {
   const [showRedirectModal, setShowRedirectModal] = useState(false)
   const [showKillModal, setShowKillModal] = useState(false)
   const [redirectInstruction, setRedirectInstruction] = useState('')
-  const agentTokens = useJobStore((s) => s.agentTokens[`${job.jobId}:${job.currentNode}`] || '')
   const updateJob = useJobStore((s) => s.updateJob)
 
   const handlePause = async (): Promise<void> => {
@@ -170,36 +168,9 @@ function JobWorkspace({ job }: { job: JobLocal }): React.ReactElement {
         <ExecutionTimeline findings={job.findings || []} currentNode={job.currentNode || ''} status={job.status} />
       </div>
 
-      {/* Content */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-3">
-        {/* Question card */}
-        {job.awaitingHuman && (
-          <QuestionCard
-            jobId={job.jobId}
-            question={
-              job.humanExchanges?.[job.humanExchanges.length - 1]?.question
-              || job.pendingQuestion
-              || 'Additional context needed'
-            }
-            onAnswered={() => updateJob(job.jobId, { awaitingHuman: false, pendingQuestion: '' })}
-          />
-        )}
-
-        {/* Agent cards */}
-        {(job.findings || []).map((finding, idx) => (
-          <AgentCard
-            key={`${finding.agentName}-${idx}`}
-            finding={finding}
-            state={job.currentNode === finding.agentName ? 'running' : 'done'}
-            streamedTokens={job.currentNode === finding.agentName ? agentTokens : undefined}
-          />
-        ))}
-
-        {job.status === 'queued' && !job.awaitingHuman && (
-          <div className="text-center text-gray-500 text-sm py-8">
-            Job queued. Waiting for worker...
-          </div>
-        )}
+      {/* Activity Log */}
+      <div className="flex-1 overflow-y-auto p-4">
+        <ActivityLog jobId={job.jobId} />
       </div>
 
       {/* Redirect Modal */}
@@ -368,9 +339,18 @@ export function DashboardPage(): React.ReactElement {
 
   // Load existing jobs from backend on mount
   useEffect(() => {
-    gql.query({ jobs: { __scalar: true } }).then((result) => {
+    gql.query({ jobs: { __scalar: true, relevantFiles: true } }).then((result) => {
       for (const j of result.jobs) {
-        setJob({ ...j, status: j.status as JobLocal['status'] })
+        const report = j.severity ? {
+          severity: j.severity as 'critical' | 'high' | 'medium' | 'low',
+          rootCause: j.recommendedFix || '',
+          relevantFiles: j.relevantFiles || [],
+          recommendedFix: j.recommendedFix || '',
+          confidence: 0,
+          githubComment: j.githubComment || '',
+          ticketDraft: {},
+        } : undefined
+        setJob({ ...j, status: j.status as JobLocal['status'], report })
       }
     }).catch(() => {})
   }, [setJob])

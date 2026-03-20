@@ -33,12 +33,14 @@ export function subscribe<T>(
   onData: (data: T) => void,
   onError?: (err: unknown) => void,
 ): () => void {
+  console.log('[ws] subscribing', op.query?.substring(0, 80))
   const cleanup = wsClient.subscribe(op, {
     next: (result) => {
+      console.log('[ws] next', result)
       if (result.data) onData(result.data as T)
     },
-    error: (err) => onError?.(err),
-    complete: () => {},
+    error: (err) => { console.error('[ws] error', err); onError?.(err) },
+    complete: () => { console.log('[ws] complete') },
   })
   return cleanup
 }

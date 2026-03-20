@@ -79,6 +79,11 @@ export interface Job {
     pendingQuestion: Scalars['String']
     pendingQuestionContext: Scalars['String']
     githubCommentUrl: Scalars['String']
+    severity: Scalars['String']
+    recommendedFix: Scalars['String']
+    githubComment: Scalars['String']
+    relevantFiles: Scalars['String'][]
+    ticketTitle: Scalars['String']
     __typename: 'Job'
 }
 
@@ -93,7 +98,7 @@ export interface JobDoneEvent {
     __typename: 'JobDoneEvent'
 }
 
-export type JobEvent = (AgentSpawnedEvent | AgentTokenEvent | OutputTokenEvent | AgentToolCallEvent | AgentToolResultEvent | AgentDoneEvent | OutputSectionDoneEvent | GraphNodeCompleteEvent | GraphInterruptEvent | JobDoneEvent | JobFailedEvent | JobKilledEvent | JobTimedOutEvent) & { __isUnion?: true }
+export type JobEvent = (AgentSpawnedEvent | AgentTokenEvent | OutputTokenEvent | AgentToolCallEvent | AgentToolResultEvent | AgentDoneEvent | OutputSectionDoneEvent | GraphNodeCompleteEvent | GraphInterruptEvent | JobDoneEvent | JobFailedEvent | JobKilledEvent | JobTimedOutEvent | JobSnapshotEvent) & { __isUnion?: true }
 
 export interface JobFailedEvent {
     error: Scalars['String']
@@ -103,6 +108,15 @@ export interface JobFailedEvent {
 export interface JobKilledEvent {
     Empty: (Scalars['Boolean'] | null)
     __typename: 'JobKilledEvent'
+}
+
+export interface JobSnapshotEvent {
+    status: Scalars['String']
+    currentNode: Scalars['String']
+    awaitingHuman: Scalars['Boolean']
+    pendingQuestion: Scalars['String']
+    pendingQuestionContext: Scalars['String']
+    __typename: 'JobSnapshotEvent'
 }
 
 export interface JobTimedOutEvent {
@@ -135,7 +149,7 @@ export interface OutputSectionDoneEvent {
 
 export interface OutputTokenEvent {
     token: Scalars['String']
-    section: (Scalars['String'] | null)
+    section: Scalars['String']
     __typename: 'OutputTokenEvent'
 }
 
@@ -244,6 +258,11 @@ export interface JobGenqlSelection{
     pendingQuestion?: boolean | number
     pendingQuestionContext?: boolean | number
     githubCommentUrl?: boolean | number
+    severity?: boolean | number
+    recommendedFix?: boolean | number
+    githubComment?: boolean | number
+    relevantFiles?: boolean | number
+    ticketTitle?: boolean | number
     __typename?: boolean | number
     __scalar?: boolean | number
 }
@@ -275,6 +294,7 @@ export interface JobEventGenqlSelection{
     on_JobFailedEvent?:JobFailedEventGenqlSelection,
     on_JobKilledEvent?:JobKilledEventGenqlSelection,
     on_JobTimedOutEvent?:JobTimedOutEventGenqlSelection,
+    on_JobSnapshotEvent?:JobSnapshotEventGenqlSelection,
     __typename?: boolean | number
 }
 
@@ -286,6 +306,16 @@ export interface JobFailedEventGenqlSelection{
 
 export interface JobKilledEventGenqlSelection{
     Empty?: boolean | number
+    __typename?: boolean | number
+    __scalar?: boolean | number
+}
+
+export interface JobSnapshotEventGenqlSelection{
+    status?: boolean | number
+    currentNode?: boolean | number
+    awaitingHuman?: boolean | number
+    pendingQuestion?: boolean | number
+    pendingQuestionContext?: boolean | number
     __typename?: boolean | number
     __scalar?: boolean | number
 }
@@ -455,7 +485,7 @@ export interface UserInfoGenqlSelection{
     
 
 
-    const JobEvent_possibleTypes: string[] = ['AgentSpawnedEvent','AgentTokenEvent','OutputTokenEvent','AgentToolCallEvent','AgentToolResultEvent','AgentDoneEvent','OutputSectionDoneEvent','GraphNodeCompleteEvent','GraphInterruptEvent','JobDoneEvent','JobFailedEvent','JobKilledEvent','JobTimedOutEvent']
+    const JobEvent_possibleTypes: string[] = ['AgentSpawnedEvent','AgentTokenEvent','OutputTokenEvent','AgentToolCallEvent','AgentToolResultEvent','AgentDoneEvent','OutputSectionDoneEvent','GraphNodeCompleteEvent','GraphInterruptEvent','JobDoneEvent','JobFailedEvent','JobKilledEvent','JobTimedOutEvent','JobSnapshotEvent']
     export const isJobEvent = (obj?: { __typename?: any } | null): obj is JobEvent => {
       if (!obj?.__typename) throw new Error('__typename is missing in "isJobEvent"')
       return JobEvent_possibleTypes.includes(obj.__typename)
@@ -475,6 +505,14 @@ export interface UserInfoGenqlSelection{
     export const isJobKilledEvent = (obj?: { __typename?: any } | null): obj is JobKilledEvent => {
       if (!obj?.__typename) throw new Error('__typename is missing in "isJobKilledEvent"')
       return JobKilledEvent_possibleTypes.includes(obj.__typename)
+    }
+    
+
+
+    const JobSnapshotEvent_possibleTypes: string[] = ['JobSnapshotEvent']
+    export const isJobSnapshotEvent = (obj?: { __typename?: any } | null): obj is JobSnapshotEvent => {
+      if (!obj?.__typename) throw new Error('__typename is missing in "isJobSnapshotEvent"')
+      return JobSnapshotEvent_possibleTypes.includes(obj.__typename)
     }
     
 

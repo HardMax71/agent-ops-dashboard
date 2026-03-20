@@ -81,10 +81,17 @@ async def _stream_and_finalize(
         for sse in transformer.transform(event):  # type: ignore[arg-type]
             await redis_client.publish(channel, json.dumps(sse))
 
+    # Read current_node from graph state so we can persist it to Redis
+    graph_state = await graph.aget_state(config)
+    graph_vals: dict[str, object] = getattr(graph_state, "values", None) or {}
+    live_node = str(graph_vals.get("current_node", ""))
+
     fresh_raw = await redis_client.get(f"job:{job_id}")
     if fresh_raw is None:
         return
     data = JobData.model_validate_json(fresh_raw)
+    if live_node:
+        data.current_node = live_node
 
     if data.status in TERMINAL_STATUSES:
         return
@@ -127,14 +134,14 @@ async def _stream_and_finalize(
         config_for_state: RunnableConfig = {"configurable": {"thread_id": job_id}}
         final_state = await graph.aget_state(config_for_state)
         vals: dict[str, object] = getattr(final_state, "values", None) or {}
-        report: dict[str, object] = vals.get("report") or {}
-        if report and "severity" in report:
-            data.github_comment = str(report.get("github_comment", ""))
-            data.severity = str(report.get("severity", ""))
-            data.relevant_files = list(report.get("relevant_files", []))
-            data.recommended_fix = str(report.get("recommended_fix", ""))
-            data.ticket_title = str(report.get("ticket_title", ""))
-            data.ticket_labels = list(report.get("ticket_labels", []))
+        report = vals.get("report")
+        if report is not None:
+            data.github_comment = str(getattr(report, "github_comment", ""))
+            data.severity = str(getattr(report, "severity", ""))
+            data.relevant_files = list(getattr(report, "relevant_files", []))
+            data.recommended_fix = str(getattr(report, "recommended_fix", ""))
+            data.ticket_title = str(getattr(report, "ticket_title", ""))
+            data.ticket_labels = list(getattr(report, "ticket_labels", []))
 
         await redis_client.publish(channel, json.dumps({"type": "job.done"}))
         data.status = "done"

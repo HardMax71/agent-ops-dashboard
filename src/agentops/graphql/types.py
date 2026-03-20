@@ -34,6 +34,11 @@ class Job:
     pending_question: str = ""
     pending_question_context: str = ""
     github_comment_url: str = ""
+    severity: str = ""
+    recommended_fix: str = ""
+    github_comment: str = ""
+    relevant_files: list[str] = strawberry.field(default_factory=list)
+    ticket_title: str = ""
 
 
 @strawberry.input
@@ -89,7 +94,7 @@ class AgentTokenEvent:
 @strawberry.type
 class OutputTokenEvent:
     token: str
-    section: str | None = None
+    section: str = ""
 
 
 @strawberry.type
@@ -149,6 +154,15 @@ class JobTimedOutEvent:
     _empty: bool | None = None
 
 
+@strawberry.type
+class JobSnapshotEvent:
+    status: str
+    current_node: str
+    awaiting_human: bool
+    pending_question: str
+    pending_question_context: str
+
+
 JobEvent = Annotated[
     AgentSpawnedEvent
     | AgentTokenEvent
@@ -162,7 +176,8 @@ JobEvent = Annotated[
     | JobDoneEvent
     | JobFailedEvent
     | JobKilledEvent
-    | JobTimedOutEvent,
+    | JobTimedOutEvent
+    | JobSnapshotEvent,
     strawberry.union("JobEvent"),
 ]
 
@@ -182,6 +197,7 @@ _EVENT_MAP: dict[str, type] = {
     "job.failed": JobFailedEvent,
     "job.killed": JobKilledEvent,
     "job.timed_out": JobTimedOutEvent,
+    "job.snapshot": JobSnapshotEvent,
 }
 
 
@@ -201,6 +217,7 @@ def event_from_dict(
     | JobFailedEvent
     | JobKilledEvent
     | JobTimedOutEvent
+    | JobSnapshotEvent
     | None
 ):
     """Convert a Redis pub/sub JSON dict into the matching Strawberry event type."""

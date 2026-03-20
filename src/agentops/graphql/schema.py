@@ -6,6 +6,7 @@ import hashlib
 import json
 import logging
 import re
+import time
 import uuid
 from collections.abc import AsyncGenerator
 from datetime import UTC, datetime
@@ -32,6 +33,7 @@ from agentops.graphql.types import (
     Job,
     JobActionResult,
     JobEvent,
+    JobSnapshotEvent,
     LogoutResult,
     PostCommentResult,
     UserInfo,
@@ -43,9 +45,21 @@ _logger = logging.getLogger(__name__)
 
 _GITHUB_ISSUE_URL_PATTERN = r"^https://github\.com/[^/]+/[^/]+/issues/\d+$"
 _MAX_ACTIVE_JOBS_PER_OWNER = 10
+_ARQ_ABORT_SS = "arq:abort"
+_ARQ_RESULT_PREFIX = "arq:result:"
 
 
 # ── Helpers ────────────────────────────────────────────────────────────
+
+
+async def _abort_arq_job(redis: aioredis.Redis, job_id: str) -> None:
+    """Signal the arq worker to abort a job (fire-and-forget)."""
+    await redis.zadd(_ARQ_ABORT_SS, {job_id: int(time.time() * 1000)})
+
+
+async def _clear_arq_result(redis: aioredis.Redis, job_id: str) -> None:
+    """Remove a stale arq result so a new job with the same ID can be enqueued."""
+    await redis.delete(f"{_ARQ_RESULT_PREFIX}{job_id}")
 
 
 def _extract_bearer_token(connection: HTTPConnection) -> str | None:
@@ -70,6 +84,11 @@ def _job_from_dict(data: JobData) -> Job:
         pending_question=data.pending_question,
         pending_question_context=data.pending_question_context,
         github_comment_url=data.github_comment_url,
+        severity=data.severity,
+        recommended_fix=data.recommended_fix,
+        github_comment=data.github_comment,
+        relevant_files=data.relevant_files,
+        ticket_title=data.ticket_title,
     )
 
 
@@ -196,13 +215,12 @@ class Mutation:
         self, info: strawberry.Info[GraphQLContext], job_id: strawberry.ID
     ) -> JobActionResult:
         redis: aioredis.Redis = info.context["redis"]
-        arq: ArqRedis = info.context["arq"]
         data = await _load_job_data(redis, str(job_id))
 
         if data.status in TERMINAL_STATUSES:
             return JobActionResult(status=data.status, job_id=job_id)
 
-        await arq.abort_job(str(job_id))
+        await _abort_arq_job(redis, str(job_id))
 
         data.status = "killed"
         await redis.setex(f"job:{job_id}", 86400, data.model_dump_json())
@@ -223,11 +241,12 @@ class Mutation:
         if not data.awaiting_human:
             raise ValueError("Job is not awaiting human input")
 
-        await arq.abort_job(f"timeout:{job_id}")
+        await _abort_arq_job(redis, f"timeout:{job_id}")
 
         data.awaiting_human = False
         data.status = "running"
         await redis.setex(f"job:{job_id}", 86400, data.model_dump_json())
+        await _clear_arq_result(redis, str(job_id))
         await arq.enqueue_job("resume_graph", str(job_id), answer, _job_id=str(job_id))
 
         return JobActionResult(status="answer_received", job_id=job_id)
@@ -256,6 +275,7 @@ class Mutation:
         data.status = "running"
         data.paused = False
         await redis.setex(f"job:{job_id}", 86400, data.model_dump_json())
+        await _clear_arq_result(redis, str(job_id))
         await arq.enqueue_job("resume_graph", str(job_id), "resume", _job_id=str(job_id))
 
         return JobActionResult(status="resumed", job_id=job_id)
@@ -274,6 +294,7 @@ class Mutation:
             data.paused = False
             data.status = "running"
             await redis.setex(f"job:{job_id}", 86400, data.model_dump_json())
+            await _clear_arq_result(redis, str(job_id))
             await arq.enqueue_job(
                 "resume_graph",
                 str(job_id),
@@ -338,18 +359,41 @@ class Subscription:
         redis: aioredis.Redis = info.context["redis"]
         pubsub = redis.pubsub()
         channel = f"jobs:{job_id}:events"
+
+        # Subscribe FIRST — Redis buffers messages from this point
         await pubsub.subscribe(channel)
+
         try:
+            # Yield current state as snapshot (catches up on anything before subscribe)
+            raw = await redis.get(f"job:{job_id}")
+            if raw is not None:
+                data = JobData.model_validate_json(raw)
+                yield JobSnapshotEvent(
+                    status=data.status,
+                    current_node=data.current_node,
+                    awaiting_human=data.awaiting_human,
+                    pending_question=data.pending_question,
+                    pending_question_context=data.pending_question_context,
+                )
+                if data.status in TERMINAL_STATUSES:
+                    return
+
+            # Yield live events (including any buffered during snapshot fetch)
             async for message in pubsub.listen():
-                if message["type"] == "message":
-                    data = json.loads(message["data"])
-                    event = event_from_dict(data)
-                    if event is None:
-                        continue
-                    yield event
-                    event_type = data.get("type", "")
-                    if event_type in ("job.done", "job.failed", "job.killed", "job.timed_out"):
-                        break
+                if message["type"] != "message":
+                    continue
+                parsed = json.loads(message["data"])
+                event = event_from_dict(parsed)
+                if event is None:
+                    continue
+                yield event
+                if parsed.get("type", "") in (
+                    "job.done",
+                    "job.failed",
+                    "job.killed",
+                    "job.timed_out",
+                ):
+                    break
         finally:
             await pubsub.unsubscribe(channel)
             await pubsub.aclose()

@@ -34,6 +34,7 @@ async def test_expire_provides_timeout_answer(ctx, fake_redis, mock_graph, make_
 
     mock_graph.aget_state.side_effect = [
         MagicMock(tasks=["pending_task"]),  # expire_human_input check
+        MagicMock(values={"current_node": ""}),  # current_node extraction in _stream_and_finalize
         MagicMock(tasks=[]),  # check_for_interrupt in _stream_and_finalize
         MagicMock(values={}),  # report extraction in _stream_and_finalize
     ]

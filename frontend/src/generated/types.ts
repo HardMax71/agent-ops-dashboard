@@ -163,6 +163,21 @@ export default {
             "githubCommentUrl": [
                 1
             ],
+            "severity": [
+                1
+            ],
+            "recommendedFix": [
+                1
+            ],
+            "githubComment": [
+                1
+            ],
+            "relevantFiles": [
+                1
+            ],
+            "ticketTitle": [
+                1
+            ],
             "__typename": [
                 1
             ]
@@ -194,7 +209,7 @@ export default {
                 3
             ],
             "on_OutputTokenEvent": [
-                24
+                25
             ],
             "on_AgentToolCallEvent": [
                 4
@@ -206,7 +221,7 @@ export default {
                 0
             ],
             "on_OutputSectionDoneEvent": [
-                23
+                24
             ],
             "on_GraphNodeCompleteEvent": [
                 12
@@ -224,6 +239,9 @@ export default {
                 19
             ],
             "on_JobTimedOutEvent": [
+                21
+            ],
+            "on_JobSnapshotEvent": [
                 20
             ],
             "__typename": [
@@ -241,6 +259,26 @@ export default {
         "JobKilledEvent": {
             "Empty": [
                 10
+            ],
+            "__typename": [
+                1
+            ]
+        },
+        "JobSnapshotEvent": {
+            "status": [
+                1
+            ],
+            "currentNode": [
+                1
+            ],
+            "awaitingHuman": [
+                10
+            ],
+            "pendingQuestion": [
+                1
+            ],
+            "pendingQuestionContext": [
+                1
             ],
             "__typename": [
                 1
@@ -326,7 +364,7 @@ export default {
                 }
             ],
             "postComment": [
-                25,
+                26,
                 {
                     "jobId": [
                         8,
@@ -335,7 +373,7 @@ export default {
                 }
             ],
             "logout": [
-                21
+                22
             ],
             "deleteGithubToken": [
                 9
@@ -376,7 +414,7 @@ export default {
         },
         "Query": {
             "me": [
-                28
+                29
             ],
             "job": [
                 14,
