@@ -1,38 +1,39 @@
 import React, { useEffect, useRef, useState } from 'react'
-import clsx from 'clsx'
+import { cn } from '@/lib/utils'
 import { useJobStore } from '../store/jobStore'
 import type { LogEntry } from '../store/jobStore'
 import { QuestionCard } from './QuestionCard'
+import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible'
+import { ChevronRight, Check, Loader2, MessageSquare, XCircle, X, Clock, Wrench, ArrowLeft } from 'lucide-react'
 
 // ── Style config ─────────────────────────────────────────────────────
 
 const NODE_STYLE: Record<string, { text: string; border: string; bg: string }> = {
-  investigator:    { text: 'text-blue-300',   border: 'border-blue-700',   bg: 'bg-blue-950/20' },
-  codebase_search: { text: 'text-purple-300', border: 'border-purple-700', bg: 'bg-purple-950/20' },
-  web_search:      { text: 'text-cyan-300',   border: 'border-cyan-700',   bg: 'bg-cyan-950/20' },
-  critic:          { text: 'text-orange-300',  border: 'border-orange-700', bg: 'bg-orange-950/20' },
-  human_input:     { text: 'text-amber-300',   border: 'border-amber-700',  bg: 'bg-amber-950/20' },
-  writer:          { text: 'text-green-300',   border: 'border-green-700',  bg: 'bg-green-950/20' },
+  investigator:    { text: 'text-blue-700',    border: 'border-blue-200',    bg: 'bg-blue-50/50' },
+  codebase_search: { text: 'text-purple-700',  border: 'border-purple-200',  bg: 'bg-purple-50/50' },
+  web_search:      { text: 'text-cyan-700',    border: 'border-cyan-200',    bg: 'bg-cyan-50/50' },
+  critic:          { text: 'text-orange-700',   border: 'border-orange-200',  bg: 'bg-orange-50/50' },
+  human_input:     { text: 'text-amber-700',    border: 'border-amber-200',   bg: 'bg-amber-50/50' },
+  writer:          { text: 'text-green-700',    border: 'border-green-200',   bg: 'bg-green-50/50' },
 }
-const DEFAULT_STYLE = { text: 'text-gray-300', border: 'border-gray-700', bg: 'bg-gray-800/30' }
+const DEFAULT_STYLE = { text: 'text-foreground', border: 'border-border', bg: 'bg-muted/30' }
 
 function label(node: string): string { return node.replace(/_/g, ' ') }
 function colors(node: string) { return NODE_STYLE[node] || DEFAULT_STYLE }
 
-// ── Standalone event config (icon + text + style — no branching) ─────
+// ── Standalone event config ──────────────────────────────────────────
 
 interface EventDisplay {
-  icon: string
+  icon: React.ReactElement
   text: (e: Record<string, string>) => string
   className: string
 }
 
 const EVENT_DISPLAY: Record<string, EventDisplay> = {
-  JobDoneEvent:     { icon: '\u2713', text: () => 'Job completed',                                     className: 'border border-green-800 bg-green-950/30 text-green-300 font-medium' },
-  JobFailedEvent:   { icon: '\u2717', text: (e) => `Job failed${e.error ? `: ${e.error}` : ''}`,       className: 'border border-red-800 bg-red-950/30 text-red-300' },
-  JobKilledEvent:   { icon: '\u2715', text: () => 'Job killed',                                        className: 'border border-gray-700 bg-gray-800/50 text-gray-400' },
-  JobTimedOutEvent: { icon: '\u23f1', text: () => 'Job timed out',                                     className: 'border border-red-800 bg-red-950/30 text-red-300' },
-  JobSnapshotEvent: { icon: '\u21bb', text: (e) => `Reconnected \u2014 ${e.status}${e.currentNode ? `, at ${label(e.currentNode)}` : ''}`, className: 'text-gray-500 text-xs py-0' },
+  JobDoneEvent:     { icon: <Check className="h-3.5 w-3.5" />,    text: () => 'Job completed',                                className: 'border border-emerald-200 bg-emerald-50 text-emerald-700 font-medium' },
+  JobFailedEvent:   { icon: <XCircle className="h-3.5 w-3.5" />,  text: (e) => `Job failed${e.error ? `: ${e.error}` : ''}`,  className: 'border border-red-200 bg-red-50 text-red-700' },
+  JobKilledEvent:   { icon: <X className="h-3.5 w-3.5" />,        text: () => 'Job killed',                                   className: 'border border-border bg-muted text-muted-foreground' },
+  JobTimedOutEvent: { icon: <Clock className="h-3.5 w-3.5" />,    text: () => 'Job timed out',                                className: 'border border-red-200 bg-red-50 text-red-700' },
 }
 
 // ── Block types for grouping ─────────────────────────────────────────
@@ -56,34 +57,31 @@ function buildBlocks(events: LogEntry[]): Block[] {
   const flushRun = () => { if (run) { blocks.push({ kind: 'run', run }); run = null } }
 
   for (const e of events) {
-    // Agent spawned (non-supervisor) → start a new run
+    // Skip snapshot/reconnect events entirely
+    if (e.__typename === 'JobSnapshotEvent') continue
+
     if (e.__typename === 'AgentSpawnedEvent' && e.node !== 'supervisor') {
       flushRun()
       run = { node: e.node, children: [], done: false }
       continue
     }
-    // Agent done (non-supervisor) → close current run
     if (e.__typename === 'AgentDoneEvent' && e.node !== 'supervisor') {
       if (run?.node === e.node) run.done = true
       flushRun()
       continue
     }
-    // Tool events → nest inside current run
     if (run && (e.__typename === 'AgentToolCallEvent' || e.__typename === 'AgentToolResultEvent')) {
       run.children.push(e)
       continue
     }
-    // Question → attach to current run (human_input node) or standalone
     if (e.__typename === 'GraphInterruptEvent') {
       if (run) {
         run.question = { text: e.question, context: e.context, index: qIdx++ }
       } else {
-        // Shouldn't happen, but handle gracefully — make a synthetic run
         run = { node: 'human_input', children: [], done: false, question: { text: e.question, context: e.context, index: qIdx++ } }
       }
       continue
     }
-    // Everything else → standalone
     flushRun()
     blocks.push({ kind: 'event', entry: e })
   }
@@ -95,49 +93,52 @@ function buildBlocks(events: LogEntry[]): Block[] {
 
 function RunBlock({ run, jobId }: { run: AgentRun; jobId: string }): React.ReactElement {
   const hasQuestion = !!run.question
-  // Default open only if there's a pending question (user needs to interact)
   const job = useJobStore((s) => s.jobs[jobId])
   const isPending = hasQuestion && run.question!.index === (job?.humanExchanges?.length ?? 0) - 1 && job?.awaitingHuman
   const [open, setOpen] = useState(isPending)
   const c = colors(run.node)
   const calls = run.children.filter((e) => e.__typename === 'AgentToolCallEvent').length
 
-  // Auto-open when a question arrives
   useEffect(() => { if (isPending) setOpen(true) }, [isPending])
 
-  const statusLabel = hasQuestion && isPending
-    ? <span className="text-amber-400 text-xs ml-auto">awaiting input</span>
+  const statusIcon = hasQuestion && isPending
+    ? <MessageSquare className="h-3.5 w-3.5 text-amber-600 ml-auto" />
     : run.done
-      ? <span className="text-green-500 text-xs ml-auto">&#10003; done</span>
-      : <span className="text-blue-400 text-xs ml-auto animate-pulse">running...</span>
+      ? <Check className="h-3.5 w-3.5 text-emerald-600 ml-auto" />
+      : <Loader2 className="h-3.5 w-3.5 text-blue-600 ml-auto animate-spin" />
 
   return (
-    <div className={clsx('rounded-lg border', c.border, c.bg)}>
-      <button onClick={() => setOpen(!open)} className="w-full flex items-center gap-2 px-3 py-2 text-left">
-        <span className={clsx('text-xs transition-transform', open && 'rotate-90')}>&#9654;</span>
-        <span className={clsx('text-sm font-medium', c.text)}>{label(run.node)}</span>
-        {statusLabel}
-        {calls > 0 && <span className="text-gray-500 text-xs">{calls} tool call{calls !== 1 ? 's' : ''}</span>}
-      </button>
-      {open && (
-        <div className="px-3 pb-3 space-y-1 border-t border-gray-700/50 pt-2 ml-5">
-          {run.children.map((ev, i) =>
-            ev.__typename === 'AgentToolCallEvent' ? (
-              <div key={i} className="text-xs">
-                <span className="text-gray-500">&#9881; </span>
-                <span className="text-gray-300 font-mono">{ev.toolName}</span>
-                {ev.inputPreview && <span className="text-gray-500 font-mono ml-1">({ev.inputPreview})</span>}
-              </div>
-            ) : ev.__typename === 'AgentToolResultEvent' ? (
-              <div key={i} className="text-xs text-gray-500 font-mono pl-3 break-all">&#8592; {ev.resultSummary}</div>
-            ) : null,
-          )}
-          {hasQuestion && (
-            <QuestionInRun question={run.question!.text} index={run.question!.index} jobId={jobId} />
-          )}
-        </div>
-      )}
-    </div>
+    <Collapsible open={open} onOpenChange={setOpen}>
+      <div className={cn('rounded-lg border', c.border, c.bg)}>
+        <CollapsibleTrigger className="w-full flex items-center gap-2 px-3 py-2 text-left">
+          <ChevronRight className={cn('h-3 w-3 transition-transform text-muted-foreground', open && 'rotate-90')} />
+          <span className={cn('text-sm font-medium', c.text)}>{label(run.node)}</span>
+          {calls > 0 && <span className="text-muted-foreground text-xs">{calls} tool call{calls !== 1 ? 's' : ''}</span>}
+          {statusIcon}
+        </CollapsibleTrigger>
+        <CollapsibleContent>
+          <div className="px-3 pb-3 space-y-1 border-t pt-2 ml-5">
+            {run.children.map((ev, i) =>
+              ev.__typename === 'AgentToolCallEvent' ? (
+                <div key={i} className="text-xs flex items-center gap-1">
+                  <Wrench className="h-3 w-3 text-muted-foreground shrink-0" />
+                  <span className="text-foreground font-mono">{ev.toolName}</span>
+                  {ev.inputPreview && <span className="text-muted-foreground font-mono">({ev.inputPreview})</span>}
+                </div>
+              ) : ev.__typename === 'AgentToolResultEvent' ? (
+                <div key={i} className="text-xs text-muted-foreground font-mono pl-4 break-all flex items-start gap-1">
+                  <ArrowLeft className="h-3 w-3 shrink-0 mt-0.5" />
+                  <span>{ev.resultSummary}</span>
+                </div>
+              ) : null,
+            )}
+            {hasQuestion && (
+              <QuestionInRun question={run.question!.text} index={run.question!.index} jobId={jobId} />
+            )}
+          </div>
+        </CollapsibleContent>
+      </div>
+    </Collapsible>
   )
 }
 
@@ -170,30 +171,29 @@ function QuestionInRun({ question, index, jobId }: { question: string; index: nu
   return (
     <div className="space-y-1 mt-1">
       <div className="text-sm">
-        <span className="text-amber-400 font-medium">Question: </span>
-        <span className="text-gray-300">{question}</span>
+        <span className="text-amber-700 font-medium">Question: </span>
+        <span className="text-foreground">{question}</span>
       </div>
       {exchange?.answer && (
         <div className="text-sm">
-          <span className="text-amber-300 font-medium">Your answer: </span>
-          <span className="text-gray-300">{exchange.answer}</span>
+          <span className="text-amber-600 font-medium">Your answer: </span>
+          <span className="text-foreground">{exchange.answer}</span>
         </div>
       )}
     </div>
   )
 }
 
-// ── Standalone event banner (config-driven) ──────────────────────────
+// ── Standalone event banner ──────────────────────────────────────────
 
 function EventBanner({ entry }: { entry: LogEntry }): React.ReactElement | null {
   const cfg = EVENT_DISPLAY[entry.__typename]
   if (!cfg) return null
   const text = cfg.text(entry as unknown as Record<string, string>)
   return (
-    <div className={clsx('rounded px-3 py-2 text-sm', cfg.className)}>
-      {cfg.icon} {entry.__typename === 'HumanAnswerEntry'
-        ? <><span className="font-medium">Your answer: </span>{text}</>
-        : text}
+    <div className={cn('rounded px-3 py-2 text-sm flex items-center gap-2', cfg.className)}>
+      {cfg.icon}
+      {text}
     </div>
   )
 }
@@ -216,7 +216,7 @@ export function ActivityLog({ jobId }: { jobId: string }): React.ReactElement {
   return (
     <div className="space-y-2">
       {blocks.length === 0 && job.status === 'queued' && (
-        <div className="text-center text-gray-500 text-sm py-8">Job queued. Waiting for worker...</div>
+        <div className="text-center text-muted-foreground text-sm py-8">Job queued. Waiting for worker...</div>
       )}
       {blocks.map((block, i) =>
         block.kind === 'run'

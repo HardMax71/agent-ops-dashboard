@@ -309,12 +309,15 @@ class Mutation:
 
     @strawberry.mutation
     async def post_comment(
-        self, info: strawberry.Info[GraphQLContext], job_id: strawberry.ID
+        self,
+        info: strawberry.Info[GraphQLContext],
+        job_id: strawberry.ID,
+        comment: str | None = None,
     ) -> PostCommentResult:
         user = _require_user(info)
         settings: Settings = info.context["settings"]
         comment_url = await post_triage_comment(
-            info.context["redis"], str(job_id), user.github_id, settings
+            info.context["redis"], str(job_id), user.github_id, settings, comment
         )
         return PostCommentResult(ok=True, comment_url=comment_url)
 

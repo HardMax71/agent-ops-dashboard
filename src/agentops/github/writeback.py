@@ -15,6 +15,7 @@ async def post_triage_comment(
     job_id: str,
     github_id: str,
     settings: Settings,
+    comment_override: str | None = None,
 ) -> str:
     """Post the triage comment to GitHub and optionally add labels.
 
@@ -24,6 +25,9 @@ async def post_triage_comment(
     if raw is None:
         raise ValueError(f"Job {job_id} not found")
     data = JobData.model_validate_json(raw)
+
+    if comment_override:
+        data.github_comment = comment_override
 
     if not data.github_comment:
         raise ValueError("No triage comment available for this job")

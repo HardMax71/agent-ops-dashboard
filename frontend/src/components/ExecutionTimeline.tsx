@@ -1,5 +1,5 @@
 import React from 'react'
-import clsx from 'clsx'
+import { cn } from '@/lib/utils'
 import type { AgentFinding } from '../store/jobStore'
 
 interface ExecutionTimelineProps {
@@ -17,7 +17,7 @@ export function ExecutionTimeline({ findings, currentNode, status }: ExecutionTi
 
   return (
     <div
-      className="flex items-center gap-1 p-3 bg-gray-800 rounded-lg border border-gray-700 overflow-x-auto"
+      className="flex items-center gap-1 p-3 bg-muted/50 rounded-lg border overflow-x-auto"
       role="list"
       aria-label="Execution timeline"
     >
@@ -28,20 +28,20 @@ export function ExecutionTimeline({ findings, currentNode, status }: ExecutionTi
           <React.Fragment key={node}>
             {idx > 0 && (
               <div
-                className={clsx('h-px flex-1 min-w-4', isVisited ? 'bg-blue-500' : 'bg-gray-600')}
+                className={cn('h-px flex-1 min-w-4', isVisited ? 'bg-primary' : 'bg-border')}
                 aria-hidden="true"
               />
             )}
             <div
               role="listitem"
               aria-label={`${node}: ${isCurrent ? 'active' : isVisited ? 'completed' : 'pending'}`}
-              className={clsx(
+              className={cn(
                 'flex-shrink-0 rounded-full text-xs px-2 py-1 font-medium whitespace-nowrap transition-colors',
                 isCurrent
-                  ? 'bg-blue-600 text-white ring-2 ring-blue-400 ring-offset-2 ring-offset-gray-800'
+                  ? 'bg-primary text-primary-foreground ring-2 ring-primary/30 ring-offset-2 ring-offset-background'
                   : isVisited
-                  ? 'bg-blue-900 text-blue-200'
-                  : 'bg-gray-700 text-gray-400'
+                  ? 'bg-primary/10 text-primary'
+                  : 'bg-muted text-muted-foreground'
               )}
             >
               {node.replace('_', ' ')}
