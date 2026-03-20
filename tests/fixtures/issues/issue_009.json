@@ -1,0 +1,10 @@
+{
+    "issue_url": "https://github.com/acme/backend/issues/201",
+    "issue_title": "Sensitive user data logged in plaintext at INFO level",
+    "issue_body": "The UserService logs full user objects at INFO level, including email addresses, phone numbers, and hashed passwords. These logs are shipped to our centralized logging platform which is accessible to the entire engineering team.\n\nExample log line:\nINFO UserService: Updating user User{id=123, email=john@example.com, phone=+1234567890, passwordHash=$2a$10$...}",
+    "repository": "acme/backend",
+    "outputs": {
+        "severity": "high",
+        "relevant_files": ["src/main/java/com/acme/UserService.java", "src/main/java/com/acme/model/User.java"]
+    }
+}

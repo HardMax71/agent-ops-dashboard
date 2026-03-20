@@ -154,6 +154,9 @@ export default {
             "createdAt": [
                 1
             ],
+            "githubCommentUrl": [
+                1
+            ],
             "__typename": [
                 1
             ]
@@ -357,6 +360,9 @@ export default {
         "PostCommentResult": {
             "ok": [
                 10
+            ],
+            "commentUrl": [
+                1
             ],
             "__typename": [
                 1

@@ -31,6 +31,7 @@ class Job:
     awaiting_human: bool
     current_node: str
     created_at: str
+    github_comment_url: str = ""
 
 
 @strawberry.input
@@ -54,6 +55,7 @@ class JobActionResult:
 @strawberry.type
 class PostCommentResult:
     ok: bool
+    comment_url: str = ""
 
 
 @strawberry.type

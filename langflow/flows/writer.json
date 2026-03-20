@@ -1,6 +1,30 @@
 {
+  "id": "flow-writer-001",
   "name": "Writer Agent",
-  "description": "LangFlow flow for writer agent",
-  "nodes": [],
-  "edges": []
+  "description": "Produces the final triage report including severity assessment, root cause analysis, recommended fix, and a GitHub comment draft.",
+  "nodes": [
+    {
+      "id": "chat-model-1",
+      "type": "ChatModel",
+      "data": {
+        "model": "gpt-4o-mini",
+        "temperature": 0
+      },
+      "position": { "x": 400, "y": 200 }
+    },
+    {
+      "id": "prompt-1",
+      "type": "Prompt",
+      "data": {
+        "template": "You are a technical writer producing a bug triage report.\n\nIssue: {issue_title}\n\nAgent Findings:\n{findings}\n\nCritic Feedback:\n{critic_feedback}\n\nHuman Exchanges:\n{human_exchanges}\n\nProduce a complete triage report with:\n1. Severity: critical, high, medium, or low\n2. Root cause: Clear, technical explanation\n3. Relevant files: List of affected source files\n4. Recommended fix: Step-by-step remediation plan\n5. Confidence: 0.0-1.0\n6. GitHub comment: Markdown-formatted comment suitable for posting on the issue\n7. Ticket title: Concise title for a follow-up ticket\n8. Ticket labels: Appropriate labels (e.g., bug, security, performance)"
+      },
+      "position": { "x": 100, "y": 200 }
+    }
+  ],
+  "edges": [
+    {
+      "source": "prompt-1",
+      "target": "chat-model-1"
+    }
+  ]
 }

@@ -119,6 +119,19 @@ async def _stream_and_finalize(
                 _defer_by=_HUMAN_TIMEOUT_SECONDS,
             )
     else:
+        # Persist triage report fields from final graph state
+        config_for_state: RunnableConfig = {"configurable": {"thread_id": job_id}}
+        final_state = await graph.aget_state(config_for_state)
+        vals: dict[str, object] = getattr(final_state, "values", None) or {}
+        report: dict[str, object] = vals.get("report") or {}
+        if report and "severity" in report:
+            data["github_comment"] = report.get("github_comment", "")
+            data["severity"] = report.get("severity", "")
+            data["relevant_files"] = report.get("relevant_files", [])
+            data["recommended_fix"] = report.get("recommended_fix", "")
+            data["ticket_title"] = report.get("ticket_title", "")
+            data["ticket_labels"] = report.get("ticket_labels", [])
+
         await redis_client.publish(channel, json.dumps({"type": "job.done"}))
         data["status"] = "done"
         await redis_client.setex(f"job:{job_id}", 86400, json.dumps(data))

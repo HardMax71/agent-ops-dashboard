@@ -60,6 +60,7 @@ type Job {
   awaitingHuman: Boolean!
   currentNode: String!
   createdAt: String!
+  githubCommentUrl: String!
 }
 
 type JobActionResult {
@@ -112,6 +113,7 @@ type OutputTokenEvent {
 
 type PostCommentResult {
   ok: Boolean!
+  commentUrl: String!
 }
 
 type Query {

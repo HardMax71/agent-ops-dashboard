@@ -1,6 +1,30 @@
 {
+  "id": "flow-critic-001",
   "name": "Critic Agent",
-  "description": "LangFlow flow for critic agent",
-  "nodes": [],
-  "edges": []
+  "description": "Reviews findings from all agents to assess completeness, identify gaps, and determine if sufficient evidence exists for a final report.",
+  "nodes": [
+    {
+      "id": "chat-model-1",
+      "type": "ChatModel",
+      "data": {
+        "model": "gpt-4o-mini",
+        "temperature": 0
+      },
+      "position": { "x": 400, "y": 200 }
+    },
+    {
+      "id": "prompt-1",
+      "type": "Prompt",
+      "data": {
+        "template": "You are a critical reviewer evaluating a bug triage investigation.\n\nFindings from agents:\n{findings}\n\nCurrent hypothesis: {hypothesis}\n\nHuman exchanges:\n{human_exchanges}\n\nEvaluate the investigation:\n1. Verdict: APPROVED or REJECTED\n2. Gaps: What evidence is missing?\n3. Required evidence: What specific data points are needed?\n4. Confidence: How confident are you in the current findings? (0.0-1.0)\n\nBe rigorous — only APPROVE if the root cause is well-supported with specific file references."
+      },
+      "position": { "x": 100, "y": 200 }
+    }
+  ],
+  "edges": [
+    {
+      "source": "prompt-1",
+      "target": "chat-model-1"
+    }
+  ]
 }

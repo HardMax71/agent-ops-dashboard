@@ -243,6 +243,26 @@ function JobWorkspace({ job }: { job: JobLocal }): React.ReactElement {
 
 function OutputPanel({ job }: { job: JobLocal }): React.ReactElement {
   const [commentText, setCommentText] = useState(job.report?.githubComment || '')
+  const [isPostingComment, setIsPostingComment] = useState(false)
+  const [commentUrl, setCommentUrl] = useState('')
+
+  const handlePostComment = async (): Promise<void> => {
+    setIsPostingComment(true)
+    try {
+      const result = await gql.mutation({
+        postComment: {
+          __args: { jobId: job.jobId },
+          ok: true,
+          commentUrl: true,
+        },
+      })
+      if (result.postComment.commentUrl) {
+        setCommentUrl(result.postComment.commentUrl)
+      }
+    } finally {
+      setIsPostingComment(false)
+    }
+  }
 
   if (!job.report) {
     return (
@@ -299,14 +319,26 @@ function OutputPanel({ job }: { job: JobLocal }): React.ReactElement {
           rows={4}
           aria-label="GitHub comment editor"
         />
-        <button
-          disabled
-          title="Not yet implemented"
-          className="mt-2 w-full bg-gray-700 text-gray-500 text-xs font-medium py-2 rounded cursor-not-allowed"
-          aria-label="Post comment to GitHub (not yet implemented)"
-        >
-          Post Comment to GitHub
-        </button>
+        {commentUrl ? (
+          <a
+            href={commentUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-2 block w-full text-center bg-green-800 text-green-200 text-xs font-medium py-2 rounded hover:bg-green-700 transition-colors"
+            aria-label="View posted comment on GitHub"
+          >
+            Comment posted — view on GitHub
+          </a>
+        ) : (
+          <button
+            onClick={handlePostComment}
+            disabled={isPostingComment || !commentText.trim()}
+            className="mt-2 w-full bg-blue-600 hover:bg-blue-500 disabled:bg-gray-700 disabled:text-gray-500 text-white text-xs font-medium py-2 rounded transition-colors"
+            aria-label="Post comment to GitHub"
+          >
+            {isPostingComment ? 'Posting...' : 'Post Comment to GitHub'}
+          </button>
+        )}
       </div>
 
       {/* LangSmith Link */}
@@ -355,7 +387,21 @@ export function DashboardPage(): React.ReactElement {
       >
         <div className="p-4 border-b border-gray-700">
           <div className="flex items-center justify-between mb-3">
-            <h1 className="text-sm font-semibold text-gray-200">AgentOps</h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-sm font-semibold text-gray-200">AgentOps</h1>
+              <a
+                href="/langflow/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-gray-400 hover:text-gray-200 transition-colors"
+                title="Configure flows in LangFlow"
+                aria-label="Open LangFlow editor"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
+                </svg>
+              </a>
+            </div>
             <button
               onClick={() => setShowNewJobModal(true)}
               className="bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium px-3 py-1.5 rounded transition-colors"

@@ -6,15 +6,18 @@ import uuid
 from collections.abc import AsyncGenerator
 from typing import Annotated
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
 from agentops.api.deps.arq import ArqDep
-from agentops.api.deps.auth import OptionalUserDep
+from agentops.api.deps.auth import CurrentUserDep, OptionalUserDep
 from agentops.api.deps.redis import RedisDep
-from agentops.config import get_settings
+from agentops.config import Settings, get_settings
 from agentops.github.client import fetch_issue, parse_issue_url
+from agentops.github.writeback import post_triage_comment
+
+SettingsDep = Annotated[Settings, Depends(get_settings)]
 
 router = APIRouter(prefix="/jobs", tags=["jobs"])
 
@@ -130,6 +133,12 @@ async def create_job(
         "owner_id": owner_id,
     }
     await redis.setex(f"job:{job_id}", 86400, json.dumps(job_data))
+
+    # Auto-index repository if not already indexed
+    if repository:
+        index_guard = await redis.set(f"repo_index:{repository}", "building", nx=True, ex=86400)
+        if index_guard is not None:
+            await arq.enqueue_job("build_codebase_index", repository, _job_id=f"index:{repository}")
 
     await arq.enqueue_job("run_triage", job_id, _job_id=job_id)
 
@@ -336,12 +345,15 @@ async def kill_job(
 
 
 @router.post("/{job_id}/post-comment")
-async def post_github_comment(job_id: str, redis: RedisDep) -> dict[str, str]:
-    """Post triage report as GitHub comment. Full implementation uses DB token."""
-    raw = await redis.get(f"job:{job_id}")
-    if raw is None:
-        raise HTTPException(status_code=404, detail="Job not found")
-    return {"status": "comment_posted", "job_id": job_id}
+async def post_github_comment(
+    job_id: str,
+    redis: RedisDep,
+    current_user: CurrentUserDep,
+    settings: SettingsDep,
+) -> dict[str, str]:
+    """Post triage report as GitHub comment."""
+    comment_url = await post_triage_comment(redis, job_id, current_user.github_id, settings)
+    return {"status": "comment_posted", "job_id": job_id, "comment_url": comment_url}
 
 
 @router.post("/{job_id}/create-ticket")

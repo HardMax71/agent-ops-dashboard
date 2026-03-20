@@ -43,6 +43,7 @@ agentops-codegen = "agentops.codegen:main"
 
 [dependency-groups]
 dev = ["ruff>=0.6", "ty>=0.0.1a1", "pre-commit>=3.8"]
+docs = ["mkdocs>=1.6", "mkdocs-material>=9.5"]
 test = [
     "codebase_search",
     "critic",

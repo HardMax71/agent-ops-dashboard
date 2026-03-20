@@ -76,6 +76,7 @@ export interface Job {
     awaitingHuman: Scalars['Boolean']
     currentNode: Scalars['String']
     createdAt: Scalars['String']
+    githubCommentUrl: Scalars['String']
     __typename: 'Job'
 }
 
@@ -138,6 +139,7 @@ export interface OutputTokenEvent {
 
 export interface PostCommentResult {
     ok: Scalars['Boolean']
+    commentUrl: Scalars['String']
     __typename: 'PostCommentResult'
 }
 
@@ -236,6 +238,7 @@ export interface JobGenqlSelection{
     awaitingHuman?: boolean | number
     currentNode?: boolean | number
     createdAt?: boolean | number
+    githubCommentUrl?: boolean | number
     __typename?: boolean | number
     __scalar?: boolean | number
 }
@@ -323,6 +326,7 @@ export interface OutputTokenEventGenqlSelection{
 
 export interface PostCommentResultGenqlSelection{
     ok?: boolean | number
+    commentUrl?: boolean | number
     __typename?: boolean | number
     __scalar?: boolean | number
 }

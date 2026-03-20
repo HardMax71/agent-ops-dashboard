@@ -22,6 +22,7 @@ from agentops.api.deps.auth import get_optional_user
 from agentops.api.deps.redis import get_redis
 from agentops.config import Settings, get_settings
 from agentops.github.client import fetch_issue, parse_issue_url
+from agentops.github.writeback import post_triage_comment
 from agentops.graphql.types import (
     CreateJobInput,
     CreateJobResult,
@@ -55,6 +56,7 @@ def _job_from_dict(data: dict[str, str | int | bool | None]) -> Job:
         awaiting_human=bool(data.get("awaiting_human", False)),
         current_node=str(data.get("current_node", "")),
         created_at=str(data.get("created_at", "")),
+        github_comment_url=str(data.get("github_comment_url", "")),
     )
 
 
@@ -145,6 +147,15 @@ class Mutation:
             "created_at": datetime.now(UTC).isoformat(),
         }
         await redis.setex(f"job:{job_id}", 86400, json.dumps(job_data))
+
+        # Auto-index repository if not already indexed
+        if repository:
+            index_guard = await redis.set(f"repo_index:{repository}", "building", nx=True, ex=86400)
+            if index_guard is not None:
+                await arq.enqueue_job(
+                    "build_codebase_index", repository, _job_id=f"index:{repository}"
+                )
+
         await arq.enqueue_job("run_triage", job_id, _job_id=job_id)
 
         return CreateJobResult(job_id=strawberry.ID(job_id), status="queued")
@@ -246,11 +257,11 @@ class Mutation:
 
     @strawberry.mutation
     async def post_comment(self, info: strawberry.Info, job_id: strawberry.ID) -> PostCommentResult:
+        user = _require_user(info)
         redis: aioredis.Redis = info.context["redis"]
-        raw = await redis.get(f"job:{job_id}")
-        if raw is None:
-            raise ValueError("Job not found")
-        raise ValueError("Not implemented")
+        settings: Settings = info.context["settings"]
+        comment_url = await post_triage_comment(redis, str(job_id), user.github_id, settings)
+        return PostCommentResult(ok=True, comment_url=comment_url)
 
     @strawberry.mutation
     async def logout(self, info: strawberry.Info) -> LogoutResult:

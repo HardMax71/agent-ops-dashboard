@@ -1,0 +1,10 @@
+{
+    "issue_url": "https://github.com/acme/api-gateway/issues/23",
+    "issue_title": "Authentication bypass via manipulated OAuth state parameter",
+    "issue_body": "An attacker can forge the OAuth state parameter to hijack another user's authentication flow. The state parameter is not cryptographically signed and can be predicted. This allows account takeover by intercepting the OAuth callback.\n\nSeverity: CRITICAL — affects all OAuth-authenticated users.",
+    "repository": "acme/api-gateway",
+    "outputs": {
+        "severity": "critical",
+        "relevant_files": ["src/auth/oauth.go", "src/auth/state.go", "src/handlers/callback.go"]
+    }
+}
