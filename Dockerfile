@@ -21,8 +21,9 @@ RUN uv sync --no-dev
 
 ENV PATH="/app/.venv/bin:$PATH"
 
-RUN groupadd --system appuser && useradd --system --gid appuser appuser \
-    && chown -R appuser:appuser /app
+RUN mkdir -p /data/chroma \
+    && groupadd --system appuser && useradd --system --gid appuser appuser \
+    && chown -R appuser:appuser /app /data/chroma
 USER appuser
 
 # ── API target ────────────────────────────────────────────────────────
