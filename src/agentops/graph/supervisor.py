@@ -176,7 +176,7 @@ async def supervisor_node(state: BugTriageState) -> SupervisorNodeResult:
     if state.paused:
         interrupt("manual_pause")
 
-    llm = ChatOpenAI(model="gpt-4o", temperature=0)  # type: ignore[unknown-argument]
+    llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)  # type: ignore[unknown-argument]
     context = build_supervisor_context(state)
     prompt_messages = _SUPERVISOR_PROMPT.format_messages(**context)
     structured_llm = llm.with_structured_output(SupervisorDecision)
