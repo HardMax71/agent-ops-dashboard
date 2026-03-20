@@ -37,7 +37,7 @@ For running api/worker outside Docker (hot reload, debugger):
 uv sync --all-groups
 docker compose up db redis -d     # infra only
 uv run uvicorn agentops.api.main:app --reload   # terminal 1
-uv run python -m agentops.worker                 # terminal 2
+uv run arq agentops.worker.WorkerSettings         # terminal 2
 ```
 
 ### Running tests

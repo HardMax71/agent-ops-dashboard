@@ -3,6 +3,7 @@ import logging
 import time
 
 import redis.asyncio as aioredis
+from arq.connections import RedisSettings as ArqRedisSettings
 from arq.cron import cron
 from langchain_core.runnables import RunnableConfig
 from langgraph.types import Command
@@ -242,6 +243,7 @@ async def job_timeout_cleaner(ctx: WorkerContext) -> None:
 
 
 class WorkerSettings:
+    redis_settings = ArqRedisSettings.from_dsn(get_settings().redis_url)
     functions = [
         run_triage,
         expire_human_input,

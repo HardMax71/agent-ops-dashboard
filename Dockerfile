@@ -33,4 +33,4 @@ CMD ["sh", "-c", "alembic upgrade head && uvicorn agentops.api.main:app --host 0
 # ── Worker target ─────────────────────────────────────────────────────
 FROM base AS worker
 EXPOSE 8002
-CMD ["python", "-m", "agentops.worker"]
+CMD ["arq", "agentops.worker.WorkerSettings"]
